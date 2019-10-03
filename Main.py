@@ -8,7 +8,7 @@ class Ragnarok:
 ============== Ragnarok Idle Game ==============
 ================================================
 
-          Press [S] to start new game
+          Enter [S] to start new game
                 [L] to load data                
                 [E] to exit                     """)
 
