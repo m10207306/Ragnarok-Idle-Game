@@ -1,6 +1,8 @@
+import time
+
+import Attribute
 
 class CharacterClass:
-
     def __init__(self, name):
         self.char_name = name
         self.job_name = "Novice"
@@ -15,8 +17,8 @@ class CharacterClass:
         self.target_job_exp = 100
 
         self.equipment = []
-        self.ability = AbilityClusterClass()
-        self.attribute = AttributeClusterClass(self)
+        self.ability = Attribute.AbilityClusterClass()
+        self.attribute = Attribute.AttributeClusterClass(self)
         self.item = []
 
         self.hp = self.attribute.max_hp
@@ -32,40 +34,26 @@ class CharacterClass:
                "   Job Experience: " + str(job_exp_per) + " %\n"\
                "   Zeny: " + tool_money_format(self.zeny)
 
+    def attribute_console(self):
+        print(self.attribute_list())
+        while True:
+            command = input(">> Enter Command: ")
+            if command == "exit":
+                return
+
     def attribute_list(self):
-        att_list = "=====================================================\n"
+        att_list = "\n=====================================================\n"
+        att_list += "  Max HP: " + str(self.attribute.max_hp) + "\n" + \
+                              "  Max SP: " + str(self.attribute.max_sp) + "\n"
         for i in range(len(self.ability.ability)):
             ability = self.ability.ability[i]
-            att_list = att_list + ability.tag + ": "
+            att_list += "  " + ability.tag.capitalize() + ": "
             if ability.value < 10:
-                att_list = att_list + "0" + str(ability.value)
+                att_list += "0" + str(ability.value) + "\n"
             else:
-                att_list = att_list + str(att_list.value) + "\n"
-        att_list = att_list + ""
-
-
-class AbilityClusterClass:
-    def __init__(self):
-        self.ability = [ AbilityClass("str", 1),
-                         AbilityClass("agi", 1),
-                         AbilityClass("vit", 1),
-                         AbilityClass("int", 1),
-                         AbilityClass("dex", 1),
-                         AbilityClass("luk", 1) ]
-
-
-class AbilityClass:
-    def __init__(self, tag, value):
-        self.tag = tag
-        self.value = value
-
-
-class AttributeClusterClass:
-    def __init__(self, char_obj):
-        self.char_atk =
-        self.weapon_atk =
-        self.max_hp = 35 + char_obj.base_level
-        self.max_sp =
+                att_list += str(att_list.value) + "\n"
+        att_list += str(self.attribute)
+        return att_list
 
 
 def tool_money_format(money):

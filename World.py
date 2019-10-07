@@ -1,46 +1,55 @@
-import time, sys, os
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"
-import pygame, keyboard
-import Character
+import time, sys, os        # Built-in lLibrary
+import Character            # My Own Script
 
 
 class WorldClass:
-    def __init__(self):
-        # Create Character
+    def __init__(self, window_screen):
+        self.window = window_screen
         name = input(">> Please Enter the Character Name: ")
         self.Char_obj = Character.CharacterClass(name)
-        print(">> Success!")
+        print(">> Create Character Success!")
         print(">> Character Information:")
         print(self.Char_obj)
-        self.home_console()
 
-    def home_console(self):
+    def run(self):
+        idx = True
+        while idx:
+            idx = self.city_console("Prondra", True)
+
+    def city_console(self, city, replay_bgm):
         interface = "=====================================================\n" + \
-                    ">> Your Position: Prondra \n" + \
+                    ">> Your Position: " + city + " \n" + \
                     ">> Press [A] to Character Attribute Page \n" + \
                     ">>       [I] to Item Page \n" + \
-                    ">>       [K] to Fight!"
+                    ">>       [K] to Fight! \n" + \
+                    ">>       [E] to Menu \n"
         print(interface)
-        play_bgm("Prondra.mp3")
+        if replay_bgm:
+            self.window.play_bgm(city + ".mp3")
+        return WorldClass.city_standby()
+
+    def city_standby(self):
         while True:
-            time.sleep(0.1)
+            time.sleep(0.05)
             update_print(time.strftime("Time: %Y-%m-%d   %H:%M:%S  (%a)", time.localtime()))
-            if keyboard.is_pressed("a"):
-                print("Character Attribute Page")
-                break
-            elif keyboard.is_pressed("i"):
-                print("Item Page")
-            elif keyboard.is_pressed("k"):
-                print("Fight!")
-                break
-
-
-def play_bgm(path):
-    pygame.mixer.init()
-    pygame.mixer.music.load(path)
-    pygame.mixer.music.play(loops = -1)
+            content = self.window.key_detection()
+            if content == "a":
+                print("\n>> Attribute Page")
+                return True
+            elif content == "i":
+                print("\n>> Item Page")
+                return True
+            elif content == "k":
+                print("\n>> Fight")
+                return True
+            elif content == "e":
+                print("\n>> Exit")
+                return False
 
 
 def update_print(content):
     sys.stdout.write("\r>> " + content)
     sys.stdout.flush()
+
+
+
