@@ -1,14 +1,19 @@
-import time, sys, os        # Built-in lLibrary
+import time, sys, os        # Built-in Library
 import Character            # My Own Script
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
+import pygame                                       # 3rd party Library
 
 
 class WorldClass:
     def __init__(self, window_screen):
         self.window = window_screen
-        name = input(">> Please Enter the Character Name: ")
+        self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.jpg"), 200)     # clear screen and reset background
+        rect = self.window.set_message_box(self.window.background.get_rect(), ["Please Enter the Character Name: (English)"])
+        # return the rect address of the message box
+        rect = self.window.set_block((300, 26), (0, 0, 0), (rect.center[0] - 150, rect.center[1] - 13))
+        # return the rect address of the block
+        name = self.window.get_cmd(rect)
         self.Char_obj = Character.CharacterClass(name)
-        print(">> Create Character Success!")
-        print(">> Character Information:")
         print(self.Char_obj)
 
     def run(self):
@@ -25,14 +30,14 @@ class WorldClass:
                     ">>       [E] to Menu \n"
         print(interface)
         if replay_bgm:
-            self.window.play_bgm(city + ".mp3")
-        return WorldClass.city_standby()
+            self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
+        return self.city_standby()
 
     def city_standby(self):
         while True:
-            time.sleep(0.05)
+            self.window.tick(self.window.fps)
             update_print(time.strftime("Time: %Y-%m-%d   %H:%M:%S  (%a)", time.localtime()))
-            content = self.window.key_detection()
+            content = self.window.get_key()
             if content == "a":
                 print("\n>> Attribute Page")
                 return True
