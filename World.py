@@ -1,8 +1,11 @@
 import time, sys, os        # Built-in Library
 import Character            # My Own Script
-os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
-import pygame                                       # 3rd party Library
 
+Black = (0, 0, 0)
+White = (255, 255, 255)
+Red = (255, 0, 0)
+Green = (0, 255, 0)
+Blue = (0, 0, 255)
 
 class WorldClass:
     def __init__(self, window_screen):
@@ -10,33 +13,29 @@ class WorldClass:
         self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.jpg"), 200)     # clear screen and reset background
         rect = self.window.set_message_box(self.window.background.get_rect(), ["Please Enter the Character Name: (English)"])
         # return the rect address of the message box
-        rect = self.window.set_block((300, 26), (0, 0, 0), (rect.center[0] - 150, rect.center[1] - 13))
+        rect = self.window.set_block((252, 28), (0, 0, 0), (rect.center[0] - 126, rect.center[1] - 14))
         # return the rect address of the block
         name = self.window.get_cmd(rect)
         self.Char_obj = Character.CharacterClass(name)
-        print(self.Char_obj)
 
     def run(self):
         idx = True
         while idx:
-            idx = self.city_console("Prondra", True)
+            idx = self.city_standby("Prondra")
 
-    def city_console(self, city, replay_bgm):
-        interface = "=====================================================\n" + \
-                    ">> Your Position: " + city + " \n" + \
-                    ">> Press [A] to Character Attribute Page \n" + \
-                    ">>       [I] to Item Page \n" + \
-                    ">>       [K] to Fight! \n" + \
-                    ">>       [E] to Menu \n"
-        print(interface)
-        if replay_bgm:
-            self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
-        return self.city_standby()
+    def city_standby(self, city):
+        self.window.set_bg_image(os.path.join("BG_Image", city + "_BG.png"), 255)
+        self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
+        self.window.set_idle_char(self.Char_obj.job_name)
+        self.window.set_status_window(self.Char_obj)
+        self.window.set_chat_window(["You are at: " + city,
+                                     "Press [A] to Character Attribute Page",
+                                     "              [I] to Item Page",
+                                     "              [K] to Fight!",
+                                     "              [E] to Exit Game"], Green)
 
-    def city_standby(self):
         while True:
             self.window.tick(self.window.fps)
-            update_print(time.strftime("Time: %Y-%m-%d   %H:%M:%S  (%a)", time.localtime()))
             content = self.window.get_key()
             if content == "a":
                 print("\n>> Attribute Page")
@@ -52,9 +51,6 @@ class WorldClass:
                 return False
 
 
-def update_print(content):
-    sys.stdout.write("\r>> " + content)
-    sys.stdout.flush()
 
 
 
