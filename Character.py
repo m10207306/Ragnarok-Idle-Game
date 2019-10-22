@@ -1,6 +1,6 @@
-import time
-
+import os
 import Attribute
+
 
 class CharacterClass:
     def __init__(self, name):
@@ -18,42 +18,20 @@ class CharacterClass:
         self.target_job_exp = 100
         self.job_exp_per = round(self.job_exp / self.target_job_exp * 100, 1)
 
-        self.equipment = []
-        self.ability = Attribute.AbilityClusterClass()
-        self.attribute = Attribute.AttributeClusterClass(self)
+        self.equipment = [[], [], [], ["棉襯衫", 10], ["短劍", 17], [], [], [], [], []]
+        # Temp Version
+        # head_up, head_mid, head_down, body, R-hand, L-hand, robe, shoes, accessory1, accessory2
         self.item = []
+
+        self.ability = Attribute.AbilityClusterClass()          # control str, agi, vit ...etc
+        self.attribute = Attribute.AttributeClusterClass(self)  # generate atk, def, flee ...etc
 
         self.hp = self.attribute.max_hp
         self.sp = self.attribute.max_sp
 
-    def __str__(self):
-        return "   Name: " + self.char_name + " / Job: " + self.job_name + "\n"\
-               "   HP: " + str(self.hp) + " / " + str(self.attribute.max_hp) + "\n"\
-               "   SP: " + str(self.sp) + " / " + str(self.attribute.max_sp) + "\n"\
-               "   Base Experience: " + str(self.base_exp_per) + " %\n"\
-               "   Job Experience: " + str(self.job_exp_per) + " %\n"\
-               "   Zeny: " + tool_money_format(self.zeny)
-
-    # def attribute_console(self):
-    #     print(self.attribute_list())
-    #     while True:
-    #         command = input(">> Enter Command: ")
-    #         if command == "exit":
-    #             return
-    #
-    # def attribute_list(self):
-    #     att_list = "\n=====================================================\n"
-    #     att_list += "  Max HP: " + str(self.attribute.max_hp) + "\n" + \
-    #                           "  Max SP: " + str(self.attribute.max_sp) + "\n"
-    #     for i in range(len(self.ability.ability)):
-    #         ability = self.ability.ability[i]
-    #         att_list += "  " + ability.tag.capitalize() + ": "
-    #         if ability.value < 10:
-    #             att_list += "0" + str(ability.value) + "\n"
-    #         else:
-    #             att_list += str(att_list.value) + "\n"
-    #     att_list += str(self.attribute)
-    #     return att_list
+        self.sit_img_path = os.path.join("Char_Image", self.job_name, "Sit.png")
+        self.standby_img_path = os.path.join("Char_Image", self.job_name, "Standby_Dagger.png")
+        self.attack_img_path = os.path.join("Char_Image", self.job_name, "Attack_Dagger.png")
 
 
 def tool_money_format(money):
