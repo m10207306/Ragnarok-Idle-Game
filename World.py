@@ -1,5 +1,5 @@
-import os                   # Built-in Library
-import Character, Battle            # My Own Script
+import os                           # Built-in Library
+import Character, Battle            # 自己的Code
 
 Black = (0, 0, 0)
 White = (255, 255, 255)
@@ -11,15 +11,20 @@ Blue = (0, 0, 255)
 class WorldClass:
     def __init__(self, window_screen):
         self.window = window_screen
-        self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)     # clear screen and reset background
+        self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
+        # 清理背景跟重置背景
         rect = self.window.set_message_box(self.window.background.get_rect(), ["請輸入角色名稱: (英文)"])
-        # return the rect address of the message box
+        # return message box 的 rect address
         rect = self.window.set_block((0, 0, 0), self.window.create_rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
-        # return the rect address of the block
+        # return block 的 rect address
         name = self.window.get_cmd(rect)
         self.Char_obj = Character.CharacterClass(name)
 
         self.temp_enemy = Character.CharacterClass("Robot")
+        self.temp_enemy.standby_img_path = os.path.join("Mons_Image", "Poring_Standby.png")
+        self.temp_enemy.attack_img_path = os.path.join("Mons_Image", "Poring_Attack.png")
+        self.temp_enemy.attribute.aspd = 160
+        self.temp_enemy.attribute.att_frq = round(50 / (200 - self.temp_enemy.attribute.aspd), 1)
 
     def run(self, city):
         idx = True
@@ -28,13 +33,13 @@ class WorldClass:
             self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
             self.window.set_sit_char(self.Char_obj.sit_img_path)
             self.window.set_status_window(self.Char_obj)
-            self.window.chat_message = []
+            self.window.reset_chat_message()
             self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
                                          "你的位置在: " + city,
                                          "按下 [A] 到人物素質介面",
                                          "         [I] 到物品介面",
                                          "         [K] 前往戰鬥",
-                                         "         [E] 回主畫面"], Green)
+                                         "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
             idx = self.city_standby()
 
     def city_standby(self):

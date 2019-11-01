@@ -13,8 +13,8 @@ class AbilityClusterClass:
         try:
             idx = ability.index(ability_tag)
             return self.ability[idx]
-        except ValueError as error_message:
-            print(">> " + error_message)
+        except Exception as error_message:
+            print(">> ", error_message)
             return
 
 
@@ -60,9 +60,11 @@ class AttributeClusterClass:
                                ability.get_ability("dex").value / 5)
         self.armor_mdefence = 0
         self.hit = round(175 + ability.get_ability("dex").value + char_obj.base_level + ability.get_ability("luk").value / 3)
-        self.flee = 100 + char_obj.base_level + ability.get_ability("agi").value
+        self.flee = round(100 + char_obj.base_level + ability.get_ability("agi").value + ability.get_ability("luk").value / 5)
         self.cri = round(ability.get_ability("luk").value / 3 + 1)
-        self.aspd = round(160 + (200 - 150) * (ability.get_ability("agi").value + ability.get_ability("dex").value / 4) / 250)
-        self.aspd = 195 if self.aspd > 195 else self.aspd
+        # self.aspd = round(165 + (200 - 150) * (ability.get_ability("agi").value + ability.get_ability("dex").value / 4) / 250)
+        self.aspd = 190
+        self.aspd = 190 if self.aspd > 190 else self.aspd
+        self.aspd = 150 if self.aspd < 150 else self.aspd
         self.att_frq = round(50 / (200 - self.aspd), 1)
 

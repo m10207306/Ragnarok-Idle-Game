@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import os                     # Built-in Library
-import World, Graphic         # My Own Library
+import World, Graphic         # 自己的Code
 
 
 class Ragnarok:
@@ -14,7 +14,7 @@ class Ragnarok:
             self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
             self.window.set_message_box(self.window.background.get_rect(), ["     按 [S] 開始新遊戲",
                                                                             "          [L] 載入舊檔",
-                                                                            "          [E] 離開遊戲"])
+                                                                            "          [Esc] 離開遊戲"])
             idx = self.standby()
 
     def standby(self):
@@ -22,9 +22,8 @@ class Ragnarok:
             self.window.tick(self.window.fps)
             content = self.window.get_key()
             if content == "s":
-                self.window.chat_message = []
                 world_obj = World.WorldClass(self.window)
-                world_obj.run("Prondra")
+                world_obj.run("Prontera")
                 print(">> Create Character")
                 return True
             elif content == "l":
