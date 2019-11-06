@@ -20,11 +20,11 @@ class WorldClass:
         name = self.window.get_cmd(rect)
         self.Char_obj = Character.CharacterClass(name)
 
-        self.temp_enemy = Character.CharacterClass("Robot")
-        self.temp_enemy.standby_img_path = os.path.join("Mons_Image", "Poring_Standby.png")
-        self.temp_enemy.attack_img_path = os.path.join("Mons_Image", "Poring_Attack.png")
-        self.temp_enemy.attribute.aspd = 160
-        self.temp_enemy.attribute.att_frq = round(50 / (200 - self.temp_enemy.attribute.aspd), 1)
+        # self.temp_enemy = Character.CharacterClass("Robot")
+        # self.temp_enemy.standby_img_path = os.path.join("Mons_Image", "Poring_Standby.png")
+        # self.temp_enemy.attack_img_path = os.path.join("Mons_Image", "Poring_Attack.png")
+        # self.temp_enemy.attribute.aspd = 160
+        # self.temp_enemy.attribute.att_frq = round(50 / (200 - self.temp_enemy.attribute.aspd), 1)
 
     def run(self, city):
         idx = True
@@ -53,7 +53,7 @@ class WorldClass:
                 print("\n>> Item Page")
                 return True
             elif content == "k":
-                battle_scene = Battle.BattleControl(self.window, os.path.join("BG_Image", "Battle.png"), self.Char_obj, self.temp_enemy)
+                battle_scene = Battle.BattleControl(self.window, os.path.join("BG_Image", "Battle.png"), self.Char_obj)
                 battle_scene.run()
                 print("\n>> Fight")
                 return True

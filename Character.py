@@ -35,21 +35,43 @@ class CharacterClass:
 
 
 def tool_money_format(money):
-    str_money = str(money)
-    str_money = str_money[::-1]  # inverse string
-    digit = len(str_money)
-    comma_num = digit // 3
-    result = ""
-    if comma_num > 1:
-        for i in range(1, comma_num+1):
-            if i == comma_num:
-                tmp = str_money[(i-1)*3 : i*3]
-                tmp2 = str_money[i*3 : len(str_money)+1]
-                result = (tmp2[::-1] + "," + tmp[::-1]) + result
-            else:
-                tmp = str_money[(i-1)*3 : i*3]
-                result = ("," + tmp[::-1]) + result
-        return result
-    else:
-        return str(money)
+    value_list = str(money)
+    money_str = ""
+    count = 1
+    for idx, digit in enumerate(reversed(value_list)):
+        if count == 3 and idx + 1 != len(value_list):
+            money_str = "," + digit + money_str
+            count = 1
+        else:
+            money_str = digit + money_str
+            count += 1
+    return money_str
+
+
+# type = [無，火，水，風，地，毒，聖，闇，念，不死]
+monster_data = \
+    [   # name,    hp, type,      atk, def, mdef, flee, hit, aspd, base_exp, job_exp
+        ['Poring', 60,    3, [13, 17],   2,    5,  178, 203,  160,       27,      20]
+    ]
+
+
+class MonsterClass:
+    def __init__(self, moster_number):
+        self.mons_number = moster_number
+        self.mons_name = monster_data[self.mons_number][0]
+        self.hp = monster_data[self.mons_number][1]
+        self.type = monster_data[self.mons_number][2]
+        self.atk = monster_data[self.mons_number][3]
+        self.defence = monster_data[self.mons_number][4]
+        self.mdefence = monster_data[self.mons_number][5]
+        self.flee = monster_data[self.mons_number][6]
+        self.hit = monster_data[self.mons_number][7]
+        self.aspd = monster_data[self.mons_number][8]
+        self.base_exp = monster_data[self.mons_number][9]
+        self.job_exp = monster_data[self.mons_number][10]
+        self.standby_img_path = os.path.join("Mons_Image", self.mons_name + "_Standby.png")
+        self.attack_img_path = os.path.join("Mons_Image", self.mons_name + "_Attack.png")
+        self.att_frq = round(50 / (200 - self.aspd), 1)
+
+
 

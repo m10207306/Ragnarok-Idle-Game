@@ -1,4 +1,5 @@
 import math, os, random
+import Character
 
 Black = (0, 0, 0)
 White = (255, 255, 255)
@@ -8,11 +9,10 @@ Blue = (0, 0, 255)
 
 
 class BattleControl:
-    def __init__(self, graphic_obj, background_path, char, enemy):
+    def __init__(self, graphic_obj, background_path, char):
         self.window = graphic_obj
         self.background_path = background_path
         self.char = char
-        self.enemy = enemy
         self.attack_fps = 30
         self.standby_fps = 10
 
@@ -40,42 +40,49 @@ class BattleControl:
                 self.attack()
                 return True
             char_animate.update()
+            self.window.update_screen((0, 0, self.window.width, self.window.height))
 
     def attack(self):
         self.window.reset_chat_message()
+        monster = Character.MonsterClass(0)
         count = 1
         char_center_pos = (self.window.width * 0.4, self.window.height * 0.55)
         enemy_center_pos = (self.window.width * 0.6, self.window.height * 0.55)
-        char_damage = Damage(self.window, (enemy_center_pos[0], enemy_center_pos[1] - 110))
-        enemy_damage = Damage(self.window, (char_center_pos[0], char_center_pos[1] - 110))
+        char_damage_center = (enemy_center_pos[0], enemy_center_pos[1] - 110)
+        enemy_damage_center = (char_center_pos[0], char_center_pos[1] - 110)
+        char_damage = Damage(self.window, char_damage_center)
+        enemy_damage = Damage(self.window, enemy_damage_center)
         char_animate = Animate(self.window, self.char.attack_img_path, char_center_pos, char_damage)
-        enemy_animate = Animate(self.window, self.enemy.attack_img_path, enemy_center_pos, enemy_damage)
+        enemy_animate = Animate(self.window, monster.attack_img_path, enemy_center_pos, enemy_damage)
         char_move_frq = math.floor(self.attack_fps / self.char.attribute.att_frq / char_animate.image_count)
-        enemy_move_frq = math.floor(self.attack_fps / self.enemy.attribute.att_frq / enemy_animate.image_count)
+        enemy_move_frq = math.floor(self.attack_fps / monster.att_frq / enemy_animate.image_count)
 
         while True:
-            # pygame.dispaly.update 會掉 frame，但暫時無法處理
-            # 測試在 30 or 60 fps下只做update就會掉到25fps
+            # pygame.dispaly.update 會掉 frame，但暫時無法處理，執行時間大概是0.04秒
+            # 測試在 60 fps下只做update就會掉到25fps
             self.window.tick(self.attack_fps)
             content = self.window.get_key()
-            # print(self.window.clock.get_fps())
+            print(self.window.clock.get_fps())
             if content == "esc":
                 return
 
             if count % char_move_frq == 0:
-                damage = random.randint(1000, 1000000)
-                char_animate.update_with_sound(damage)
+                damage = random.randint(1, 1000000)
+                damage_type = random.randint(1, 3)              # 1 普通 2 爆擊 3 miss
+                char_animate.update_with_sound([damage, damage_type])
             if count % enemy_move_frq == 0:
                 damage = random.randint(5, 15)
-                enemy_animate.update_with_sound(damage)
+                damage_type = random.randint(1, 3)
+                enemy_animate.update_with_sound([damage, damage_type])
 
             surface = char_damage.generate_surface()
             if surface is not None:
-                self.window.screen.blit(surface, (enemy_center_pos[0]-35, enemy_center_pos[1]-110-6-39))
+                self.window.screen.blit(surface, (char_damage_center[0]-35, char_damage_center[1]-30-39))
             surface = enemy_damage.generate_surface()
             if surface is not None:
-                self.window.screen.blit(surface, (char_center_pos[0]-35, char_center_pos[1]-110-6-39))
+                self.window.screen.blit(surface, (enemy_damage_center[0]-35, enemy_damage_center[1]-30-39))
 
+            self.window.update_screen((0, 0, self.window.width, self.window.height))
             count += 1
 
 
@@ -121,76 +128,99 @@ class Animate:
         rect.center = self.center_pos
         self.window.screen.blit(self.sub_bg, rect)
         self.window.screen.blit(ani_img, rect)
-        self.window.update_screen(rect)
 
 
 class Damage:
     def __init__(self, graphic_obj, blit_center_pos):
         self.window = graphic_obj
-        self.width = 10
-        self.height = 13
+        self.damage_width = 10
+        self.damage_height = 13
+        self.cri_width = 70
+        self.cri_height = 60
         self.center_pos = blit_center_pos
-        self.damage_img = []
-        self.miss_img = self.window.load_image(os.path.join("Info_Image", "Damage.png"))
-        damage_img = self.window.load_image(os.path.join("Info_Image", "Damage.png"))
-        damage_img.set_colorkey(damage_img.get_at((0, 0)))
-        for i in range(1, 11):                                              # Parsing 傷害數字
-            self.damage_img.append(damage_img.subsurface(self.window.create_rect((i-1) * self.width, 0, self.width, self.height)))
+        self.damage_img = self.window.damage_template
+        self.damage_cri_img = self.window.damage_cri_template
+        self.miss_img = self.window.miss_template
+        self.cri_img = self.window.cri_template
         self.damage_list = []
 
-    def check_container(self):
-        if len(self.damage_list) == 0:
-            return False
-        else:
-            return True
-
     def add_damage(self, damage):
-        damage = 9999999 if damage > 9999999 else damage
-        damage_value = [int(d) for d in str(damage)]                        # 擷取傷害的每個數字
-        self.damage_list.insert(0, [damage_value, 0])                       # [Token過的傷害, frame idx] 排序方式是越薪的越前面，這樣超過40 frame的傷害就可以從後面開始刪，在iterate時才不會有問題
+        damage[0] = 9999999 if damage[0] > 9999999 else damage[0]
+        damage_value = [int(d) for d in str(damage[0])]                 # 擷取傷害的每個數字
+        self.damage_list.insert(0, [damage_value, damage[1], 0])        # [Token過的傷害, frame idx] 排序方式是越薪的越前面，這樣超過40 frame的傷害就可以從後面開始刪，在iterate時才不會有問題
 
     def generate_surface(self):
         if len(self.damage_list) == 0:
             return
         else:
-            rect = self.window.create_rect(self.center_pos[0]-0-35, self.center_pos[1]-6-39, 7 * self.width, 52)
+            rect = self.window.create_rect(self.center_pos[0]-(self.cri_width / 2), self.center_pos[1]-(self.cri_height / 2)-39, self.cri_width, 99)
+            # 切出傷害漂浮動畫所需要的完整區域，大小是70x99 (60+39)，x是第一個frame center pos - width/2
+            # y則是第一個frame center pos - width / 2 - 39(隨著frame往上漂浮的空間)
             bg = self.window.background.copy()
             surface = bg.subsurface(rect)
-            for damage, frame in self.damage_list:
-                if frame == 40:
-                    self.damage_list.remove([damage, frame])
-            for damage, frame in reversed(self.damage_list):
-                bg2 = self.window.background.copy()
-                rect2 = self.window.create_rect(0, 0, len(damage) * self.width, self.height)
-                rect2.center = self.window.create_rect(self.center_pos[0]-len(damage)/2, self.center_pos[1]-self.height/2-frame, len(damage) * self.width, self.height).center
-                dmg_surface = bg2.subsurface(rect2)
-                for i in range(len(damage)):
-                    dmg_surface.blit(self.damage_img[damage[i]], (i * self.width, 0))
-                rect3 = self.window.create_rect(0, 38 - frame, 7 * self.width, self.height)
-                rect2.center = rect3.center
-                surface.blit(dmg_surface, rect2)
-                self.damage_list[self.damage_list.index([damage, frame])][1] += 1
+            for damage, damage_type, frame in self.damage_list:              # 先篩選一遍看是否有壽命到期的傷害
+                if frame == 20:
+                    self.damage_list.remove([damage, damage_type, frame])
+            for damage, damage_type, frame in reversed(self.damage_list):    # 反向iterate，從舊的傷害開始blit
+                if damage_type == 1:
+                    bg2 = self.window.background.copy()
+                    rect2 = self.window.create_rect(0, 0, len(damage) * self.damage_width, self.damage_height)
+                    rect2.center = self.window.create_rect(self.center_pos[0]-len(damage)/2, self.center_pos[1]-self.damage_height/2-frame*2, len(damage) * self.damage_width, self.damage_height).center
+                    dmg_surface = bg2.subsurface(rect2)             # 切出實際傷害所佔的背景
+                    for i in range(len(damage)):                    # 畫上傷害
+                        dmg_surface.blit(self.damage_img[damage[i]], (i * self.damage_width, 0))
+                    rect3 = self.window.create_rect(0, 38 - frame*2, self.cri_width, self.cri_height)     # 產出在surface上的正確center位置
+                    rect2.center = rect3.center                                                           # 轉交這個center位置
+                    surface.blit(dmg_surface, rect2)
+                elif damage_type == 2:
+                    cri_base = self.cri_img.copy()
+                    rect3 = self.window.create_rect(0, 0, len(damage) * self.damage_width, self.damage_height)  # 找出預計傷害區域的座標
+                    rect3.center = cri_base.get_rect().center               # 把這個區域的中心對準cri_base的中心
+                    for i in range(len(damage)):                            # 按照這個座標開始刻數字
+                        cri_base.blit(self.damage_cri_img[damage[i]], (rect3.x + i * self.damage_width, rect3.y))
+                    rect4 = self.window.create_rect(0, 38 - frame*2, self.cri_width, self.cri_height)
+                    surface.blit(cri_base, rect4)
+                elif damage_type == 3:
+                    rect2 = self.window.miss_template.get_rect()
+                    rect3 = self.window.create_rect(0, 38 - frame*2, self.cri_width, self.cri_height)
+                    rect2.center = rect3.center
+                    surface.blit(self.miss_img, rect2)
+                self.damage_list[self.damage_list.index([damage, damage_type, frame])][2] += 1
             return surface
 
+    # def generate_surface(self):
+    #     if len(self.damage_list) == 0:
+    #         return
+    #     else:
+    #         rect = self.window.create_rect(self.center_pos[0]-(7 * self.damage_width / 2), self.center_pos[1]-(self.damage_height / 2)-39, 7 * self.damage_width, 52)
+    #         # 切出傷害漂浮動畫所需要的完整區域，大小是70x52 (原本的13+39)，x是第一個frame center pos - width/2
+    #         # y則是第一個frame center pos - width / 2 - 39(隨著frame往上漂浮的空間)
+    #         bg = self.window.background.copy()
+    #         surface = bg.subsurface(rect)
+    #         for damage, damage_type, frame in self.damage_list:              # 先篩選一遍看是否有壽命到期的傷害
+    #             if frame == 40:
+    #                 self.damage_list.remove([damage, damage_type, frame])
+    #         for damage, damage_type, frame in reversed(self.damage_list):    # 反向iterate，從舊的傷害開始blit
+    #             if damage_type == 1:
+    #                 bg2 = self.window.background.copy()
+    #                 rect2 = self.window.create_rect(0, 0, len(damage) * self.damage_width, self.damage_height)
+    #                 rect2.center = self.window.create_rect(self.center_pos[0]-len(damage)/2, self.center_pos[1]-self.damage_height/2-frame, len(damage) * self.damage_width, self.height).center
+    #                 dmg_surface = bg2.subsurface(rect2)             # 切出實際傷害所佔的背景
+    #                 for i in range(len(damage)):                    # 畫上傷害
+    #                     dmg_surface.blit(self.damage_img[damage[i]], (i * self.damage_width, 0))
+    #                 rect3 = self.window.create_rect(0, 38 - frame, 7 * self.damage_width, self.damage_height)     # 產出在surface上的正確center位置
+    #                 rect2.center = rect3.center                                                     # 轉交這個center位置
+    #                 surface.blit(dmg_surface, rect2)
+    #             elif damage_type == 2:
+    #
+    #             elif damage_type == 3:
+    #                 rect2 = self.window.miss_template.get_rect()
+    #                 rect3 = self.window.create_rect(0, 38 - frame, 7 * self.damage_width, self.damage_height)
+    #                 rect2.center = rect3.center
+    #                 surface.blit(self.miss_img, rect2)
+    #             self.damage_list[self.damage_list.index([damage, damage_type, frame])][2] += 1
+    #         return surface
 
-    # def generate_damage(self, damage):
-    #     damage = 9999999 if damage > 9999999 else damage
-    #     damage_value = [int(d) for d in str(damage)]                        # 擷取傷害的每個數字
-    #     bg = self.window.background.copy()
-    #     rect = self.window.create_rect(0, 0, 7 * self.width, self.height)   # 預先撈出傷害所需要的最大畫面空間 (9999999) 為了避免顯示大的數字後顯示小數字會沒有把前一個數字蓋乾淨
-    #     rect.center = self.center_pos                                       # pos是指這個畫面的中心位置
-    #     surface = bg.subsurface(rect)                                       # surface 是最大傷害畫面區域的背景
-    #
-    #     bg2 = self.window.background.copy()
-    #     rect2 = self.window.create_rect(0, 0, len(damage_value) * self.width, self.height)
-    #     rect2.center = self.center_pos
-    #     dmg_surface = bg2.subsurface(rect2)                                 # dmg_surface 是實際傷害的圖像，接著要把這兩個併起來
-    #     for i in range(len(damage_value)):
-    #         dmg_surface.blit(self.damage_img[damage_value[i]], (i * self.width, 0))
-    #
-    #     rect.topleft = (0, 0)                                               # 在blit時，總是以該圖自己內部的座標來指定，左上角總是0, 0
-    #     rect2.center = rect.center                                          # 把surface與dmg_surface的中心點對齊後畫上去
-    #     surface.blit(dmg_surface, rect2)
-    #     return surface
+
 
 

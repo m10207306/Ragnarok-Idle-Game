@@ -62,8 +62,7 @@ class AttributeClusterClass:
         self.hit = round(175 + ability.get_ability("dex").value + char_obj.base_level + ability.get_ability("luk").value / 3)
         self.flee = round(100 + char_obj.base_level + ability.get_ability("agi").value + ability.get_ability("luk").value / 5)
         self.cri = round(ability.get_ability("luk").value / 3 + 1)
-        # self.aspd = round(165 + (200 - 150) * (ability.get_ability("agi").value + ability.get_ability("dex").value / 4) / 250)
-        self.aspd = 190
+        self.aspd = round(165 + (200 - 150) * (ability.get_ability("agi").value + ability.get_ability("dex").value / 4) / 250)
         self.aspd = 190 if self.aspd > 190 else self.aspd
         self.aspd = 150 if self.aspd < 150 else self.aspd
         self.att_frq = round(50 / (200 - self.aspd), 1)

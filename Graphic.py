@@ -27,6 +27,11 @@ class WindowClass:
         # 1 Chinese Character = 4 Space
         self.font = pygame.font.Font("TaipeiSansTCBeta-Bold.ttf", Font_size)
         self.clock = pygame.time.Clock()
+        self.damage_template = []
+        self.damage_cri_template = []
+        self.miss_template = []
+        self.cri_template = []
+        self.token_damage_image()
 
     def clear_screen(self):
         self.screen.blit(self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 255), (0, 0))
@@ -45,9 +50,8 @@ class WindowClass:
     def set_message_box(self, surface_rect, text):
         # text = ["str1", "str2", "str3" ...]
         # return rect if message_box
-        img = pygame.image.load(os.path.join("Info_Image", "win_msgbox.png"))
+        img = pygame.image.load(os.path.join("Info_Image", "win_msgbox.png")).convert()
         img.set_colorkey(img.get_at((0, 0)))
-        img = img.convert()
         dest_rect = img.get_rect()
         color = []
         for i in range(len(text)):
@@ -163,6 +167,21 @@ class WindowClass:
         # self.screen.blit(img, (self.width * 0.4 - width / 2, self.height * 0.55 - height / 2))
         self.screen.blit(img, rect)
         pygame.display.update()
+
+    def token_damage_image(self):
+        damage_img = pygame.image.load(os.path.join("Info_Image", "Damage.png")).convert()
+        damage_cri_img = pygame.image.load(os.path.join("Info_Image", "Damage_Critical.png")).convert()
+        self.miss_template = pygame.image.load(os.path.join("Info_Image", "Miss.png")).convert()
+        self.cri_template = pygame.image.load(os.path.join("Info_Image", "Critical.png")).convert()
+        damage_img.set_colorkey(damage_img.get_at((0, 0)))
+        damage_cri_img.set_colorkey(damage_cri_img.get_at((0, 0)))
+        self.miss_template.set_colorkey(self.miss_template.get_at((0, 0)))
+        self.cri_template.set_colorkey(self.cri_template.get_at((0, 0)))
+        digit_width = 10
+        digit_height = 13
+        for i in range(1, 11):
+            self.damage_template.append(damage_img.subsurface(pygame.Rect((i-1) * digit_width, 0, digit_width, digit_height)))
+            self.damage_cri_template.append(damage_cri_img.subsurface(pygame.Rect((i-1) * digit_width, 0, digit_width, digit_height)))
 
     @staticmethod
     def create_color_surface(color, rect, alpha):
