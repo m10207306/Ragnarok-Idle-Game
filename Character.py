@@ -1,4 +1,4 @@
-import os
+import os, math
 import Attribute
 
 
@@ -13,10 +13,8 @@ class CharacterClass:
         self.zeny = 0
         self.base_exp = 0
         self.target_base_exp = 100
-        self.base_exp_per = round(self.base_exp / self.target_base_exp * 100, 1)
         self.job_exp = 0
         self.target_job_exp = 100
-        self.job_exp_per = round(self.job_exp / self.target_job_exp * 100, 1)
 
         self.equipment = [[], [], [], ["棉襯衫", 10], ["短劍", 17], [], [], [], [], []]
         # Temp Version
@@ -32,6 +30,24 @@ class CharacterClass:
         self.sit_img_path = os.path.join("Char_Image", self.job_name, "Sit.png")
         self.standby_img_path = os.path.join("Char_Image", self.job_name, "Standby_Dagger.png")
         self.attack_img_path = os.path.join("Char_Image", self.job_name, "Attack_Dagger.png")
+
+    def get_exp(self, base_exp, job_exp):
+        self.base_exp += base_exp
+        self.job_exp += job_exp
+        self.check_level_up()
+
+    def check_level_up(self):
+        print("Empty")
+
+    def exp_punish(self):
+        self.base_exp = self.base_exp - math.floor(0.02 * self.target_base_exp) if \
+                        self.base_exp > math.floor(0.02 * self.target_base_exp) else 0
+        self.job_exp = self.job_exp - math.floor(0.02 * self.target_job_exp) if \
+                       self.job_exp > math.floor(0.02 * self.target_job_exp) else 0
+
+    def respawn(self):
+        self.hp = math.floor(0.1 * self.attribute.max_hp)
+        self.sp = math.floor(0.1 * self.attribute.max_sp)
 
 
 def tool_money_format(money):
@@ -50,8 +66,10 @@ def tool_money_format(money):
 
 # type = [無，火，水，風，地，毒，聖，闇，念，不死]
 monster_data = \
-    [   # name,    hp, type,      atk, def, mdef, flee, hit, aspd, base_exp, job_exp
-        ['Poring', 60,    3, [13, 17],   2,    5,  178, 203,  160,       27,      20]
+    [   # name,      hp, type, atk, def, mdef, flee, hit, aspd, base_exp, job_exp, cri
+        ["Poring",   60,    3,   7,   2,    5,  178, 203,  150,       27,      20,   5],
+        ["Fabre",    72,    4,  15,  25,    7,  159, 207,  150,       54,      41,   5],
+        ["Lunatic",  55,    0,  14,  21,    1,  156, 206,  150,       36,      27,   5]
     ]
 
 
@@ -60,18 +78,11 @@ class MonsterClass:
         self.mons_number = moster_number
         self.mons_name = monster_data[self.mons_number][0]
         self.hp = monster_data[self.mons_number][1]
-        self.type = monster_data[self.mons_number][2]
-        self.atk = monster_data[self.mons_number][3]
-        self.defence = monster_data[self.mons_number][4]
-        self.mdefence = monster_data[self.mons_number][5]
-        self.flee = monster_data[self.mons_number][6]
-        self.hit = monster_data[self.mons_number][7]
-        self.aspd = monster_data[self.mons_number][8]
         self.base_exp = monster_data[self.mons_number][9]
         self.job_exp = monster_data[self.mons_number][10]
+        self.attribute = Attribute.MonsterAttribute(monster_data[self.mons_number])
         self.standby_img_path = os.path.join("Mons_Image", self.mons_name + "_Standby.png")
         self.attack_img_path = os.path.join("Mons_Image", self.mons_name + "_Attack.png")
-        self.att_frq = round(50 / (200 - self.aspd), 1)
 
 
 

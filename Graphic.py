@@ -196,7 +196,8 @@ class WindowClass:
     def set_status_text(surface, char_obj):
         temp_font = pygame.font.Font("TaipeiSansTCBeta-Bold.ttf", 11)
         name_render = temp_font.render(char_obj.char_name, True, Black)
-        status1 = "Lv. " + str(char_obj.base_level) + " / " + char_obj.job_name + " / Lv. " + str(char_obj.job_level) + " / Exp. " + str(char_obj.base_exp_per) + "%"
+        exp_percentrage = round(char_obj.base_exp / char_obj.target_base_exp * 100, 2)
+        status1 = "Lv. " + str(char_obj.base_level) + " / " + char_obj.job_name + " / Lv. " + str(char_obj.job_level) + " / Exp. " + str(exp_percentrage) + "%"
         status2 = "HP " + str(char_obj.hp) + " / " + str(char_obj.attribute.max_hp) + " | SP " + str(char_obj.sp) + " / " + str(char_obj.attribute.max_sp) + " | " + str(Character.tool_money_format(char_obj.zeny)) + " Z"
         max_width, max_height = surface.get_size()
         surface.blit(name_render, (0.02 * max_width, 0.08 * max_height))
