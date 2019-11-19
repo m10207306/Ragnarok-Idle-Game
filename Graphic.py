@@ -22,7 +22,7 @@ class WindowClass:
         self.fps = 30
         self.chat_message = []
         self.chat_color = []
-        self.screen = pygame.display.set_mode((self.width, self.height))
+        self.screen = pygame.display.set_mode((self.width, self.height))#, pygame.FULLSCREEN)
         self.background = pygame.Surface(self.screen.get_size())
         # 1 Chinese Character = 4 Space
         self.font = pygame.font.Font("TaipeiSansTCBeta-Bold.ttf", Font_size)
