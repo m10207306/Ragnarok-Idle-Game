@@ -184,9 +184,16 @@ class WindowClass:
             self.damage_cri_template.append(damage_cri_img.subsurface(pygame.Rect((i-1) * digit_width, 0, digit_width, digit_height)))
 
     @staticmethod
+    def create_transparent_surface(width, height):
+        surface = pygame.Surface((width, height)).convert()
+        surface.set_colorkey((0, 0, 0))
+        return surface
+
+    @staticmethod
     def create_color_surface(color, rect, alpha):
         # color = (R, G, B)
         # rect = pygame.Rect(x, y, width, height)
+        # 這個會強制把整個Surface化為透明，就算之後再對他畫任何內容也看不到，因此如果是要一個透明的底來畫東西要用create_transparent_surface()
         surface = pygame.Surface((rect.width, rect.height))
         surface.fill(color)
         surface.set_alpha(alpha)
