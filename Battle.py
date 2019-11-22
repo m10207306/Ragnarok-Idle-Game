@@ -49,6 +49,7 @@ class BattleControl:
     def attack(self):
         self.window.reset_chat_message()
         monster = Character.MonsterClass(0)
+
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
         mons_pos = (self.window.width * 0.6, self.window.height * 0.55)
         char_animate_group = pygame.sprite.Group()
@@ -61,6 +62,22 @@ class BattleControl:
 
         mons_animate = Animate(self.window, monster.standby_img_path, monster.attack_img_path, mons_pos, monster, self.char, (char_pos[0], char_pos[1] - 110))
         mons_animate_group.add(mons_animate)
+
+        # Show出戰鬥的數據(命中率、迴避率等)
+        char_hit_percent = round(self.char.attribute.hit / (monster.attribute.flee + 100), 2) * 100
+        mons_hit_percent = round(monster.attribute.hit / (self.char.attribute.flee + 100), 2) * 100
+        char_defence_ratio = round((4000 + self.char.attribute.total_defence) / (4000 + self.char.attribute.total_defence * 10), 2)
+        mons_defence_ratio = round((4000 + monster.attribute.total_defence) / (4000 + monster.attribute.total_defence * 10), 2)
+        char_damage_range = [round(self.char.attribute.total_atk[0] * mons_defence_ratio),
+                             round(self.char.attribute.total_atk[1] * mons_defence_ratio)]
+        mons_damage_range = [round(monster.attribute.total_atk[0] * char_defence_ratio),
+                             round(monster.attribute.total_atk[1] * char_defence_ratio)]
+
+        self.window.set_chat_window(["角色命中率: " + str(char_hit_percent) + "%",
+                                     "角色傷害範圍: " + str(char_damage_range[0]) + " - " + str(char_damage_range[1]),
+                                     "魔物命中率: " + str(mons_hit_percent) + "%",
+                                     "魔物傷害範圍: " + str(mons_damage_range[0]) + " - " + str(mons_damage_range[1])],
+                                    [Green, Green, Green, Green])
 
         # 怪物出場(由實轉虛)，角色待機，目標一秒完成登場
         count = 1
