@@ -100,7 +100,6 @@ class BattleControl:
             mons_animate_group.draw(self.window.screen)
             alpha += 40
             pygame.display.update()
-
             count += 1
 
         # 戰鬥開始
@@ -147,12 +146,23 @@ class BattleControl:
             if monster.hp <= 0:
                 self.char.get_exp(monster.base_exp, monster.job_exp)
                 mons_dead = True
-                return
+                break
             if self.char.hp <= 0:
                 self.char.exp_punish()
                 self.char.respawn()
                 char_dead = True
-                return
+                break
+            count += 1
+
+        # 死亡動畫
+        count = 1
+        while True:
+            self.window.tick(self.standby_fps)
+            self.window.get_key()
+            if count > 6:
+                break
+
+            pygame.display.update()
             count += 1
 
 
