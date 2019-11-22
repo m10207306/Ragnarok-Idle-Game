@@ -15,7 +15,7 @@ class BattleControl:
         self.window = graphic_obj
         self.background_path = background_path
         self.char = char
-        self.attack_fps = 30
+        self.attack_fps = 60
         self.standby_fps = 10
 
     def run(self):
@@ -42,14 +42,13 @@ class BattleControl:
                 self.attack()
                 return True
             char_group.clear(self.window.screen, self.window.background)
-            char_group.update(1)
+            char_group.update(1, 255)
             char_group.draw(self.window.screen)
             pygame.display.update()
 
     def attack(self):
         self.window.reset_chat_message()
         monster = Character.MonsterClass(0)
-        count = 1
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
         mons_pos = (self.window.width * 0.6, self.window.height * 0.55)
         char_animate_group = pygame.sprite.Group()
@@ -59,14 +58,40 @@ class BattleControl:
 
         char_animate = Animate(self.window, self.char.standby_img_path, self.char.attack_img_path, char_pos, self.char, monster, (mons_pos[0], mons_pos[1] - 110))
         char_animate_group.add(char_animate)
-        char_move_frq = math.floor(self.attack_fps / self.char.attribute.att_frq / char_animate.image_count)
 
         mons_animate = Animate(self.window, monster.standby_img_path, monster.attack_img_path, mons_pos, monster, self.char, (char_pos[0], char_pos[1] - 110))
         mons_animate_group.add(mons_animate)
-        mons_move_frq = math.floor(self.attack_fps / monster.attribute.att_frq / mons_animate.image_count)
 
+        # 怪物出場(由實轉虛)，角色待機，目標一秒完成登場
+        count = 1
+        alpha = 255 - 240
+        while True:
+            self.window.tick(self.standby_fps)
+            self.window.get_key()
+            if count > 6:
+                break
+            if count == 1:
+                rect = pygame.Rect(0, 0, 200, 200)
+                rect.center = char_pos
+                self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
+            else:
+                char_animate_group.clear(self.window.screen, self.window.background)
+            char_animate_group.update(1, 255)
+            char_animate_group.draw(self.window.screen)
+            mons_animate_group.clear(self.window.screen, self.window.background)
+            mons_animate_group.update(1, alpha)
+            mons_animate_group.draw(self.window.screen)
+            alpha += 40
+            pygame.display.update()
+
+            count += 1
+
+        # 戰鬥開始
         mons_dead = False
         char_dead = False
+        char_move_frq = math.floor(self.attack_fps / self.char.attribute.att_frq / char_animate.image_count)
+        mons_move_frq = math.floor(self.attack_fps / monster.attribute.att_frq / mons_animate.image_count)
+        count = 1
         while True:
             self.window.tick(self.attack_fps)
             content = self.window.get_key()
@@ -82,8 +107,8 @@ class BattleControl:
                     self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
                 else:   # 當第一次呼叫clear時不會有動作，因為他是根據上一次draw的內容做clear，所以才需要有上面的情境
                     char_animate_group.clear(self.window.screen, self.window.background)
-                    char_animate_group.update(2)
-                    char_animate_group.draw(self.window.screen)
+                char_animate_group.update(2, 255)
+                char_animate_group.draw(self.window.screen)
             # 怪物攻擊動畫
             if count % mons_move_frq == 0:
                 if count <= mons_move_frq:
@@ -92,8 +117,8 @@ class BattleControl:
                     self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
                 else:
                     mons_animate_group.clear(self.window.screen, self.window.background)
-                    mons_animate_group.update(2)
-                    mons_animate_group.draw(self.window.screen)
+                mons_animate_group.update(2, 255)
+                mons_animate_group.draw(self.window.screen)
 
             # 傷害動畫
             damage_group.clear(self.window.screen, self.window.background)
@@ -104,12 +129,13 @@ class BattleControl:
             # 判斷生死
             if monster.hp <= 0:
                 self.char.get_exp(monster.base_exp, monster.job_exp)
+                mons_dead = True
                 return
             if self.char.hp <= 0:
                 self.char.exp_punish()
                 self.char.respawn()
+                char_dead = True
                 return
-
             count += 1
 
 
@@ -145,35 +171,37 @@ class Animate(pygame.sprite.Sprite):
         self.defencer = defencer
         self.damage_pos = damage_pos
 
-    def update(self, type_flag):
+    def update(self, type_flag, alpha):
         # Sprite.Group()當中override掉的function
         # type_flag: 1 = standby, 2 = attack, 3 = dead
         # 如果輸入進來的type_flag跟目前的self.current_type不同，則self.current歸0(代表動畫重置)
         if type_flag != self.current_type:
             self.current = 0
             self.current_type = type_flag
-        if self.current == self.image_count:
+        if self.current == self.image_count:    # 動畫播完reset重播
             self.current = 0
         self.current += 1
-        if type_flag == 1:
-            self.update_standby()
-        elif type_flag == 2:
-            self.update_attack()
+        if type_flag == 1:                      # 待機動畫
+            self.update_standby(alpha)
+        elif type_flag == 2:                    # 攻擊動畫
+            self.update_attack(alpha)
             if self.current == self.image_count:
                 Damage.AllGroup.add(Damage(self.window, self.attacker, self.defencer, self.damage_pos))
-        elif type_flag == 3:
-            self.update_dead()
+        elif type_flag == 3:                    # 死亡動畫
+            self.update_dead(alpha)
         else:
             print("Error Animation Update: parameter - type_flag = ", type_flag)
             return
 
-    def update_standby(self):
+    def update_standby(self, alpha):
         self.image = self.standby_image_array[self.current - 1]
+        self.image.set_alpha(alpha)
 
-    def update_attack(self):
+    def update_attack(self, alpha):
         self.image = self.attack_image_array[self.current - 1]
+        self.image.set_alpha(alpha)
 
-    def update_dead(self):
+    def update_dead(self, alpha):
         print("Handle Dead Animation")
 
 
@@ -186,21 +214,21 @@ class Damage(pygame.sprite.Sprite):
         self.image = self.window.create_transparent_surface(70, 60)     # transparent surface
         self.rect = self.image.get_rect()
         self.rect.center = pos                                          # set to target position
-        damage, flag = self.calculate_damage(attacker, defencer)
-        defencer.hp -= damage
+        damage, flag = self.calculate_damage(attacker, defencer)        # 傷害計算(普通、爆擊、迴避，含音效)
+        defencer.hp -= damage                                           # 傷害傳遞
         rect1 = pygame.Rect(0, 0, 70, 60)
-        if flag == 3:
+        if flag == 3:                                                   # 迴避
             rect2 = self.window.miss_template.get_rect()
             rect2.center = rect1.center
             self.image.blit(self.window.miss_template, rect2)
-        elif flag == 1 or flag == 2:
+        elif flag == 1 or flag == 2:                                    # 普通or爆擊，差別在是否有爆擊動畫與數字顏色
             if flag == 2:
                 self.image.blit(self.window.cri_template, (0, 0))
             damage_sur = self.generate_surface(damage, flag)
             rect2 = damage_sur.get_rect()
             rect2.center = rect1.center
             self.image.blit(damage_sur, rect2)
-        self.life = 0
+        self.life = 0                                                   # 傷害數字動畫壽命(40個frame)
 
     def generate_surface(self, damage, flag):
         damage = 9999999 if damage > 9999999 else damage
@@ -229,7 +257,7 @@ class Damage(pygame.sprite.Sprite):
             return math.floor(damage_value), 2
 
         self.window.effect_sound(os.path.join("Effect_Sound", "_hit_dagger.wav"))
-        # return [damage_value, type]    type1 = 普通  type2 = 爆擊  type3 = miss
+        # return damage_value, type    type1 = 普通  type2 = 爆擊  type3 = miss
         return math.floor(damage_value), 1
 
     def update(self):
