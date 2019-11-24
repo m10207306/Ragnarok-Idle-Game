@@ -34,7 +34,7 @@ class BattleControl:
         char_name_pos = (char_pos[0], char_pos[1] - 70)
         char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
         char_group = pygame.sprite.Group()
-        char_group.add(Animate(self.window, self.char.standby_img_path, self.char.standby_img_path, char_pos))
+        char_group.add(Animate(self.window, self.char.standby_img_path, self.char.standby_img_path, self.char.dead_img_path, char_pos))
         while True:
             self.window.clock.tick(self.standby_fps)
             content = self.window.get_key()
@@ -63,10 +63,10 @@ class BattleControl:
         damage_group = pygame.sprite.Group()
         Damage.AllGroup = damage_group
 
-        char_animate = Animate(self.window, self.char.standby_img_path, self.char.attack_img_path, char_pos, self.char, monster, (mons_pos[0], mons_pos[1] - 110))
+        char_animate = Animate(self.window, self.char.standby_img_path, self.char.attack_img_path, self.char.dead_img_path, char_pos, self.char, monster, (mons_pos[0], mons_pos[1] - 110))
         char_animate_group.add(char_animate)
 
-        mons_animate = Animate(self.window, monster.standby_img_path, monster.attack_img_path, mons_pos, monster, self.char, (char_pos[0], char_pos[1] - 110))
+        mons_animate = Animate(self.window, monster.standby_img_path, monster.attack_img_path, monster.dead_img_path, mons_pos, monster, self.char, (char_pos[0], char_pos[1] - 110))
         mons_animate_group.add(mons_animate)
 
         # Show出戰鬥的數據(命中率、迴避率等)
@@ -89,7 +89,7 @@ class BattleControl:
         count = 1
         alpha = 255 - 240
         while True:
-            self.window.clock.tick(self.standby_fps)
+            self.window.clock.tick(6)
             self.window.get_key()
             if count > 6:
                 break
@@ -167,17 +167,35 @@ class BattleControl:
         # 死亡動畫
         count = 1
         while True:
-            self.window.clock.tick(self.standby_fps)
+            self.window.clock.tick(self.attack_fps)     # 保持使用attack_fps是因為要確保傷害數字速率一致
             self.window.get_key()
-            if count > 6:
+            if count > 60:
                 break
+            if count % 10 == 0:
+                if mons_dead:
+                    mons_animate_group.clear(self.window.screen, self.window.background)
+                    mons_animate_group.update(3, 255)
+                    mons_animate_group.draw(self.window.screen)
+                    char_animate_group.clear(self.window.screen, self.window.background)
+                    char_animate_group.update(1, 255)
+                    char_animate_group.draw(self.window.screen)
+                if char_dead:
+                    mons_animate_group.clear(self.window.screen, self.window.background)
+                    mons_animate_group.update(1, 255)
+                    mons_animate_group.draw(self.window.screen)
+                    char_animate_group.clear(self.window.screen, self.window.background)
+                    char_animate_group.update(3, 255)
+                    char_animate_group.draw(self.window.screen)
 
+            damage_group.clear(self.window.screen, self.window.background)
+            damage_group.update()
+            damage_group.draw(self.window.screen)
             pygame.display.update()
             count += 1
 
 
 class Animate(pygame.sprite.Sprite):
-    def __init__(self, graphic_obj, standby_image_path, attack_image_path, center_pos, attacker = None, defencer = None, damage_pos = None):
+    def __init__(self, graphic_obj, standby_image_path, attack_image_path, dead_image_path, center_pos, attacker = None, defencer = None, damage_pos = None):
         super().__init__()
         # 想以sprite.group的方式來控制動畫 property 中 image 與 rect 是必須的
         self.window = graphic_obj
@@ -186,11 +204,13 @@ class Animate(pygame.sprite.Sprite):
         # self.standby_image.set_colorkey(self.standby_image.get_at((0, 0)))
         self.attack_image = pygame.image.load(attack_image_path).convert_alpha()
         # self.attack_image.set_colorkey(self.attack_image.get_at((0, 0)))
+        self.dead_image = pygame.image.load(dead_image_path).convert_alpha()
         self.image_count = self.standby_image.get_size()[0] / self.default_width        # 原則上是6
         self.current = 0
         self.current_type = 0
         self.standby_image_array = []
         self.attack_image_array = []
+        self.dead_image_array = []
         self.center_pos = center_pos
         for i in range(1, int(self.image_count)+1):                             # Parsing 攻擊動畫
             self.standby_image_array.append(self.standby_image.subsurface(pygame.Rect((i-1) * self.default_width,
@@ -201,6 +221,10 @@ class Animate(pygame.sprite.Sprite):
                                                                         0,
                                                                         self.default_width,
                                                                         self.default_width)))
+            self.dead_image_array.append(self.dead_image.subsurface(pygame.Rect((i-1) * self.default_width,
+                                                                    0,
+                                                                    self.default_width,
+                                                                    self.default_width)))
         self.rect = pygame.Rect(0, 0, self.default_width, self.default_width)
         self.rect.center = self.center_pos
         self.image = []
@@ -247,7 +271,11 @@ class Animate(pygame.sprite.Sprite):
             self.image.blit(alpha_surface, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
 
     def update_dead(self, alpha):
-        print("Handle Dead Animation")
+        self.image = self.dead_image_array[self.current - 1]
+        if alpha < 255:
+            alpha_surface = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+            alpha_surface.fill((255, 255, 255, alpha))
+            self.image.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
 
 
 class Damage(pygame.sprite.Sprite):

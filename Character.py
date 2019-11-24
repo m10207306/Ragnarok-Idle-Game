@@ -30,6 +30,7 @@ class CharacterClass:
         self.sit_img_path = os.path.join("Char_Image", self.job_name, "Sit.png")
         self.standby_img_path = os.path.join("Char_Image", self.job_name, "Standby_Dagger.png")
         self.attack_img_path = os.path.join("Char_Image", self.job_name, "Attack_Dagger.png")
+        self.dead_img_path = os.path.join("Char_Image", self.job_name, "Dead.png")
 
     def get_exp(self, base_exp, job_exp):
         self.base_exp += base_exp
@@ -83,6 +84,6 @@ class MonsterClass:
         self.attribute = Attribute.MonsterAttribute(monster_data[self.mons_number])
         self.standby_img_path = os.path.join("Mons_Image", self.mons_name + "_Standby.png")
         self.attack_img_path = os.path.join("Mons_Image", self.mons_name + "_Attack.png")
-
+        self.dead_img_path = os.path.join("Mons_Image", self.mons_name + "_Dead.png")
 
 
