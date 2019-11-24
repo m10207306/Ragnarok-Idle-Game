@@ -1,4 +1,4 @@
-import os                                           # Built-in Library
+import os, math                                     # Built-in Library
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # 3rd party Library
 import Character
@@ -39,7 +39,7 @@ class WindowClass:
 
     def set_bg_image(self, file_path, alpha):
         self.clear_screen()
-        img = pygame.image.load(file_path).convert()
+        img = pygame.image.load(file_path).convert_alpha()
         # Resize the surface to new resolution and output to dest_surface
         # then self.background will save the current background surface, it can be used for reload bg or create bg subsurface
         pygame.transform.scale(img, self.screen.get_size(), self.background)
@@ -50,8 +50,8 @@ class WindowClass:
     def set_message_box(self, surface_rect, text):
         # text = ["str1", "str2", "str3" ...]
         # return rect if message_box
-        img = pygame.image.load(os.path.join("Info_Image", "win_msgbox.png")).convert()
-        img.set_colorkey(img.get_at((0, 0)))
+        img = pygame.image.load(os.path.join("Info_Image", "win_msgbox.png")).convert_alpha()
+        # img.set_colorkey(img.get_at((0, 0)))
         dest_rect = img.get_rect()
         color = []
         for i in range(len(text)):
@@ -98,7 +98,7 @@ class WindowClass:
         cmd = ""
         input_size = (input_rec.width, input_rec.height)
         while True:
-            self.tick(self.fps)
+            self.clock.tick(self.fps)
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_BACKSPACE:     # delete final char
@@ -148,8 +148,8 @@ class WindowClass:
 
     def set_status_window(self, char_obj):
         # char_obj = Character Class Object
-        img = pygame.image.load(os.path.join("Info_Image", "basewin_mini.png")).convert()
-        img.set_colorkey(img.get_at((0, 0)))        # Turn the default purple to transparent (need convert() first)
+        img = pygame.image.load(os.path.join("Info_Image", "basewin_mini.png")).convert_alpha()
+        # img.set_colorkey(img.get_at((0, 0)))        # Turn the default purple to transparent (need convert() first)
         img = self.set_status_text(img, char_obj)
         self.screen.blit(img, (0, 0))
         pygame.display.update()
@@ -158,30 +158,65 @@ class WindowClass:
         self.chat_message = []
         self.chat_color = []
 
-    def set_sit_char(self, sit_image_path):
-        img = pygame.image.load(sit_image_path).convert()
-        img.set_colorkey(img.get_at((0, 0)))
+    def set_sit_char(self, sit_image_path, pos):
+        img = pygame.image.load(sit_image_path).convert_alpha()
+        # img.set_colorkey(img.get_at((0, 0)))
         width, height = img.get_size()
         rect = pygame.Rect(0, 0, width, height)
-        rect.center = (self.width * 0.4, self.height * 0.55)
-        # self.screen.blit(img, (self.width * 0.4 - width / 2, self.height * 0.55 - height / 2))
+        rect.center = pos
         self.screen.blit(img, rect)
         pygame.display.update()
 
     def token_damage_image(self):
-        damage_img = pygame.image.load(os.path.join("Info_Image", "Damage.png")).convert()
-        damage_cri_img = pygame.image.load(os.path.join("Info_Image", "Damage_Critical.png")).convert()
-        self.miss_template = pygame.image.load(os.path.join("Info_Image", "Miss.png")).convert()
-        self.cri_template = pygame.image.load(os.path.join("Info_Image", "Critical.png")).convert()
-        damage_img.set_colorkey(damage_img.get_at((0, 0)))
-        damage_cri_img.set_colorkey(damage_cri_img.get_at((0, 0)))
-        self.miss_template.set_colorkey(self.miss_template.get_at((0, 0)))
-        self.cri_template.set_colorkey(self.cri_template.get_at((0, 0)))
+        damage_img = pygame.image.load(os.path.join("Info_Image", "Damage.png")).convert_alpha()
+        damage_cri_img = pygame.image.load(os.path.join("Info_Image", "Damage_Critical.png")).convert_alpha()
+        self.miss_template = pygame.image.load(os.path.join("Info_Image", "Miss.png")).convert_alpha()
+        self.cri_template = pygame.image.load(os.path.join("Info_Image", "Critical.png")).convert_alpha()
+        # damage_img.set_colorkey(damage_img.get_at((0, 0)))
+        # damage_cri_img.set_colorkey(damage_cri_img.get_at((0, 0)))
+        # self.miss_template.set_colorkey(self.miss_template.get_at((0, 0)))
+        # self.cri_template.set_colorkey(self.cri_template.get_at((0, 0)))
         digit_width = 10
         digit_height = 13
         for i in range(1, 11):
             self.damage_template.append(damage_img.subsurface(pygame.Rect((i-1) * digit_width, 0, digit_width, digit_height)))
             self.damage_cri_template.append(damage_cri_img.subsurface(pygame.Rect((i-1) * digit_width, 0, digit_width, digit_height)))
+
+    def set_text_block(self, surface, text, center_pos):
+        text_surface = self.font.render(text, True, White)
+        rect1 = text_surface.get_rect()
+        rect1.center = center_pos
+        text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+4, rect1.height+4), 128)
+        rect2 = text_base.get_rect()
+        rect2.center = center_pos
+        surface.blit(text_base, rect2)
+        surface.blit(text_surface, rect1)
+
+    @staticmethod
+    def create_health_bar(surface, char_obj, center_pos):
+        hp_ratio = math.floor(char_obj.hp / char_obj.attribute.max_hp * 100 / 2)    # 0 - 100 整數
+        sp_ratio = math.floor(char_obj.sp / char_obj.attribute.max_sp * 100 / 2)
+        hp_color = (13, 242, 39)
+        sp_color = (9, 90, 219)
+        empty_color = (61, 69, 70)
+        border_color = (32, 28, 103)
+        width, height = 50, 8
+        bar_surface = pygame.Surface((width, height)).convert()
+        bar_surface.fill(empty_color)
+
+        if hp_ratio > 0:
+            hp_bar = pygame.Surface((hp_ratio, height/2)).convert()
+            hp_bar.fill(hp_color)
+            bar_surface.blit(hp_bar, (0, 0))
+        if sp_ratio > 0:
+            sp_bar = pygame.Surface((sp_ratio, height/2)).convert()
+            sp_bar.fill(sp_color)
+            bar_surface.blit(sp_bar, (0, height/2))
+
+        pygame.draw.rect(bar_surface, border_color, (0, 0, width, height), 1)
+        rect = bar_surface.get_rect()
+        rect.center = center_pos
+        surface.blit(bar_surface, rect)
 
     @staticmethod
     def create_transparent_surface(width, height):
@@ -234,23 +269,6 @@ class WindowClass:
                     return "backspace"
                 else:
                     return event.unicode
-
-    @staticmethod
-    def create_rect(x, y, width, height):
-        # for other script to use without import pygame
-        return pygame.Rect(x, y, width, height)
-
-    def tick(self, fps):
-        # for other script to use without import pygame
-        return self.clock.tick(fps)
-
-    @staticmethod
-    def load_image(image_path):
-        return pygame.image.load(image_path).convert()
-
-    @staticmethod
-    def update_screen(pos):
-        pygame.display.update(pygame.Rect(pos))
 
     @staticmethod
     def effect_sound(path):

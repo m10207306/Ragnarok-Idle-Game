@@ -1,5 +1,7 @@
 import os                           # Built-in Library
 import Character, Battle            # 自己的Code
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
+import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
 
 Black = (0, 0, 0)
 White = (255, 255, 255)
@@ -15,7 +17,7 @@ class WorldClass:
         # 清理背景跟重置背景
         rect = self.window.set_message_box(self.window.background.get_rect(), ["請輸入角色名稱: (英文)"])
         # return message box 的 rect address
-        rect = self.window.set_block((0, 0, 0), self.window.create_rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
+        rect = self.window.set_block((0, 0, 0), pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
         # return block 的 rect address
         name = self.window.get_cmd(rect)
         self.Char_obj = Character.CharacterClass(name)
@@ -25,8 +27,9 @@ class WorldClass:
         while idx:
             self.window.set_bg_image(os.path.join("BG_Image", city + "_BG.png"), 255)
             self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
-            self.window.set_sit_char(self.Char_obj.sit_img_path)
+            self.window.set_sit_char(self.Char_obj.sit_img_path, (self.window.width * 0.4, self.window.height * 0.55))
             self.window.set_status_window(self.Char_obj)
+            self.window.set_text_block(self.window.screen, self.Char_obj.char_name, (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
             self.window.reset_chat_message()
             self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
                                          "你的位置在: " + city,
@@ -38,7 +41,7 @@ class WorldClass:
 
     def city_standby(self):
         while True:
-            self.window.tick(self.window.fps)
+            self.window.clock.tick(self.window.fps)
             content = self.window.get_key()
             if content == "a":
                 print("\n>> Attribute Page")
@@ -54,8 +57,7 @@ class WorldClass:
             elif content == "e" or content == "esc":
                 print("\n>> Exit")
                 return False
-
-
-
+            self.window.create_health_bar(self.window.screen, self.Char_obj, (self.window.width * 0.4, self.window.height * 0.55 + 50))
+            pygame.display.update()
 
 

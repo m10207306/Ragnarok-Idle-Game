@@ -19,7 +19,7 @@ class Ragnarok:
 
     def standby(self):
         while True:
-            self.window.tick(self.window.fps)
+            self.window.clock.tick(self.window.fps)
             content = self.window.get_key()
             if content == "s":
                 world_obj = World.WorldClass(self.window)
