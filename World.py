@@ -15,11 +15,13 @@ class WorldClass:
         self.window = window_screen
         self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
         # 清理背景跟重置背景
-        rect = self.window.set_message_box(self.window.background.get_rect(), ["請輸入角色名稱: (英文)"])
+        rect = self.window.set_message_box(self.window.background.get_rect().center, ["請輸入角色名稱: (英文)"])
         # return message box 的 rect address
-        rect = self.window.set_block((0, 0, 0), pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
-        # return block 的 rect address
-        name = self.window.get_cmd(rect)
+        # rect = self.window.set_block(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
+        # # return block 的 rect address
+        name = ""
+        while name == "":
+            name = self.window.get_cmd(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
         self.Char_obj = Character.CharacterClass(name)
 
     def run(self, city):
@@ -37,6 +39,7 @@ class WorldClass:
                                          "         [I] 到物品介面",
                                          "         [K] 前往戰鬥",
                                          "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
+            pygame.display.update()
             idx = self.city_standby()
 
     def city_standby(self):

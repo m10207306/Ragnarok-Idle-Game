@@ -35,7 +35,6 @@ class WindowClass:
 
     def clear_screen(self):
         self.screen.blit(self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 255), (0, 0))
-        pygame.display.update()
 
     def set_bg_image(self, file_path, alpha):
         self.clear_screen()
@@ -45,9 +44,8 @@ class WindowClass:
         pygame.transform.scale(img, self.screen.get_size(), self.background)
         self.background.set_alpha(alpha)
         self.screen.blit(self.background, (0, 0))
-        pygame.display.update()
 
-    def set_message_box(self, surface_rect, text):
+    def set_message_box(self, center_pos, text):
         # text = ["str1", "str2", "str3" ...]
         # return rect if message_box
         img = pygame.image.load(os.path.join("Info_Image", "win_msgbox.png")).convert_alpha()
@@ -57,9 +55,8 @@ class WindowClass:
         for i in range(len(text)):
             color.append(Black)
         self.set_text(img, text, color, (dest_rect.width * 0.05, dest_rect.height * 0.20))
-        dest_rect.center = surface_rect.center
+        dest_rect.center = center_pos
         rect = self.screen.blit(img, dest_rect)
-        pygame.display.update()
         return rect
 
     def set_text(self, surface, text, color, offset):
@@ -90,13 +87,13 @@ class WindowClass:
         # rect = pygame.Rect(x, y, width, height)
         surface = self.create_color_surface(color, rect, 255)
         rect = self.screen.blit(surface, rect)
-        pygame.display.update()
         return rect
 
-    def get_cmd(self, input_rec):
+    def get_cmd(self, background_color, rect):
         # return cmd when enter pressed, or return "" when esc pressed
+        self.set_block(background_color, rect)
+        pygame.display.update()
         cmd = ""
-        input_size = (input_rec.width, input_rec.height)
         while True:
             self.clock.tick(self.fps)
             for event in pygame.event.get():
@@ -104,25 +101,19 @@ class WindowClass:
                     if event.key == pygame.K_BACKSPACE:     # delete final char
                         cmd = cmd[:-1]
                     elif event.key == pygame.K_RETURN:      # return current cmd
-                        self.set_block(Black, input_rec)
+                        self.set_block(Black, rect)
                         return cmd
                     elif event.key == pygame.K_ESCAPE:      # reset current cmd and clear block
                         cmd = ""
-                        self.set_block(Black, input_rec)
-                        pygame.display.update()
+                        self.set_block(Black, rect)
                     else:
-                        border_detect = self.font.render(cmd, True, White)
-                        if border_detect.get_size()[0] < 0.9 * input_rec.width:
+                        if len(cmd) < 12:                   # 考慮到status window，限制只能輸入12個字
                             cmd += event.unicode
-                    self.set_block(Black, input_rec)
-                    text_surface = pygame.Surface(input_size)
+                    self.set_block(Black, rect)
+                    text_surface = pygame.Surface(rect.size)
                     self.set_text(text_surface, [cmd], [White], (0, 0))
-                    self.screen.blit(text_surface, input_rec)
+                    self.screen.blit(text_surface, rect)
                     pygame.display.update()
-                elif event.type == pygame.QUIT:             # return empty string means keep getting cmd
-                    self.set_block(Black, input_rec)
-                    pygame.display.update()
-                    pygame.quit()
 
     def set_chat_window(self, content, color):
         # content = ["str1", "str2", ...]
@@ -144,7 +135,6 @@ class WindowClass:
         self.screen.blit(sub_bg, (0, self.height - size[1]))
         self.screen.blit(chat_surface, (0, self.height - size[1]))
         self.screen.blit(text_surface, (0, self.height - size[1]))
-        pygame.display.update()
 
     def set_status_window(self, char_obj):
         # char_obj = Character Class Object
@@ -152,7 +142,6 @@ class WindowClass:
         # img.set_colorkey(img.get_at((0, 0)))        # Turn the default purple to transparent (need convert() first)
         img = self.set_status_text(img, char_obj)
         self.screen.blit(img, (0, 0))
-        pygame.display.update()
 
     def reset_chat_message(self):
         self.chat_message = []
@@ -160,22 +149,16 @@ class WindowClass:
 
     def set_sit_char(self, sit_image_path, pos):
         img = pygame.image.load(sit_image_path).convert_alpha()
-        # img.set_colorkey(img.get_at((0, 0)))
         width, height = img.get_size()
         rect = pygame.Rect(0, 0, width, height)
         rect.center = pos
         self.screen.blit(img, rect)
-        pygame.display.update()
 
     def token_damage_image(self):
         damage_img = pygame.image.load(os.path.join("Info_Image", "Damage.png")).convert_alpha()
         damage_cri_img = pygame.image.load(os.path.join("Info_Image", "Damage_Critical.png")).convert_alpha()
         self.miss_template = pygame.image.load(os.path.join("Info_Image", "Miss.png")).convert_alpha()
         self.cri_template = pygame.image.load(os.path.join("Info_Image", "Critical.png")).convert_alpha()
-        # damage_img.set_colorkey(damage_img.get_at((0, 0)))
-        # damage_cri_img.set_colorkey(damage_cri_img.get_at((0, 0)))
-        # self.miss_template.set_colorkey(self.miss_template.get_at((0, 0)))
-        # self.cri_template.set_colorkey(self.cri_template.get_at((0, 0)))
         digit_width = 10
         digit_height = 13
         for i in range(1, 11):
@@ -186,7 +169,7 @@ class WindowClass:
         text_surface = self.font.render(text, True, White)
         rect1 = text_surface.get_rect()
         rect1.center = center_pos
-        text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+4, rect1.height+4), 128)
+        text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
         rect2 = text_base.get_rect()
         rect2.center = center_pos
         surface.blit(text_base, rect2)

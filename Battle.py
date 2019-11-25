@@ -16,7 +16,6 @@ class BattleControl:
         self.background_path = background_path
         self.char = char
         self.attack_fps = 60
-        self.standby_fps = 10
 
     def run(self):
         idx = True
@@ -27,6 +26,7 @@ class BattleControl:
             self.window.reset_chat_message()
             self.window.set_chat_window(["按 [A] 開始戰鬥",
                                          "     [Esc] 返回城市"], [Green, Green])
+            pygame.display.update()
             idx = self.standby()
 
     def standby(self):
@@ -35,23 +35,27 @@ class BattleControl:
         char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
         char_group = pygame.sprite.Group()
         char_group.add(Animate(self.window, self.char.standby_img_path, self.char.standby_img_path, self.char.dead_img_path, char_pos))
+        count = 1
         while True:
-            self.window.clock.tick(self.standby_fps)
+            self.window.clock.tick(self.attack_fps)
             content = self.window.get_key()
             if content == "esc":
                 return False
             elif content == "a":
                 self.attack()
                 return True
-            char_group.clear(self.window.screen, self.window.background)
-            char_group.update(1, 255)
-            char_group.draw(self.window.screen)
-            self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
-            self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
-            pygame.display.update()
+            if count % 6 == 0:
+                char_group.clear(self.window.screen, self.window.background)
+                char_group.update(1, 255)
+                char_group.draw(self.window.screen)
+                self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
+                self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
+                pygame.display.update()
+            count += 1
 
     def attack(self):
         self.window.reset_chat_message()
+        # 這裡還缺個Random怪物的部分
         monster = Character.MonsterClass(0)
 
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
@@ -69,7 +73,7 @@ class BattleControl:
         mons_animate = Animate(self.window, monster.standby_img_path, monster.attack_img_path, monster.dead_img_path, mons_pos, monster, self.char, (char_pos[0], char_pos[1] - 110))
         mons_animate_group.add(mons_animate)
 
-        # Show出戰鬥的數據(命中率、迴避率等)
+        # Show出戰鬥的分析數據(命中率、迴避率等)
         char_hit_percent = round(self.char.attribute.hit / (monster.attribute.flee + 100), 2) * 100
         mons_hit_percent = round(monster.attribute.hit / (self.char.attribute.flee + 100), 2) * 100
         char_defence_ratio = round((4000 + self.char.attribute.total_defence) / (4000 + self.char.attribute.total_defence * 10), 2)
@@ -87,27 +91,28 @@ class BattleControl:
 
         # 怪物出場(由實轉虛)，角色待機，目標一秒完成登場
         count = 1
-        alpha = 255 - 240
+        alpha = 255 - 120
         while True:
-            self.window.clock.tick(6)
+            self.window.clock.tick(self.attack_fps)
             self.window.get_key()
-            if count > 6:
+            if count > 36:
                 break
-            if count == 1:
-                rect = pygame.Rect(0, 0, 200, 200)
-                rect.center = char_pos
-                self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
-            else:
-                char_animate_group.clear(self.window.screen, self.window.background)
-            char_animate_group.update(1, 255)
-            char_animate_group.draw(self.window.screen)
-            mons_animate_group.clear(self.window.screen, self.window.background)
-            mons_animate_group.update(1, alpha)
-            mons_animate_group.draw(self.window.screen)
-            self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
-            self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
-            alpha += 40
-            pygame.display.update()
+            if count % 6 == 0:
+                if count == 6:
+                    rect = pygame.Rect(0, 0, 200, 200)
+                    rect.center = char_pos
+                    self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
+                else:   # 當第一次呼叫clear時不會有動作，因為他是根據上一次draw的內容做clear，所以才需要有上面的情境
+                    char_animate_group.clear(self.window.screen, self.window.background)
+                char_animate_group.update(1, 255)
+                char_animate_group.draw(self.window.screen)
+                mons_animate_group.clear(self.window.screen, self.window.background)
+                mons_animate_group.update(1, alpha)
+                mons_animate_group.draw(self.window.screen)
+                self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
+                self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
+                alpha += 20
+                pygame.display.update()
             count += 1
 
         # 戰鬥開始
@@ -125,24 +130,14 @@ class BattleControl:
 
             # 角色攻擊動畫
             if count % char_move_frq == 0:
-                if count <= char_move_frq:
-                    rect = pygame.Rect(0, 0, 200, 200)
-                    rect.center = char_pos
-                    self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
-                else:   # 當第一次呼叫clear時不會有動作，因為他是根據上一次draw的內容做clear，所以才需要有上面的情境
-                    char_animate_group.clear(self.window.screen, self.window.background)
+                char_animate_group.clear(self.window.screen, self.window.background)
                 char_animate_group.update(2, 255)
                 char_animate_group.draw(self.window.screen)
                 self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
                 self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
             # 怪物攻擊動畫
             if count % mons_move_frq == 0:
-                if count <= mons_move_frq:
-                    rect = pygame.Rect(0, 0, 200, 200)
-                    rect.center = mons_pos
-                    self.window.screen.blit(self.window.background.subsurface(pygame.Rect(rect)), rect)
-                else:
-                    mons_animate_group.clear(self.window.screen, self.window.background)
+                mons_animate_group.clear(self.window.screen, self.window.background)
                 mons_animate_group.update(2, 255)
                 mons_animate_group.draw(self.window.screen)
 
@@ -150,31 +145,31 @@ class BattleControl:
             damage_group.clear(self.window.screen, self.window.background)
             damage_group.update()
             damage_group.draw(self.window.screen)
+            self.window.set_status_window(self.char)
             pygame.display.update()
 
             # 判斷生死
             if monster.hp <= 0:
-                self.char.get_exp(monster.base_exp, monster.job_exp)
                 mons_dead = True
                 break
             if self.char.hp <= 0:
-                self.char.exp_punish()
-                self.char.respawn()
+                self.char.hp = 0
                 char_dead = True
                 break
             count += 1
 
         # 死亡動畫
         count = 1
+        alpha = 255
         while True:
             self.window.clock.tick(self.attack_fps)     # 保持使用attack_fps是因為要確保傷害數字速率一致
             self.window.get_key()
-            if count > 60:
+            if count > 36:
                 break
-            if count % 10 == 0:
+            if count % 6 == 0:
                 if mons_dead:
                     mons_animate_group.clear(self.window.screen, self.window.background)
-                    mons_animate_group.update(3, 255)
+                    mons_animate_group.update(3, alpha)
                     mons_animate_group.draw(self.window.screen)
                     char_animate_group.clear(self.window.screen, self.window.background)
                     char_animate_group.update(1, 255)
@@ -186,11 +181,49 @@ class BattleControl:
                     char_animate_group.clear(self.window.screen, self.window.background)
                     char_animate_group.update(3, 255)
                     char_animate_group.draw(self.window.screen)
-
+                self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
+                self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
+                alpha -= 20
             damage_group.clear(self.window.screen, self.window.background)
             damage_group.update()
             damage_group.draw(self.window.screen)
+            self.window.set_status_window(self.char)
             pygame.display.update()
+            count += 1
+
+        # 暫停(結算？)畫面
+        center = self.window.background.get_rect().center
+        count = 1
+        if mons_dead:
+            self.char.get_exp(monster.base_exp, monster.job_exp)
+        while True:
+            self.window.clock.tick(self.attack_fps)
+            content = self.window.get_key()
+            if content is not None:
+                if char_dead:
+                    self.char.exp_punish()
+                    self.char.respawn()
+                return
+
+            if count % 6 == 0:
+                if mons_dead:
+                    self.window.set_message_box((center[0], center[1] - 125), ["============== 勝利！！ ==============",
+                                                                               " ",
+                                                                               "                           請按任意鍵繼續"])
+                    char_animate_group.clear(self.window.screen, self.window.background)
+                    char_animate_group.update(1, 255)
+                    char_animate_group.draw(self.window.screen)
+                if char_dead:
+                    self.window.set_message_box((center[0], center[1] - 125), ["============== 失敗！！ ==============",
+                                                                               " ",
+                                                                               "                           請按任意鍵繼續"])
+                    mons_animate_group.clear(self.window.screen, self.window.background)
+                    mons_animate_group.update(1, 255)
+                    mons_animate_group.draw(self.window.screen)
+                self.window.set_text_block(self.window.screen, self.char.char_name, char_name_pos)
+                self.window.create_health_bar(self.window.screen, self.char, char_health_bar_pos)
+                self.window.set_status_window(self.char)
+                pygame.display.update()
             count += 1
 
 
@@ -255,27 +288,30 @@ class Animate(pygame.sprite.Sprite):
             return
 
     def update_standby(self, alpha):
-        self.image = self.standby_image_array[self.current - 1]
+        copy = self.standby_image_array[self.current - 1].copy()
         # self.image.set_alpha(alpha)       # 因為使用convert_alpha()處理影像，所以沒辦法直接用surface alpha
         if alpha < 255:
-            alpha_surface = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
             alpha_surface.fill((255, 255, 255, alpha))
-            self.image.blit(alpha_surface, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+            copy.blit(alpha_surface, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+        self.image = copy
 
     def update_attack(self, alpha):
-        self.image = self.attack_image_array[self.current - 1]
+        copy = self.attack_image_array[self.current - 1]
         # self.image.set_alpha(alpha)
         if alpha < 255:
-            alpha_surface = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
             alpha_surface.fill((255, 255, 255, alpha))
-            self.image.blit(alpha_surface, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+            copy.blit(alpha_surface, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+        self.image = copy
 
     def update_dead(self, alpha):
-        self.image = self.dead_image_array[self.current - 1]
+        copy = self.dead_image_array[self.current - 1]
         if alpha < 255:
-            alpha_surface = pygame.Surface(self.image.get_size(), pygame.SRCALPHA)
+            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
             alpha_surface.fill((255, 255, 255, alpha))
-            self.image.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+        self.image = copy
 
 
 class Damage(pygame.sprite.Sprite):
@@ -327,11 +363,11 @@ class Damage(pygame.sprite.Sprite):
         if self.trigger_or_not(round(attacker.attribute.cri / 100, 2)):
             damage_value *= 1.5
             self.window.effect_sound(os.path.join("Effect_Sound", "ef_hit2_critical.wav"))
-            return math.floor(damage_value), 2
+            return round(damage_value), 2
 
         self.window.effect_sound(os.path.join("Effect_Sound", "_hit_dagger.wav"))
         # return damage_value, type    type1 = 普通  type2 = 爆擊  type3 = miss
-        return math.floor(damage_value), 1
+        return round(damage_value), 1
 
     def update(self):
         if self.life >= 40:
@@ -341,4 +377,4 @@ class Damage(pygame.sprite.Sprite):
 
     @staticmethod
     def trigger_or_not(probability):
-        return random.randint(1, 100) >= (1 - probability) * 100
+        return random.randint(1, 100) <= int(probability * 100)
