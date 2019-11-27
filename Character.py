@@ -1,5 +1,5 @@
 import os, math
-import Attribute
+import Attribute, Monster_Database
 
 
 class CharacterClass:
@@ -65,25 +65,20 @@ def tool_money_format(money):
     return money_str
 
 
-# type = [無，火，水，風，地，毒，聖，闇，念，不死]
-monster_data = \
-    [   # name,      hp, type, atk, def, mdef, flee, hit, aspd, base_exp, job_exp, cri
-        ["Poring",   60,    3,   7,   2,    5,  178, 203,  150,       27,      20,   5],
-        ["Fabre",    72,    4,  15,  25,    7,  159, 207,  150,       54,      41,   5],
-        ["Lunatic",  55,    0,  14,  21,    1,  156, 206,  150,       36,      27,   5]
-    ]
-
+base_exp_list = [0, 0, 550, 900, 1500, 2200, 3200, 3800, 4200, 4550, 5000, 5500, 6000, 6100, 6350, 6700, 7350, 8000, 8400, 8800, 9200, 9700, 10300, 11000, 11800, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000, 21000, 22000, 23200, 24000, 26000, 27500, 29000, 30000, 31500, 33000, 34000, 36000, 37500, 38000, 40000, 42000, 44500, 47000, 49000, 51000, 55000, 59000, 61500, 61500, 63000, 65000, 67000, 69000, 69000, 70000, 73000, 77000, 80000, 84000, 88000, 91000, 95000, 110000, 128000, 140000, 155000, 163000, 170000, 180000, 188000, 195000, 200000, 230000, 260000, 300000, 350000, 400000, 480000, 550000, 600000, 680000, 750000, 900000, 1000000, 1200000, 1500000, 1800000, 2100000, 2400000, 2800000, 3300000, 4000000]
 
 class MonsterClass:
     def __init__(self, moster_number):
         self.mons_number = moster_number
-        self.mons_name = monster_data[self.mons_number][0]
-        self.hp = monster_data[self.mons_number][1]
-        self.base_exp = monster_data[self.mons_number][9]
-        self.job_exp = monster_data[self.mons_number][10]
-        self.attribute = Attribute.MonsterAttribute(monster_data[self.mons_number])
-        self.standby_img_path = os.path.join("Mons_Image", self.mons_name + "_Standby.png")
-        self.attack_img_path = os.path.join("Mons_Image", self.mons_name + "_Attack.png")
-        self.dead_img_path = os.path.join("Mons_Image", self.mons_name + "_Dead.png")
+        self.mons_en_name = Monster_Database.monster_data[self.mons_number][0]
+        self.mons_zh_name = Monster_Database.monster_data[self.mons_number][1]
+        self.base_level = Monster_Database.monster_data[self.mons_number][2]
+        self.hp = Monster_Database.monster_data[self.mons_number][3]
+        self.base_exp = Monster_Database.monster_data[self.mons_number][11]
+        self.job_exp = Monster_Database.monster_data[self.mons_number][12]
+        self.attribute = Attribute.MonsterAttribute(Monster_Database.monster_data[self.mons_number])
+        self.standby_img_path = os.path.join("Mons_Image", self.mons_en_name + "_Standby.png")
+        self.attack_img_path = os.path.join("Mons_Image", self.mons_en_name + "_Attack.png")
+        self.dead_img_path = os.path.join("Mons_Image", self.mons_en_name + "_Dead.png")
 
 

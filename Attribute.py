@@ -20,6 +20,24 @@ class AbilityClusterClass:
             return
 
 
+# 升級時所給予的素質升級點
+levelup_ability_point = [0, 0] \
+                        + [3 for _ in range(4)] + [4 for _ in range(5)] + [5 for _ in range(5)] \
+                        + [6 for _ in range(5)] + [7 for _ in range(5)] + [8 for _ in range(5)] \
+                        + [9 for _ in range(5)] + [10 for _ in range(5)] + [11 for _ in range(5)] \
+                        + [12 for _ in range(5)] + [13 for _ in range(5)] + [14 for _ in range(5)] \
+                        + [15 for _ in range(5)] + [16 for _ in range(5)] + [17 for _ in range(5)] \
+                        + [18 for _ in range(5)] + [19 for _ in range(5)] + [20 for _ in range(5)] \
+                        + [21 for _ in range(5)] + [22 for _ in range(5)]
+
+# 素質提升所需要的升級點
+ability_upgrade_point = [0, 0] \
+                        + [2 for _ in range(10)] + [3 for _ in range(10)] + [4 for _ in range(10)] \
+                        + [5 for _ in range(10)] + [6 for _ in range(10)] + [7 for _ in range(10)] \
+                        + [8 for _ in range(10)] + [9 for _ in range(10)] + [10 for _ in range(10)] \
+                        + [11 for _ in range(9)]
+
+
 class AbilityClass:
     def __init__(self, tag, value):
         self.tag = tag
@@ -80,14 +98,14 @@ class AttributeClusterClass:
 
 class MonsterAttribute:
     def __init__(self, content):
-        self.type = content[2]
-        self.total_atk = [math.floor(content[3]*0.9), math.ceil(content[3]*1.1)]
-        self.total_defence = content[4]
-        self.total_mdefence = content[5]
-        self.flee = content[6]
-        self.hit = content[7]
-        self.cri = content[11]
-        self.aspd = content[8]
+        self.type = content[4]
+        self.total_atk = [math.floor(content[5]*0.9), math.ceil(content[5]*1.1)]
+        self.total_defence = content[6]
+        self.total_mdefence = content[7]
+        self.flee = content[8]
+        self.hit = content[9]
+        self.cri = content[13]
+        self.aspd = content[10]
         self.att_frq = round(50 / (200 - self.aspd), 1)
 
 
