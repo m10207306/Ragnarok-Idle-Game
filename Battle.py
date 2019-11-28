@@ -86,8 +86,11 @@ class BattleControl:
         self.window.set_chat_window(["角色命中率: " + str(char_hit_percent) + "%",
                                      "角色傷害範圍: " + str(char_damage_range[0]) + " - " + str(char_damage_range[1]),
                                      "魔物命中率: " + str(mons_hit_percent) + "%",
-                                     "魔物傷害範圍: " + str(mons_damage_range[0]) + " - " + str(mons_damage_range[1])],
-                                    [Green, Green, Green, Green])
+                                     "魔物傷害範圍: " + str(mons_damage_range[0]) + " - " + str(mons_damage_range[1]),
+                                     "角色Base_Exp: " + str(self.char.base_exp) + ", 下一級所需: " + str(self.char.target_base_exp),
+                                     "角色Job_Exp: " + str(self.char.job_exp) + ", 下一級所需: " + str(self.char.target_job_exp),
+                                     "怪物Base_Exp: " + str(monster.base_exp) + ", Job_Exp: " + str(monster.job_exp)],
+                                    [Green, Green, Green, Green, Green, Green, Green])
 
         # 怪物出場(由實轉虛)，角色待機，目標一秒完成登場
         count = 1
