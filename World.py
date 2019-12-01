@@ -17,12 +17,127 @@ class WorldClass:
         # 清理背景跟重置背景
         rect = self.window.set_message_box(self.window.background.get_rect().center, ["請輸入角色名稱: (英文)"])
         # return message box 的 rect address
-        # rect = self.window.set_block(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
-        # # return block 的 rect address
         name = ""
         while name == "":
             name = self.window.get_cmd(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
+
+        ini_ability = self.initialize_ability(name)
         self.Char_obj = Character.CharacterClass(name)
+
+    def initialize_ability(self, name):
+        create_char = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
+        stand_char = pygame.image.load(os.path.join("Char_Image", "Novice", "Stand.png")).convert_alpha()
+        rect1 = create_char.get_rect()
+        rect1.center = pygame.Rect(0, 0, self.window.width, self.window.height).center
+        rect2 = stand_char.get_rect()
+        rect2.center = (320, 392)
+        self.window.screen.blit(create_char, rect1)
+
+        center_pos = (512, 377)
+        str_, agi_, vit_, int_, dex_, luk_ = 5, 5, 5, 5, 5, 5
+        vertical_bias = [0, 3, 10, 20, 30, 40, 50, 60, 70, 79]
+        nonvertical_xbias = [0, 3, 8, 16, 25, 33, 41, 49, 57, 67]
+        nonvertical_ybias = [0, 3, 5, 10, 15, 20, 25, 30, 35, 41]
+        str_idx = [center_pos, (center_pos[0], center_pos[1] - vertical_bias[1]),
+                   (center_pos[0], center_pos[1] - vertical_bias[2]), (center_pos[0], center_pos[1] - vertical_bias[3]),
+                   (center_pos[0], center_pos[1] - vertical_bias[4]), (center_pos[0], center_pos[1] - vertical_bias[5]),
+                   (center_pos[0], center_pos[1] - vertical_bias[6]), (center_pos[0], center_pos[1] - vertical_bias[7]),
+                   (center_pos[0], center_pos[1] - vertical_bias[8]), (center_pos[0], center_pos[1] - vertical_bias[9])]
+        int_idx = [center_pos, (center_pos[0], center_pos[1] + vertical_bias[1]),
+                   (center_pos[0], center_pos[1] + vertical_bias[2]), (center_pos[0], center_pos[1] + vertical_bias[3]),
+                   (center_pos[0], center_pos[1] + vertical_bias[4]), (center_pos[0], center_pos[1] + vertical_bias[5]),
+                   (center_pos[0], center_pos[1] + vertical_bias[6]), (center_pos[0], center_pos[1] + vertical_bias[7]),
+                   (center_pos[0], center_pos[1] + vertical_bias[8]), (center_pos[0], center_pos[1] + vertical_bias[9])]
+        agi_idx = [center_pos,
+                   (center_pos[0] - nonvertical_xbias[1], center_pos[1] - nonvertical_ybias[1]),
+                   (center_pos[0] - nonvertical_xbias[2], center_pos[1] - nonvertical_ybias[2]),
+                   (center_pos[0] - nonvertical_xbias[3], center_pos[1] - nonvertical_ybias[3]),
+                   (center_pos[0] - nonvertical_xbias[4], center_pos[1] - nonvertical_ybias[4]),
+                   (center_pos[0] - nonvertical_xbias[5], center_pos[1] - nonvertical_ybias[5]),
+                   (center_pos[0] - nonvertical_xbias[6], center_pos[1] - nonvertical_ybias[6]),
+                   (center_pos[0] - nonvertical_xbias[7], center_pos[1] - nonvertical_ybias[7]),
+                   (center_pos[0] - nonvertical_xbias[8], center_pos[1] - nonvertical_ybias[8]),
+                   (center_pos[0] - nonvertical_xbias[9], center_pos[1] - nonvertical_ybias[9])]
+        vit_idx = [center_pos,
+                   (center_pos[0] + nonvertical_xbias[1], center_pos[1] - nonvertical_ybias[1]),
+                   (center_pos[0] + nonvertical_xbias[2], center_pos[1] - nonvertical_ybias[2]),
+                   (center_pos[0] + nonvertical_xbias[3], center_pos[1] - nonvertical_ybias[3]),
+                   (center_pos[0] + nonvertical_xbias[4], center_pos[1] - nonvertical_ybias[4]),
+                   (center_pos[0] + nonvertical_xbias[5], center_pos[1] - nonvertical_ybias[5]),
+                   (center_pos[0] + nonvertical_xbias[6], center_pos[1] - nonvertical_ybias[6]),
+                   (center_pos[0] + nonvertical_xbias[7], center_pos[1] - nonvertical_ybias[7]),
+                   (center_pos[0] + nonvertical_xbias[8], center_pos[1] - nonvertical_ybias[8]),
+                   (center_pos[0] + nonvertical_xbias[9], center_pos[1] - nonvertical_ybias[9])]
+        dex_idx = [center_pos,
+                   (center_pos[0] - nonvertical_xbias[1], center_pos[1] + nonvertical_ybias[1]),
+                   (center_pos[0] - nonvertical_xbias[2], center_pos[1] + nonvertical_ybias[2]),
+                   (center_pos[0] - nonvertical_xbias[3], center_pos[1] + nonvertical_ybias[3]),
+                   (center_pos[0] - nonvertical_xbias[4], center_pos[1] + nonvertical_ybias[4]),
+                   (center_pos[0] - nonvertical_xbias[5], center_pos[1] + nonvertical_ybias[5]),
+                   (center_pos[0] - nonvertical_xbias[6], center_pos[1] + nonvertical_ybias[6]),
+                   (center_pos[0] - nonvertical_xbias[7], center_pos[1] + nonvertical_ybias[7]),
+                   (center_pos[0] - nonvertical_xbias[8], center_pos[1] + nonvertical_ybias[8]),
+                   (center_pos[0] - nonvertical_xbias[9], center_pos[1] + nonvertical_ybias[9])]
+        luk_idx = [center_pos,
+                   (center_pos[0] + nonvertical_xbias[1], center_pos[1] + nonvertical_ybias[1]),
+                   (center_pos[0] + nonvertical_xbias[2], center_pos[1] + nonvertical_ybias[2]),
+                   (center_pos[0] + nonvertical_xbias[3], center_pos[1] + nonvertical_ybias[3]),
+                   (center_pos[0] + nonvertical_xbias[4], center_pos[1] + nonvertical_ybias[4]),
+                   (center_pos[0] + nonvertical_xbias[5], center_pos[1] + nonvertical_ybias[5]),
+                   (center_pos[0] + nonvertical_xbias[6], center_pos[1] + nonvertical_ybias[6]),
+                   (center_pos[0] + nonvertical_xbias[7], center_pos[1] + nonvertical_ybias[7]),
+                   (center_pos[0] + nonvertical_xbias[8], center_pos[1] + nonvertical_ybias[8]),
+                   (center_pos[0] + nonvertical_xbias[9], center_pos[1] + nonvertical_ybias[9])]
+        color = (123, 145, 203)
+        pygame.draw.polygon(self.window.screen, color,
+                            [str_idx[str_], agi_idx[agi_], dex_idx[dex_], int_idx[int_], luk_idx[luk_],
+                             vit_idx[vit_]])
+        self.window.screen.blit(self.window.font.render(str(str_), True, Black), (725, 253))
+        self.window.screen.blit(self.window.font.render(str(agi_), True, Black), (725, 269))
+        self.window.screen.blit(self.window.font.render(str(vit_), True, Black), (725, 286))
+        self.window.screen.blit(self.window.font.render(str(int_), True, Black), (725, 302))
+        self.window.screen.blit(self.window.font.render(str(dex_), True, Black), (725, 318))
+        self.window.screen.blit(self.window.font.render(str(luk_), True, Black), (725, 334))
+        self.window.screen.blit(self.window.font.render(name, True, Black), (293, 460))
+        self.window.screen.blit(stand_char, rect2)
+        pygame.display.update()
+        while True:
+            self.window.clock.tick(10)
+            content = self.window.get_key()
+            if content == "s":
+                str_ = str_ + 1 if str_ < 9 else 9
+                int_ = int_ - 1 if int_ > 1 else 1
+            elif content == "a":
+                agi_ = agi_ + 1 if agi_ < 9 else 9
+                luk_ = luk_ - 1 if luk_ > 1 else 1
+            elif content == "v":
+                vit_ = vit_ + 1 if vit_ < 9 else 9
+                dex_ = dex_ - 1 if dex_ > 1 else 1
+            elif content == "i":
+                int_ = int_ + 1 if int_ < 9 else 9
+                str_ = str_ - 1 if str_ > 1 else 1
+            elif content == "d":
+                dex_ = dex_ + 1 if dex_ < 9 else 9
+                vit_ = vit_ - 1 if vit_ > 1 else 1
+            elif content == "l":
+                luk_ = luk_ + 1 if luk_ < 9 else 9
+                agi_ = agi_ - 1 if agi_ > 1 else 1
+            if content is not None:
+                self.window.screen.blit(create_char, rect1)
+                pygame.draw.polygon(self.window.screen, color,
+                                    [str_idx[str_], agi_idx[agi_], dex_idx[dex_], int_idx[int_], luk_idx[luk_],
+                                     vit_idx[vit_]])
+                self.window.screen.blit(self.window.font.render(str(str_), True, Black), (725, 253))
+                self.window.screen.blit(self.window.font.render(str(agi_), True, Black), (725, 269))
+                self.window.screen.blit(self.window.font.render(str(vit_), True, Black), (725, 286))
+                self.window.screen.blit(self.window.font.render(str(int_), True, Black), (725, 302))
+                self.window.screen.blit(self.window.font.render(str(dex_), True, Black), (725, 318))
+                self.window.screen.blit(self.window.font.render(str(luk_), True, Black), (725, 334))
+                self.window.screen.blit(self.window.font.render(name, True, Black), (293, 460))
+                self.window.screen.blit(stand_char, rect2)
+                pygame.display.update()
+            if content == "esc":
+                return [str_, agi_, vit_, int_, dex_, luk_]
 
     def run(self, city):
         idx = True
