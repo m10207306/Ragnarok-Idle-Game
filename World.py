@@ -92,6 +92,10 @@ class WorldClass:
         pygame.draw.polygon(self.window.screen, color,
                             [str_idx[str_], agi_idx[agi_], dex_idx[dex_], int_idx[int_], luk_idx[luk_],
                              vit_idx[vit_]])
+        self.window.screen.blit(self.window.font.render('加點請按：', True, Black), (230, 235))
+        self.window.screen.blit(self.window.font.render('[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk', True, Black), (230, 250))
+        self.window.screen.blit(self.window.font.render('Esc: 重置', True, Black), (230, 265))
+        self.window.screen.blit(self.window.font.render('Enter: 送出', True, Black), (230, 280))
         self.window.screen.blit(self.window.font.render(str(str_), True, Black), (725, 253))
         self.window.screen.blit(self.window.font.render(str(agi_), True, Black), (725, 269))
         self.window.screen.blit(self.window.font.render(str(vit_), True, Black), (725, 286))
@@ -122,11 +126,17 @@ class WorldClass:
             elif content == "l":
                 luk_ = luk_ + 1 if luk_ < 9 else 9
                 agi_ = agi_ - 1 if agi_ > 1 else 1
+            elif content == "esc":
+                str_, agi_, vit_, int_, dex_, luk_ = 5, 5, 5, 5, 5, 5
             if content is not None:
                 self.window.screen.blit(create_char, rect1)
                 pygame.draw.polygon(self.window.screen, color,
                                     [str_idx[str_], agi_idx[agi_], dex_idx[dex_], int_idx[int_], luk_idx[luk_],
                                      vit_idx[vit_]])
+                self.window.screen.blit(self.window.font.render('加點請按：', True, Black), (230, 235))
+                self.window.screen.blit(self.window.font.render('[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk', True, Black), (230, 250))
+                self.window.screen.blit(self.window.font.render('Esc: 重置', True, Black), (230, 265))
+                self.window.screen.blit(self.window.font.render('Enter: 送出', True, Black), (230, 280))
                 self.window.screen.blit(self.window.font.render(str(str_), True, Black), (725, 253))
                 self.window.screen.blit(self.window.font.render(str(agi_), True, Black), (725, 269))
                 self.window.screen.blit(self.window.font.render(str(vit_), True, Black), (725, 286))
@@ -136,7 +146,7 @@ class WorldClass:
                 self.window.screen.blit(self.window.font.render(name, True, Black), (293, 460))
                 self.window.screen.blit(stand_char, rect2)
                 pygame.display.update()
-            if content == "esc":
+            if content == "enter":
                 return [str_, agi_, vit_, int_, dex_, luk_]
 
     def run(self, city):
