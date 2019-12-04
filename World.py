@@ -22,7 +22,7 @@ class WorldClass:
             name = self.window.get_cmd(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
 
         ini_ability = self.initialize_ability(name)
-        self.Char_obj = Character.CharacterClass(name)
+        self.Char_obj = Character.CharacterClass(name, ini_ability)
 
     def initialize_ability(self, name):
         create_char = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()

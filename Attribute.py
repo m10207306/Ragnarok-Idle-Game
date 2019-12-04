@@ -2,13 +2,13 @@ import math
 
 
 class AbilityClusterClass:
-    def __init__(self):
-        self.ability = [ AbilityClass("str", 1),
-                         AbilityClass("agi", 1),
-                         AbilityClass("vit", 1),
-                         AbilityClass("int", 1),
-                         AbilityClass("dex", 1),
-                         AbilityClass("luk", 1) ]
+    def __init__(self, ini_ability):
+        self.ability = [ AbilityClass("str", ini_ability[0]),
+                         AbilityClass("agi", ini_ability[1]),
+                         AbilityClass("vit", ini_ability[2]),
+                         AbilityClass("int", ini_ability[3]),
+                         AbilityClass("dex", ini_ability[4]),
+                         AbilityClass("luk", ini_ability[5]) ]
 
     def get_ability(self, ability_tag):
         ability = ["str", "agi", "vit", "int", "dex", "luk"]

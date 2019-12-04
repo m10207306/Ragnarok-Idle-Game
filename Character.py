@@ -3,7 +3,7 @@ import Attribute, Monster_Database
 
 
 class CharacterClass:
-    def __init__(self, name):
+    def __init__(self, name, ini_ability):
         self.char_name = name
         self.job_name = "Novice"
         self.job_type = 1
@@ -24,7 +24,7 @@ class CharacterClass:
         # head_up, head_mid, head_down, body, R-hand, L-hand, robe, shoes, accessory1, accessory2
         self.item = []
 
-        self.ability = Attribute.AbilityClusterClass()          # control str, agi, vit ...etc
+        self.ability = Attribute.AbilityClusterClass(ini_ability)          # control str, agi, vit ...etc
         self.attribute = Attribute.AttributeClusterClass(self)  # generate atk, def, flee ...etc
 
         self.hp = self.attribute.max_hp
