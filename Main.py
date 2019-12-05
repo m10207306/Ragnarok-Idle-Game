@@ -25,6 +25,7 @@ class Ragnarok:
             content = self.window.get_key()
             if content == "s":
                 world_obj = World.WorldClass(self.window)
+                self.window.interlude_black_window()
                 world_obj.run("Prontera")
                 print(">> Create Character")
                 return True

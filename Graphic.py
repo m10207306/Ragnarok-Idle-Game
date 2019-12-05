@@ -19,7 +19,7 @@ class WindowClass:
         pygame.display.set_caption("Ragnarok Idle")
         self.width = 1024
         self.height = 768
-        self.fps = 30
+        self.fps = 60
         self.chat_message = []
         self.chat_color = []
         self.screen = pygame.display.set_mode((self.width, self.height), pygame.FULLSCREEN)
@@ -174,6 +174,19 @@ class WindowClass:
         rect2.center = center_pos
         surface.blit(text_base, rect2)
         surface.blit(text_surface, rect1)
+
+    def interlude_black_window(self):
+        count = 1
+        black_sur = self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 40)
+        while True:
+            self.clock.tick(self.fps)
+            self.get_key()
+            print(self.clock.get_fps())
+            if count > 30:
+                break
+            self.screen.blit(black_sur, (0, 0))
+            pygame.display.update()
+            count += 1
 
     @staticmethod
     def create_health_bar(surface, char_obj, center_pos):
