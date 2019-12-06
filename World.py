@@ -1,5 +1,5 @@
-import os                           # Built-in Library
-import Character, Battle            # 自己的Code
+import os                                           # Built-in Library
+import Character, Battle, Map_Database              # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
 
@@ -13,6 +13,7 @@ Blue = (0, 0, 255)
 class WorldClass:
     def __init__(self, window_screen):
         self.window = window_screen
+        self.current_pos = None
         self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
         # 清理背景跟重置背景
         rect = self.window.set_message_box(self.window.background.get_rect().center, ["請輸入角色名稱: (英文)"])
@@ -149,25 +150,39 @@ class WorldClass:
             if content == "enter":
                 return [str_, agi_, vit_, int_, dex_, luk_]
 
-    def run(self, city):
+    def transfer_station(self, map_idx):
         idx = True
         while idx:
-            self.window.set_bg_image(os.path.join("BG_Image", city + "_BG.png"), 255)
-            self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
-            self.window.set_sit_char(self.Char_obj.sit_img_path, (self.window.width * 0.4, self.window.height * 0.55))
+            map_data = Map_Database.map_data[map_idx]
+            if self.current_pos != map_idx:
+                self.window.set_bg_image(os.path.join("BG_Image", map_data[0] + ".png"), 255)
+                self.window.play_bgm(os.path.join("BG_Music", map_data[0] + ".mp3"))
+                self.current_pos = map_idx
+            if map_data[2] == 1:
+                idx, map_idx = self.run(map_idx)
+            elif map_data[2] == 2:
+                idx, map_idx =
+
+    def run(self, map_idx):
+        idx = True
+        map_data = Map_Database.map_data[map_idx]
+        while idx:
             self.window.set_status_window(self.Char_obj)
-            self.window.set_text_block(self.window.screen, self.Char_obj.char_name, (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
+            self.window.set_sit_char(self.Char_obj.sit_img_path,
+                                     (self.window.width * 0.4, self.window.height * 0.55))
+            self.window.set_text_block(self.window.screen, self.Char_obj.char_name,
+                                       (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
             self.window.reset_chat_message()
             self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
-                                         "你的位置在: " + city,
+                                         "你的位置在: " + map_data[1],
                                          "按下 [A] 到人物素質介面",
                                          "         [I] 到物品介面",
-                                         "         [K] 前往戰鬥",
+                                         "         [M] 地圖移動",
                                          "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
             pygame.display.update()
-            idx = self.city_standby()
+            idx = self.city_standby(map_idx)
 
-    def city_standby(self):
+    def city_standby(self, map_idx):
         while True:
             self.window.clock.tick(self.window.fps)
             content = self.window.get_key()
@@ -176,16 +191,55 @@ class WorldClass:
                 return True
             elif content == "i":
                 print("\n>> Item Page")
+                return True,
+            elif content == "M":
+                print("\n>> Moving")
                 return True
-            elif content == "k":
-                battle_scene = Battle.BattleControl(self.window, os.path.join("BG_Image", "Battle.png"), self.Char_obj)
-                battle_scene.run()
-                print("\n>> Fight")
-                return True
-            elif content == "e" or content == "esc":
+            elif content == "esc":
                 print("\n>> Exit")
                 return False
-            self.window.create_health_bar(self.window.screen, self.Char_obj, (self.window.width * 0.4, self.window.height * 0.55 + 50))
+            self.window.create_health_bar(self.window.screen, self.Char_obj,
+                                          (self.window.width * 0.4, self.window.height * 0.55 + 50))
             pygame.display.update()
+
+    # def run(self, city):
+    #     idx = True
+    #     while idx:
+    #         self.window.set_bg_image(os.path.join("BG_Image", city + "_BG.png"), 255)
+    #         self.window.play_bgm(os.path.join("BG_Music", city + ".mp3"))
+    #
+    #         self.window.set_status_window(self.Char_obj)
+    #         self.window.set_sit_char(self.Char_obj.sit_img_path, (self.window.width * 0.4, self.window.height * 0.55))
+    #         self.window.set_text_block(self.window.screen, self.Char_obj.char_name, (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
+    #         self.window.reset_chat_message()
+    #         self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
+    #                                      "你的位置在: " + city,
+    #                                      "按下 [A] 到人物素質介面",
+    #                                      "         [I] 到物品介面",
+    #                                      "         [K] 前往戰鬥",
+    #                                      "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
+    #         pygame.display.update()
+    #         idx = self.city_standby()
+    #
+    # def city_standby(self):
+    #     while True:
+    #         self.window.clock.tick(self.window.fps)
+    #         content = self.window.get_key()
+    #         if content == "a":
+    #             print("\n>> Attribute Page")
+    #             return True
+    #         elif content == "i":
+    #             print("\n>> Item Page")
+    #             return True
+    #         elif content == "k":
+    #             battle_scene = Battle.BattleControl(self.window, os.path.join("BG_Image", "Battle.png"), self.Char_obj)
+    #             battle_scene.run()
+    #             print("\n>> Fight")
+    #             return True
+    #         elif content == "e" or content == "esc":
+    #             print("\n>> Exit")
+    #             return False
+    #         self.window.create_health_bar(self.window.screen, self.Char_obj, (self.window.width * 0.4, self.window.height * 0.55 + 50))
+    #         pygame.display.update()
 
 
