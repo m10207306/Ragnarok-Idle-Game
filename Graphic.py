@@ -172,17 +172,18 @@ class WindowClass:
         text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
         rect2 = text_base.get_rect()
         rect2.center = center_pos
+        surface.blit(self.background.subsurface(rect2), rect2)
         surface.blit(text_base, rect2)
         surface.blit(text_surface, rect1)
+        return rect2
 
-    def interlude_black_window(self):
+    def interlude_black_window(self):       # 漸黑屏轉場
         count = 1
         black_sur = self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 40)
         while True:
             self.clock.tick(self.fps)
             self.get_key()
-            print(self.clock.get_fps())
-            if count > 30:
+            if count > 25:
                 break
             self.screen.blit(black_sur, (0, 0))
             pygame.display.update()
