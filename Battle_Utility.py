@@ -136,7 +136,7 @@ class Damage(pygame.sprite.Sprite):
     def calculate_damage(self, attacker, defencer):
         # 先判斷是否命中
         if attacker.attribute.hit < defencer.attribute.flee + 100:
-            if self.trigger_or_not(round(attacker.attribute.hit / (defencer.attribute.flee + 100), 2)):
+            if not self.trigger_or_not(round(attacker.attribute.hit / (defencer.attribute.flee + 100), 2)):     # 代表miss
                 self.window.effect_sound(os.path.join("Effect_Sound", "_attack_sword_miss.wav"))
                 return 0, 3
         defence_ratio = round(
