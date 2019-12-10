@@ -31,6 +31,7 @@ class CharacterClass:
         self.sp = self.attribute.max_sp
 
         self.sit_img_path = os.path.join("Char_Image", self.job_name, "Sit.png")
+        self.stand_img_path = os.path.join("Char_Image", self.job_name, "Stand.png")
         self.standby_img_path = os.path.join("Char_Image", self.job_name, "Standby_Dagger.png")
         self.attack_img_path = os.path.join("Char_Image", self.job_name, "Attack_Dagger.png")
         self.dead_img_path = os.path.join("Char_Image", self.job_name, "Dead.png")
@@ -46,7 +47,8 @@ class CharacterClass:
         if self.base_level < 99 and self.base_exp > self.target_base_exp:
             self.base_level += 1
             self.base_exp -= self.target_base_exp
-            self.define_base_exp_type()
+            self.define_base_exp_type()                 # 定義下一級目標經驗值
+            self.ability.level_up()                     # 加素質點
         if self.job_level < job_max_level[self.job_type] and self.job_exp > self.target_job_exp:
             self.job_level += 1
             self.job_exp -= self.target_job_exp

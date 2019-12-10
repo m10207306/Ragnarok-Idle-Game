@@ -9,6 +9,8 @@ class AbilityClusterClass:
                          AbilityClass("int", ini_ability[3]),
                          AbilityClass("dex", ini_ability[4]),
                          AbilityClass("luk", ini_ability[5]) ]
+        self.status_point = 0
+        self.level = 1
 
     def get_ability(self, ability_tag):
         ability = ["str", "agi", "vit", "int", "dex", "luk"]
@@ -18,6 +20,10 @@ class AbilityClusterClass:
         except Exception as error_message:
             print(">> ", error_message)
             return
+
+    def level_up(self):
+        self.status_point += levelup_ability_point[self.level + 1]
+        self.level += 1
 
 
 # 升級時所給予的素質升級點
@@ -42,6 +48,7 @@ class AbilityClass:
     def __init__(self, tag, value):
         self.tag = tag
         self.value = value
+        self.upgrade_demand = ability_upgrade_point[self.value + 1]
 
 
 class AttributeClusterClass:

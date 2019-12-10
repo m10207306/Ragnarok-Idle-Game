@@ -32,6 +32,8 @@ class WindowClass:
         self.miss_template = []
         self.cri_template = []
         self.equip_ability_tempplate = []
+        self.create_char_template = []
+        self.button_template = []
         self.load_template_image()
 
     def clear_screen(self):
@@ -112,7 +114,7 @@ class WindowClass:
                             cmd += event.unicode
                     self.set_block(Black, rect)
                     text_surface = pygame.Surface(rect.size)
-                    self.set_text(text_surface, [cmd], [White], (0, 0))
+                    self.set_text(text_surface, [cmd], [White], (1, 3))
                     self.screen.blit(text_surface, rect)
                     pygame.display.update()
 
@@ -157,6 +159,8 @@ class WindowClass:
 
     def load_template_image(self):
         self.equip_ability_tempplate = pygame.image.load(os.path.join("Info_Image", "Equipwin_bg.png")).convert_alpha()
+        self.create_char_template = pygame.image.load(os.path.join("Info_Image", "Win_make.png")).convert_alpha()
+        self.button_template = pygame.image.load(os.path.join("Info_Image", "txtbox_btn.png")).convert_alpha()
         damage_img = pygame.image.load(os.path.join("Info_Image", "Damage.png")).convert_alpha()
         damage_cri_img = pygame.image.load(os.path.join("Info_Image", "Damage_Critical.png")).convert_alpha()
         self.miss_template = pygame.image.load(os.path.join("Info_Image", "Miss.png")).convert_alpha()
@@ -190,6 +194,154 @@ class WindowClass:
             self.screen.blit(black_sur, (0, 0))
             pygame.display.update()
             count += 1
+
+    def create_ability_initial_win(self, ability, name):
+        return_sur = self.create_char_template.copy()
+        stand_char = pygame.image.load(os.path.join("Char_Image", "Novice", "Stand.png")).convert_alpha()
+        rect = stand_char.get_rect()
+        rect.center = (95, 178)
+        vertical_bias = [0, 3, 10, 20, 30, 40, 50, 60, 70, 79]
+        nonvertical_xbias = [0, 3, 8, 16, 25, 33, 41, 49, 57, 67]
+        nonvertical_ybias = [0, 3, 5, 10, 15, 20, 25, 30, 35, 41]
+        center_pos = (288, 165)
+        str_idx = [center_pos, (center_pos[0], center_pos[1] - vertical_bias[1]),
+                   (center_pos[0], center_pos[1] - vertical_bias[2]), (center_pos[0], center_pos[1] - vertical_bias[3]),
+                   (center_pos[0], center_pos[1] - vertical_bias[4]), (center_pos[0], center_pos[1] - vertical_bias[5]),
+                   (center_pos[0], center_pos[1] - vertical_bias[6]), (center_pos[0], center_pos[1] - vertical_bias[7]),
+                   (center_pos[0], center_pos[1] - vertical_bias[8]), (center_pos[0], center_pos[1] - vertical_bias[9])]
+        int_idx = [center_pos, (center_pos[0], center_pos[1] + vertical_bias[1]),
+                   (center_pos[0], center_pos[1] + vertical_bias[2]), (center_pos[0], center_pos[1] + vertical_bias[3]),
+                   (center_pos[0], center_pos[1] + vertical_bias[4]), (center_pos[0], center_pos[1] + vertical_bias[5]),
+                   (center_pos[0], center_pos[1] + vertical_bias[6]), (center_pos[0], center_pos[1] + vertical_bias[7]),
+                   (center_pos[0], center_pos[1] + vertical_bias[8]), (center_pos[0], center_pos[1] + vertical_bias[9])]
+        agi_idx = [center_pos,
+                   (center_pos[0] - nonvertical_xbias[1], center_pos[1] - nonvertical_ybias[1]),
+                   (center_pos[0] - nonvertical_xbias[2], center_pos[1] - nonvertical_ybias[2]),
+                   (center_pos[0] - nonvertical_xbias[3], center_pos[1] - nonvertical_ybias[3]),
+                   (center_pos[0] - nonvertical_xbias[4], center_pos[1] - nonvertical_ybias[4]),
+                   (center_pos[0] - nonvertical_xbias[5], center_pos[1] - nonvertical_ybias[5]),
+                   (center_pos[0] - nonvertical_xbias[6], center_pos[1] - nonvertical_ybias[6]),
+                   (center_pos[0] - nonvertical_xbias[7], center_pos[1] - nonvertical_ybias[7]),
+                   (center_pos[0] - nonvertical_xbias[8], center_pos[1] - nonvertical_ybias[8]),
+                   (center_pos[0] - nonvertical_xbias[9], center_pos[1] - nonvertical_ybias[9])]
+        vit_idx = [center_pos,
+                   (center_pos[0] + nonvertical_xbias[1], center_pos[1] - nonvertical_ybias[1]),
+                   (center_pos[0] + nonvertical_xbias[2], center_pos[1] - nonvertical_ybias[2]),
+                   (center_pos[0] + nonvertical_xbias[3], center_pos[1] - nonvertical_ybias[3]),
+                   (center_pos[0] + nonvertical_xbias[4], center_pos[1] - nonvertical_ybias[4]),
+                   (center_pos[0] + nonvertical_xbias[5], center_pos[1] - nonvertical_ybias[5]),
+                   (center_pos[0] + nonvertical_xbias[6], center_pos[1] - nonvertical_ybias[6]),
+                   (center_pos[0] + nonvertical_xbias[7], center_pos[1] - nonvertical_ybias[7]),
+                   (center_pos[0] + nonvertical_xbias[8], center_pos[1] - nonvertical_ybias[8]),
+                   (center_pos[0] + nonvertical_xbias[9], center_pos[1] - nonvertical_ybias[9])]
+        dex_idx = [center_pos,
+                   (center_pos[0] - nonvertical_xbias[1], center_pos[1] + nonvertical_ybias[1]),
+                   (center_pos[0] - nonvertical_xbias[2], center_pos[1] + nonvertical_ybias[2]),
+                   (center_pos[0] - nonvertical_xbias[3], center_pos[1] + nonvertical_ybias[3]),
+                   (center_pos[0] - nonvertical_xbias[4], center_pos[1] + nonvertical_ybias[4]),
+                   (center_pos[0] - nonvertical_xbias[5], center_pos[1] + nonvertical_ybias[5]),
+                   (center_pos[0] - nonvertical_xbias[6], center_pos[1] + nonvertical_ybias[6]),
+                   (center_pos[0] - nonvertical_xbias[7], center_pos[1] + nonvertical_ybias[7]),
+                   (center_pos[0] - nonvertical_xbias[8], center_pos[1] + nonvertical_ybias[8]),
+                   (center_pos[0] - nonvertical_xbias[9], center_pos[1] + nonvertical_ybias[9])]
+        luk_idx = [center_pos,
+                   (center_pos[0] + nonvertical_xbias[1], center_pos[1] + nonvertical_ybias[1]),
+                   (center_pos[0] + nonvertical_xbias[2], center_pos[1] + nonvertical_ybias[2]),
+                   (center_pos[0] + nonvertical_xbias[3], center_pos[1] + nonvertical_ybias[3]),
+                   (center_pos[0] + nonvertical_xbias[4], center_pos[1] + nonvertical_ybias[4]),
+                   (center_pos[0] + nonvertical_xbias[5], center_pos[1] + nonvertical_ybias[5]),
+                   (center_pos[0] + nonvertical_xbias[6], center_pos[1] + nonvertical_ybias[6]),
+                   (center_pos[0] + nonvertical_xbias[7], center_pos[1] + nonvertical_ybias[7]),
+                   (center_pos[0] + nonvertical_xbias[8], center_pos[1] + nonvertical_ybias[8]),
+                   (center_pos[0] + nonvertical_xbias[9], center_pos[1] + nonvertical_ybias[9])]
+        color = (123, 145, 203)
+        pygame.draw.polygon(return_sur, color,
+                            [str_idx[ability[0]], agi_idx[ability[1]], dex_idx[ability[4]], int_idx[ability[3]], luk_idx[ability[5]],
+                             vit_idx[ability[2]]])
+        return_sur.blit(self.font.render('加點請按：', True, Black), (8, 25))
+        return_sur.blit(self.font.render('[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk', True, Black), (8, 40))
+        return_sur.blit(self.font.render('Esc: 重置', True, Black), (8, 55))
+        return_sur.blit(self.font.render('Enter: 送出', True, Black), (8, 70))
+        return_sur.blit(self.font.render(str(ability[0]), True, Black), (500, 40))
+        return_sur.blit(self.font.render(str(ability[1]), True, Black), (500, 56))
+        return_sur.blit(self.font.render(str(ability[2]), True, Black), (500, 72))
+        return_sur.blit(self.font.render(str(ability[3]), True, Black), (500, 88))
+        return_sur.blit(self.font.render(str(ability[4]), True, Black), (500, 104))
+        return_sur.blit(self.font.render(str(ability[5]), True, Black), (500, 120))
+        return_sur.blit(stand_char, rect)
+        return_sur.blit(self.font.render(name, True, Black), (65, 245))
+        return return_sur, return_sur.get_rect()
+
+    def create_equip_ability_win(self, char_obj):
+        font = pygame.font.Font("TaipeiSansTCBeta-Bold.ttf", 10)
+        attribute = char_obj.attribute
+        return_sur = self.equip_ability_tempplate.copy()
+        stand_char = pygame.image.load(char_obj.stand_img_path).convert_alpha()
+        rect = stand_char.get_rect()
+        rect.center = (143, 95)
+        right_idx1, right_idx2 = 190, 272
+
+        str_ = char_obj.ability.get_ability('str').value
+        agi_ = char_obj.ability.get_ability('agi').value
+        vit_ = char_obj.ability.get_ability('vit').value
+        int_ = char_obj.ability.get_ability('int').value
+        dex_ = char_obj.ability.get_ability('dex').value
+        luk_ = char_obj.ability.get_ability('luk').value
+        return_sur.blit(font.render(str(str_) + " + 0", True, Black), (53, 190))
+        return_sur.blit(font.render(str(agi_) + " + 0", True, Black), (53, 206))
+        return_sur.blit(font.render(str(vit_) + " + 0", True, Black), (53, 222))
+        return_sur.blit(font.render(str(int_) + " + 0", True, Black), (53, 238))
+        return_sur.blit(font.render(str(dex_) + " + 0", True, Black), (53, 254))
+        return_sur.blit(font.render(str(luk_) + " + 0", True, Black), (53, 270))
+        if char_obj.ability.status_point > char_obj.ability.get_ability("str").upgrade_demand:
+            return_sur.blit(self.button_template, (89, 191))
+        if char_obj.ability.status_point > char_obj.ability.get_ability("agi").upgrade_demand:
+            return_sur.blit(self.button_template, (89, 207))
+        if char_obj.ability.status_point > char_obj.ability.get_ability("vit").upgrade_demand:
+            return_sur.blit(self.button_template, (89, 223))
+        if char_obj.ability.status_point > char_obj.ability.get_ability("int").upgrade_demand:
+            return_sur.blit(self.button_template, (89, 239))
+        if char_obj.ability.status_point > char_obj.ability.get_ability("dex").upgrade_demand:
+            return_sur.blit(self.button_template, (89, 255))
+        if char_obj.ability.status_point > char_obj.ability.get_ability("luk").upgrade_demand:
+            return_sur.blit(self.button_template, (89, 271))
+        return_sur.blit(stand_char, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.total_atk[0]) + " - " + str(attribute.total_atk[1]), Black)
+        rect.top, rect.right = 191, right_idx1
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.total_matk[0]) + " - " + str(attribute.total_matk[1]), Black)
+        rect.top, rect.right = 207, right_idx1
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.hit), Black)
+        rect.top, rect.right = 223, right_idx1
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.cri), Black)
+        rect.top, rect.right = 239, right_idx1
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.total_defence), Black)
+        rect.top, rect.right = 191, right_idx2
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.total_mdefence), Black)
+        rect.top, rect.right = 207, right_idx2
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.flee), Black)
+        rect.top, rect.right = 223, right_idx2
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(attribute.aspd), Black)
+        rect.top, rect.right = 239, right_idx2
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, str(char_obj.ability.status_point), Black)
+        rect.top, rect.right = 255, right_idx2
+        return_sur.blit(sur, rect)
+        sur, rect = self.render_and_return_rect(font, "仙境情懷", Black)
+        rect.top, rect.right = 271, right_idx2
+        return_sur.blit(sur, rect)
+        return return_sur, return_sur.get_rect()
+
+    @staticmethod
+    def render_and_return_rect(font, text, color):
+        sur = font.render(text, True, color)
+        return sur, sur.get_rect()
 
     @staticmethod
     def create_health_bar(surface, char_obj, center_pos):

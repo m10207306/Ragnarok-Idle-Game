@@ -27,85 +27,10 @@ class WorldClass:
         self.Char_obj = Character.CharacterClass(name, ini_ability)
 
     def initialize_ability(self, name):
-        create_char = pygame.image.load(os.path.join("Info_Image", "Win_make.png")).convert_alpha()
-        stand_char = pygame.image.load(os.path.join("Char_Image", "Novice", "Stand.png")).convert_alpha()
-        rect1 = create_char.get_rect()
-        rect1.center = pygame.Rect(0, 0, self.window.width, self.window.height).center
-        rect2 = stand_char.get_rect()
-        rect2.center = (320, 392)
-        self.window.screen.blit(create_char, rect1)
-
-        center_pos = (512, 377)
         str_, agi_, vit_, int_, dex_, luk_ = 5, 5, 5, 5, 5, 5
-        vertical_bias = [0, 3, 10, 20, 30, 40, 50, 60, 70, 79]
-        nonvertical_xbias = [0, 3, 8, 16, 25, 33, 41, 49, 57, 67]
-        nonvertical_ybias = [0, 3, 5, 10, 15, 20, 25, 30, 35, 41]
-        str_idx = [center_pos, (center_pos[0], center_pos[1] - vertical_bias[1]),
-                   (center_pos[0], center_pos[1] - vertical_bias[2]), (center_pos[0], center_pos[1] - vertical_bias[3]),
-                   (center_pos[0], center_pos[1] - vertical_bias[4]), (center_pos[0], center_pos[1] - vertical_bias[5]),
-                   (center_pos[0], center_pos[1] - vertical_bias[6]), (center_pos[0], center_pos[1] - vertical_bias[7]),
-                   (center_pos[0], center_pos[1] - vertical_bias[8]), (center_pos[0], center_pos[1] - vertical_bias[9])]
-        int_idx = [center_pos, (center_pos[0], center_pos[1] + vertical_bias[1]),
-                   (center_pos[0], center_pos[1] + vertical_bias[2]), (center_pos[0], center_pos[1] + vertical_bias[3]),
-                   (center_pos[0], center_pos[1] + vertical_bias[4]), (center_pos[0], center_pos[1] + vertical_bias[5]),
-                   (center_pos[0], center_pos[1] + vertical_bias[6]), (center_pos[0], center_pos[1] + vertical_bias[7]),
-                   (center_pos[0], center_pos[1] + vertical_bias[8]), (center_pos[0], center_pos[1] + vertical_bias[9])]
-        agi_idx = [center_pos,
-                   (center_pos[0] - nonvertical_xbias[1], center_pos[1] - nonvertical_ybias[1]),
-                   (center_pos[0] - nonvertical_xbias[2], center_pos[1] - nonvertical_ybias[2]),
-                   (center_pos[0] - nonvertical_xbias[3], center_pos[1] - nonvertical_ybias[3]),
-                   (center_pos[0] - nonvertical_xbias[4], center_pos[1] - nonvertical_ybias[4]),
-                   (center_pos[0] - nonvertical_xbias[5], center_pos[1] - nonvertical_ybias[5]),
-                   (center_pos[0] - nonvertical_xbias[6], center_pos[1] - nonvertical_ybias[6]),
-                   (center_pos[0] - nonvertical_xbias[7], center_pos[1] - nonvertical_ybias[7]),
-                   (center_pos[0] - nonvertical_xbias[8], center_pos[1] - nonvertical_ybias[8]),
-                   (center_pos[0] - nonvertical_xbias[9], center_pos[1] - nonvertical_ybias[9])]
-        vit_idx = [center_pos,
-                   (center_pos[0] + nonvertical_xbias[1], center_pos[1] - nonvertical_ybias[1]),
-                   (center_pos[0] + nonvertical_xbias[2], center_pos[1] - nonvertical_ybias[2]),
-                   (center_pos[0] + nonvertical_xbias[3], center_pos[1] - nonvertical_ybias[3]),
-                   (center_pos[0] + nonvertical_xbias[4], center_pos[1] - nonvertical_ybias[4]),
-                   (center_pos[0] + nonvertical_xbias[5], center_pos[1] - nonvertical_ybias[5]),
-                   (center_pos[0] + nonvertical_xbias[6], center_pos[1] - nonvertical_ybias[6]),
-                   (center_pos[0] + nonvertical_xbias[7], center_pos[1] - nonvertical_ybias[7]),
-                   (center_pos[0] + nonvertical_xbias[8], center_pos[1] - nonvertical_ybias[8]),
-                   (center_pos[0] + nonvertical_xbias[9], center_pos[1] - nonvertical_ybias[9])]
-        dex_idx = [center_pos,
-                   (center_pos[0] - nonvertical_xbias[1], center_pos[1] + nonvertical_ybias[1]),
-                   (center_pos[0] - nonvertical_xbias[2], center_pos[1] + nonvertical_ybias[2]),
-                   (center_pos[0] - nonvertical_xbias[3], center_pos[1] + nonvertical_ybias[3]),
-                   (center_pos[0] - nonvertical_xbias[4], center_pos[1] + nonvertical_ybias[4]),
-                   (center_pos[0] - nonvertical_xbias[5], center_pos[1] + nonvertical_ybias[5]),
-                   (center_pos[0] - nonvertical_xbias[6], center_pos[1] + nonvertical_ybias[6]),
-                   (center_pos[0] - nonvertical_xbias[7], center_pos[1] + nonvertical_ybias[7]),
-                   (center_pos[0] - nonvertical_xbias[8], center_pos[1] + nonvertical_ybias[8]),
-                   (center_pos[0] - nonvertical_xbias[9], center_pos[1] + nonvertical_ybias[9])]
-        luk_idx = [center_pos,
-                   (center_pos[0] + nonvertical_xbias[1], center_pos[1] + nonvertical_ybias[1]),
-                   (center_pos[0] + nonvertical_xbias[2], center_pos[1] + nonvertical_ybias[2]),
-                   (center_pos[0] + nonvertical_xbias[3], center_pos[1] + nonvertical_ybias[3]),
-                   (center_pos[0] + nonvertical_xbias[4], center_pos[1] + nonvertical_ybias[4]),
-                   (center_pos[0] + nonvertical_xbias[5], center_pos[1] + nonvertical_ybias[5]),
-                   (center_pos[0] + nonvertical_xbias[6], center_pos[1] + nonvertical_ybias[6]),
-                   (center_pos[0] + nonvertical_xbias[7], center_pos[1] + nonvertical_ybias[7]),
-                   (center_pos[0] + nonvertical_xbias[8], center_pos[1] + nonvertical_ybias[8]),
-                   (center_pos[0] + nonvertical_xbias[9], center_pos[1] + nonvertical_ybias[9])]
-        color = (123, 145, 203)
-        pygame.draw.polygon(self.window.screen, color,
-                            [str_idx[str_], agi_idx[agi_], dex_idx[dex_], int_idx[int_], luk_idx[luk_],
-                             vit_idx[vit_]])
-        self.window.screen.blit(self.window.font.render('加點請按：', True, Black), (230, 235))
-        self.window.screen.blit(self.window.font.render('[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk', True, Black), (230, 250))
-        self.window.screen.blit(self.window.font.render('Esc: 重置', True, Black), (230, 265))
-        self.window.screen.blit(self.window.font.render('Enter: 送出', True, Black), (230, 280))
-        self.window.screen.blit(self.window.font.render(str(str_), True, Black), (725, 253))
-        self.window.screen.blit(self.window.font.render(str(agi_), True, Black), (725, 269))
-        self.window.screen.blit(self.window.font.render(str(vit_), True, Black), (725, 286))
-        self.window.screen.blit(self.window.font.render(str(int_), True, Black), (725, 302))
-        self.window.screen.blit(self.window.font.render(str(dex_), True, Black), (725, 318))
-        self.window.screen.blit(self.window.font.render(str(luk_), True, Black), (725, 334))
-        self.window.screen.blit(self.window.font.render(name, True, Black), (293, 460))
-        self.window.screen.blit(stand_char, rect2)
+        win_sur, rect = self.window.create_ability_initial_win([str_, agi_, vit_, int_, dex_, luk_], name)
+        rect.center = self.window.screen.get_rect().center
+        self.window.screen.blit(win_sur, rect)
         pygame.display.update()
         while True:
             self.window.clock.tick(10)
@@ -131,22 +56,8 @@ class WorldClass:
             elif content == "esc":
                 str_, agi_, vit_, int_, dex_, luk_ = 5, 5, 5, 5, 5, 5
             if content is not None:
-                self.window.screen.blit(create_char, rect1)
-                pygame.draw.polygon(self.window.screen, color,
-                                    [str_idx[str_], agi_idx[agi_], dex_idx[dex_], int_idx[int_], luk_idx[luk_],
-                                     vit_idx[vit_]])
-                self.window.screen.blit(self.window.font.render('加點請按：', True, Black), (230, 235))
-                self.window.screen.blit(self.window.font.render('[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk', True, Black), (230, 250))
-                self.window.screen.blit(self.window.font.render('Esc: 重置', True, Black), (230, 265))
-                self.window.screen.blit(self.window.font.render('Enter: 送出', True, Black), (230, 280))
-                self.window.screen.blit(self.window.font.render(str(str_), True, Black), (725, 253))
-                self.window.screen.blit(self.window.font.render(str(agi_), True, Black), (725, 269))
-                self.window.screen.blit(self.window.font.render(str(vit_), True, Black), (725, 286))
-                self.window.screen.blit(self.window.font.render(str(int_), True, Black), (725, 302))
-                self.window.screen.blit(self.window.font.render(str(dex_), True, Black), (725, 318))
-                self.window.screen.blit(self.window.font.render(str(luk_), True, Black), (725, 334))
-                self.window.screen.blit(self.window.font.render(name, True, Black), (293, 460))
-                self.window.screen.blit(stand_char, rect2)
+                win_sur, _ = self.window.create_ability_initial_win([str_, agi_, vit_, int_, dex_, luk_], name)
+                self.window.screen.blit(win_sur, rect)
                 pygame.display.update()
             if content == "enter":
                 return [str_, agi_, vit_, int_, dex_, luk_]
@@ -203,13 +114,14 @@ class WorldClass:
             content = self.window.get_key()
             if content == "a":
                 print("\n>> Attribute Page")
+                self.ability_page()
                 return True, map_idx
             elif content == "i":
                 print("\n>> Item Page")
                 return True, map_idx
             elif content == "m":
                 print("\n>> Moving")
-                return False, 1          # 因為還沒完成地圖網路，預設切換至prt_fild08
+                return False, 1                     # 因為還沒完成地圖網路，預設切換至prt_fild08
             elif content == "esc":
                 print("\n>> Exit")
                 return False, None
@@ -262,7 +174,7 @@ class WorldClass:
                 print("Map Moving in field")
                 return False, 0             # 因為還沒完成地圖網路，預設回到普隆德拉
             if count % 6 == 0:
-                if count == 6:              # 如果沒有這行，動畫會有一瞬間的斷層，因為clear需要根據上一次的draw來clear，但是第一次是沒有得clear的
+                if count == 6:              # 如果沒有這行，逃離戰鬥時動畫會有一瞬間的斷層，因為clear需要根據上一次的draw來clear，但是第一次是沒有得clear的
                     self.window.screen.blit(self.window.background.subsurface(char_animate_obj.rect), char_animate_obj.rect)
                 else:
                     char_group.clear(self.window.screen, self.window.background)
@@ -481,3 +393,19 @@ class WorldClass:
                 self.window.set_status_window(self.Char_obj)
                 pygame.display.update()
             count += 1
+
+    def ability_page(self):
+        ability_sur, rect = self.window.create_equip_ability_win(self.Char_obj)
+        rect.topleft = (20, 200)
+        self.window.screen.blit(ability_sur, rect)
+        self.window.reset_chat_message()
+        self.window.set_chat_window(["---------- 人物素質與裝備操作頁面 ----------",
+                                     "按下 [Esc] 回上一層"], [Green, Green])
+        pygame.display.update()
+        while True:
+            self.window.clock.tick(self.attack_fps)
+            content = self.window.get_key()
+            if content == "esc":
+                self.window.screen.blit(self.window.background.subsurface(rect), rect)
+                pygame.display.update()
+                return
