@@ -23,11 +23,11 @@ class WorldClass:
         while name == "":
             name = self.window.get_cmd(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
 
-        ini_ability = self.initialize_ability(name)
+        ini_ability = self.initialize_ability(name)         # 設定初始素質
         self.Char_obj = Character.CharacterClass(name, ini_ability)
 
     def initialize_ability(self, name):
-        create_char = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
+        create_char = pygame.image.load(os.path.join("Info_Image", "Win_make.png")).convert_alpha()
         stand_char = pygame.image.load(os.path.join("Char_Image", "Novice", "Stand.png")).convert_alpha()
         rect1 = create_char.get_rect()
         rect1.center = pygame.Rect(0, 0, self.window.width, self.window.height).center
@@ -152,6 +152,10 @@ class WorldClass:
                 return [str_, agi_, vit_, int_, dex_, luk_]
 
     def transfer_station(self, map_idx):
+        # 轉運站：基本上要切換場景的時候都透過這Function，並且控制背景與BGM
+        # 這邊也會判斷是否地圖有做切換，如果沒做BGM就不會重新播放
+        # 如果map_idx被設定為None代表要回到主畫面
+        # 這邊也會判斷接下來要前往的地圖是城市還是原野，原野具有戰鬥功能
         idx = True
         while idx:
             if map_idx is None:         # 回到主畫面
@@ -210,8 +214,8 @@ class WorldClass:
                 print("\n>> Exit")
                 return False, None
 
-            self.window.set_status_window(self.Char_obj)
-            self.window.create_health_bar(self.window.screen, self.Char_obj,
+            self.window.set_status_window(self.Char_obj)                        # 更新左上角狀態欄
+            self.window.create_health_bar(self.window.screen, self.Char_obj,    # 更新hp/sp bar
                                           (self.window.width * 0.4, self.window.height * 0.55 + 50))
             pygame.display.update()
 
@@ -239,7 +243,11 @@ class WorldClass:
         char_name_pos = (char_pos[0], char_pos[1] - 70)
         char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
         char_group = pygame.sprite.Group()
-        char_animate_obj = Battle_Utility.Animate(self.window, self.Char_obj.standby_img_path, self.Char_obj.standby_img_path, self.Char_obj.dead_img_path, char_pos)
+        char_animate_obj = Battle_Utility.Animate(self.window,
+                                                  self.Char_obj.standby_img_path,
+                                                  self.Char_obj.standby_img_path,
+                                                  self.Char_obj.dead_img_path,
+                                                  char_pos)
         char_group.add(char_animate_obj)
         count = 1
         while True:
@@ -252,9 +260,9 @@ class WorldClass:
                 return True, map_idx
             elif content == "m":
                 print("Map Moving in field")
-                return False, 0          # 因為還沒完成地圖網路，預設回到普隆德拉
+                return False, 0             # 因為還沒完成地圖網路，預設回到普隆德拉
             if count % 6 == 0:
-                if count == 6:
+                if count == 6:              # 如果沒有這行，動畫會有一瞬間的斷層，因為clear需要根據上一次的draw來clear，但是第一次是沒有得clear的
                     self.window.screen.blit(self.window.background.subsurface(char_animate_obj.rect), char_animate_obj.rect)
                 else:
                     char_group.clear(self.window.screen, self.window.background)
@@ -284,21 +292,31 @@ class WorldClass:
         damage_group = pygame.sprite.Group()
         Battle_Utility.Damage.AllGroup = damage_group
 
-        char_animate = Battle_Utility.Animate(self.window, self.Char_obj.standby_img_path, self.Char_obj.attack_img_path,
-                               self.Char_obj.dead_img_path, char_pos, self.Char_obj, monster, (mons_pos[0], mons_pos[1] - 110))
+        char_animate = Battle_Utility.Animate(self.window,
+                                              self.Char_obj.standby_img_path,
+                                              self.Char_obj.attack_img_path,
+                                              self.Char_obj.dead_img_path,
+                                              char_pos,
+                                              self.Char_obj,
+                                              monster,
+                                              (mons_pos[0], mons_pos[1] - 110))
         char_animate_group.add(char_animate)
 
-        mons_animate = Battle_Utility.Animate(self.window, monster.standby_img_path, monster.attack_img_path, monster.dead_img_path,
-                               mons_pos, monster, self.Char_obj, (char_pos[0], char_pos[1] - 110))
+        mons_animate = Battle_Utility.Animate(self.window,
+                                              monster.standby_img_path,
+                                              monster.attack_img_path,
+                                              monster.dead_img_path,
+                                              mons_pos,
+                                              monster,
+                                              self.Char_obj,
+                                              (char_pos[0], char_pos[1] - 110))
         mons_animate_group.add(mons_animate)
 
         # Show出戰鬥的分析數據(命中率、迴避率等)
         char_hit_percent = round(self.Char_obj.attribute.hit / (monster.attribute.flee + 100), 2) * 100
         mons_hit_percent = round(monster.attribute.hit / (self.Char_obj.attribute.flee + 100), 2) * 100
-        char_defence_ratio = round(
-            (4000 + self.Char_obj.attribute.total_defence) / (4000 + self.Char_obj.attribute.total_defence * 10), 2)
-        mons_defence_ratio = round(
-            (4000 + monster.attribute.total_defence) / (4000 + monster.attribute.total_defence * 10), 2)
+        char_defence_ratio = round((4000 + self.Char_obj.attribute.total_defence) / (4000 + self.Char_obj.attribute.total_defence * 10), 2)
+        mons_defence_ratio = round((4000 + monster.attribute.total_defence) / (4000 + monster.attribute.total_defence * 10), 2)
         char_damage_range = [round(self.Char_obj.attribute.total_atk[0] * mons_defence_ratio),
                              round(self.Char_obj.attribute.total_atk[1] * mons_defence_ratio)]
         mons_damage_range = [round(monster.attribute.total_atk[0] * char_defence_ratio),
@@ -308,10 +326,8 @@ class WorldClass:
                                      "角色傷害範圍: " + str(char_damage_range[0]) + " - " + str(char_damage_range[1]),
                                      "魔物命中率: " + str(mons_hit_percent) + "%",
                                      "魔物傷害範圍: " + str(mons_damage_range[0]) + " - " + str(mons_damage_range[1]),
-                                     "角色Base_Exp: " + str(self.Char_obj.base_exp) + ", 下一級所需: " + str(
-                                         self.Char_obj.target_base_exp),
-                                     "角色Job_Exp: " + str(self.Char_obj.job_exp) + ", 下一級所需: " + str(
-                                         self.Char_obj.target_job_exp),
+                                     "角色Base_Exp: " + str(self.Char_obj.base_exp) + ", 下一級所需: " + str(self.Char_obj.target_base_exp),
+                                     "角色Job_Exp: " + str(self.Char_obj.job_exp) + ", 下一級所需: " + str(self.Char_obj.target_job_exp),
                                      "怪物Base_Exp: " + str(monster.base_exp) + ", Job_Exp: " + str(monster.job_exp)],
                                     [Green, Green, Green, Green, Green, Green, Green])
 
@@ -353,7 +369,7 @@ class WorldClass:
             self.window.clock.tick(self.attack_fps)
             content = self.window.get_key()
             print(self.window.clock.get_fps())
-            if content == "esc":                    # 逃離戰鬥
+            if content == "esc":                    # 逃離戰鬥，清除傷害數值、怪物動畫、怪物名稱
                 damage_group.clear(self.window.screen, self.window.background)
                 mons_animate_group.clear(self.window.screen, self.window.background)
                 self.window.screen.blit(self.window.background.subsurface(mons_name_rect), mons_name_rect)
@@ -434,7 +450,7 @@ class WorldClass:
                                                ["============== 勝利！！ ==============",
                                                 " ",
                                                 "                           請按任意鍵繼續"])
-            self.window.screen.blit(self.window.background.subsurface(mons_name_rect), mons_name_rect)
+            self.window.screen.blit(self.window.background.subsurface(mons_name_rect), mons_name_rect)  # 清掉怪物名稱
         if char_dead:
             self.Char_obj.exp_punish()
             rect = self.window.set_message_box((center[0], center[1] - 125),

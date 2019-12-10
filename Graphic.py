@@ -31,7 +31,8 @@ class WindowClass:
         self.damage_cri_template = []
         self.miss_template = []
         self.cri_template = []
-        self.token_damage_image()
+        self.equip_ability_tempplate = []
+        self.load_template_image()
 
     def clear_screen(self):
         self.screen.blit(self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 255), (0, 0))
@@ -48,7 +49,7 @@ class WindowClass:
     def set_message_box(self, center_pos, text):
         # text = ["str1", "str2", "str3" ...]
         # return rect if message_box
-        img = pygame.image.load(os.path.join("Info_Image", "win_msgbox.png")).convert_alpha()
+        img = pygame.image.load(os.path.join("Info_Image", "Win_msgbox.png")).convert_alpha()
         # img.set_colorkey(img.get_at((0, 0)))
         dest_rect = img.get_rect()
         color = []
@@ -138,7 +139,7 @@ class WindowClass:
 
     def set_status_window(self, char_obj):
         # char_obj = Character Class Object
-        img = pygame.image.load(os.path.join("Info_Image", "basewin_mini.png")).convert_alpha()
+        img = pygame.image.load(os.path.join("Info_Image", "Basewin_mini.png")).convert_alpha()
         # img.set_colorkey(img.get_at((0, 0)))        # Turn the default purple to transparent (need convert() first)
         img = self.set_status_text(img, char_obj)
         self.screen.blit(img, (0, 0))
@@ -154,7 +155,8 @@ class WindowClass:
         rect.center = pos
         self.screen.blit(img, rect)
 
-    def token_damage_image(self):
+    def load_template_image(self):
+        self.equip_ability_tempplate = pygame.image.load(os.path.join("Info_Image", "Equipwin_bg.png")).convert_alpha()
         damage_img = pygame.image.load(os.path.join("Info_Image", "Damage.png")).convert_alpha()
         damage_cri_img = pygame.image.load(os.path.join("Info_Image", "Damage_Critical.png")).convert_alpha()
         self.miss_template = pygame.image.load(os.path.join("Info_Image", "Miss.png")).convert_alpha()
