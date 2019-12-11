@@ -13,8 +13,8 @@ class Ragnarok:
         while idx:
             self.window.play_bgm(os.path.join("BG_Music", "Login.mp3"))
             self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
-            self.window.set_message_box(self.window.background.get_rect().center, ["     按 [S] 開始新遊戲",
-                                                                                   "          [L] 載入舊檔",
+            self.window.set_message_box(self.window.background.get_rect().center, ["     按 [S]tart 開始新遊戲",
+                                                                                   "          [L]oad 載入舊檔",
                                                                                    "          [Esc] 離開遊戲"])
             pygame.display.update()
             idx = self.standby()

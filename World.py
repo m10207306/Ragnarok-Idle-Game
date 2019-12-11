@@ -94,9 +94,9 @@ class WorldClass:
             self.window.reset_chat_message()
             self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
                                          "你的位置在: " + map_data[1],
-                                         "按下 [A] 到人物素質介面",
-                                         "         [I] 到物品介面",
-                                         "         [M] 地圖移動",
+                                         "按下 [A]ttribute 到人物素質介面",
+                                         "         [I]tem 到物品介面",
+                                         "         [M]ove 地圖移動",
                                          "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
             pygame.display.update()
             idx, new_idx = self.city_standby(map_idx)
@@ -109,12 +109,14 @@ class WorldClass:
                 continue
 
     def city_standby(self, map_idx):
+        self.Char_obj.ability.status_point = 100
+        animate_group = None
         while True:
             self.window.clock.tick(self.window.fps)
             content = self.window.get_key()
             if content == "a":
                 print("\n>> Attribute Page")
-                self.ability_page()
+                self.ability_page(animate_group)
                 return True, map_idx
             elif content == "i":
                 print("\n>> Item Page")
@@ -138,9 +140,10 @@ class WorldClass:
             self.window.set_status_window(self.Char_obj)
             self.window.reset_chat_message()
             self.window.set_chat_window(["你的位置在: " + map_data[1],
-                                         "按 [A] 開始戰鬥",
-                                         "     [M] 地圖移動",
-                                         "     [Esc] 回主畫面"], [Green, Green, Green, Green])
+                                         "按 [F]ight 開始戰鬥",
+                                         "     [A]ttribute 人物素質頁面",
+                                         "     [M]ove 地圖移動",
+                                         "     [Esc] 回主畫面"], [Green, Green, Green, Green, Green])
             pygame.display.update()
             idx, new_idx = self.field_standby(map_idx)
             if (not idx) and (new_idx != map_idx):      # 切換地圖
@@ -168,6 +171,9 @@ class WorldClass:
             if content == "esc":
                 return False, None
             elif content == "a":
+                self.ability_page(char_group)
+                return True, map_idx
+            elif content == "f":
                 self.field_attack(map_idx)
                 return True, map_idx
             elif content == "m":
@@ -394,48 +400,54 @@ class WorldClass:
                 pygame.display.update()
             count += 1
 
-    def ability_page(self):
+    def ability_page(self, animate_group):
         ability_sur, rect = self.window.create_equip_ability_win(self.Char_obj)
         rect.topleft = (20, 200)
         ability_handle = self.Char_obj.ability
+        char_pos = (self.window.width * 0.4, self.window.height * 0.55)
+        char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
+        char_name_pos = (char_pos[0], char_pos[1] - 70)
         self.window.screen.blit(ability_sur, rect)
         self.window.reset_chat_message()
         self.window.set_chat_window(["---------- 人物素質與裝備操作頁面 ----------",
                                      "按下 [Esc] 回上一層",
                                      "加點按下：[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk"], [Green, Green, Green])
         pygame.display.update()
+        idx = None
+        count = 1
         while True:
             self.window.clock.tick(self.attack_fps)
             content = self.window.get_key()
             if content == "s":
-                if ability_handle.status_point > ability_handle.ability[0].upgrade_demand:
-                    ability_handle.status_point -= ability_handle.ability[0].upgrade_demand
-                    ability_handle.ability[0].add_ability()
+                idx = 0
             elif content == "a":
-                if ability_handle.status_point > ability_handle.ability[1].upgrade_demand:
-                    ability_handle.status_point -= ability_handle.ability[1].upgrade_demand
-                    ability_handle.ability[1].add_ability()
+                idx = 1
             elif content == "v":
-                if ability_handle.status_point > ability_handle.ability[2].upgrade_demand:
-                    ability_handle.status_point -= ability_handle.ability[2].upgrade_demand
-                    ability_handle.ability[2].add_ability()
+                idx = 2
             elif content == "i":
-                if ability_handle.status_point > ability_handle.ability[3].upgrade_demand:
-                    ability_handle.status_point -= ability_handle.ability[3].upgrade_demand
-                    ability_handle.ability[3].add_ability()
+                idx = 3
             elif content == "d":
-                if ability_handle.status_point > ability_handle.ability[4].upgrade_demand:
-                    ability_handle.status_point -= ability_handle.ability[4].upgrade_demand
-                    ability_handle.ability[4].add_ability()
+                idx = 4
             elif content == "l":
-                if ability_handle.status_point > ability_handle.ability[5].upgrade_demand:
-                    ability_handle.status_point -= ability_handle.ability[5].upgrade_demand
-                    ability_handle.ability[5].add_ability()
+                idx = 5
+            if (content is not None) and (idx is not None):
+                if ability_handle.status_point > ability_handle.ability[idx].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[idx].upgrade_demand
+                    ability_handle.ability[idx].add_ability()
+                    self.Char_obj.attribute.transform(self.Char_obj, self.Char_obj.equipment)         # 重新根據素質計算能力值
             if content == "esc":
-                self.window.screen.blit(self.window.background.subsurface(rect), rect)
+                self.window.screen.blit(self.window.background.subsurface(rect), rect)  # 關閉視窗
                 pygame.display.update()
                 return
 
             ability_sur, _ = self.window.create_equip_ability_win(self.Char_obj)
             self.window.screen.blit(ability_sur, rect)
+            if (animate_group is not None) and (count % 6 == 0):
+                animate_group.clear(self.window.screen, self.window.background)
+                animate_group.update(1, 255)
+                animate_group.draw(self.window.screen)
+            self.window.set_text_block(self.window.screen, self.Char_obj.char_name, char_name_pos)
+            self.window.set_status_window(self.Char_obj)
+            self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
             pygame.display.update()
+            count += 1
