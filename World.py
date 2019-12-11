@@ -397,15 +397,45 @@ class WorldClass:
     def ability_page(self):
         ability_sur, rect = self.window.create_equip_ability_win(self.Char_obj)
         rect.topleft = (20, 200)
+        ability_handle = self.Char_obj.ability
         self.window.screen.blit(ability_sur, rect)
         self.window.reset_chat_message()
         self.window.set_chat_window(["---------- 人物素質與裝備操作頁面 ----------",
-                                     "按下 [Esc] 回上一層"], [Green, Green])
+                                     "按下 [Esc] 回上一層",
+                                     "加點按下：[S]tr, [A]gi, [V]it, [I]nt, [D]ex, [L]uk"], [Green, Green, Green])
         pygame.display.update()
         while True:
             self.window.clock.tick(self.attack_fps)
             content = self.window.get_key()
+            if content == "s":
+                if ability_handle.status_point > ability_handle.ability[0].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[0].upgrade_demand
+                    ability_handle.ability[0].add_ability()
+            elif content == "a":
+                if ability_handle.status_point > ability_handle.ability[1].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[1].upgrade_demand
+                    ability_handle.ability[1].add_ability()
+            elif content == "v":
+                if ability_handle.status_point > ability_handle.ability[2].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[2].upgrade_demand
+                    ability_handle.ability[2].add_ability()
+            elif content == "i":
+                if ability_handle.status_point > ability_handle.ability[3].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[3].upgrade_demand
+                    ability_handle.ability[3].add_ability()
+            elif content == "d":
+                if ability_handle.status_point > ability_handle.ability[4].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[4].upgrade_demand
+                    ability_handle.ability[4].add_ability()
+            elif content == "l":
+                if ability_handle.status_point > ability_handle.ability[5].upgrade_demand:
+                    ability_handle.status_point -= ability_handle.ability[5].upgrade_demand
+                    ability_handle.ability[5].add_ability()
             if content == "esc":
                 self.window.screen.blit(self.window.background.subsurface(rect), rect)
                 pygame.display.update()
                 return
+
+            ability_sur, _ = self.window.create_equip_ability_win(self.Char_obj)
+            self.window.screen.blit(ability_sur, rect)
+            pygame.display.update()

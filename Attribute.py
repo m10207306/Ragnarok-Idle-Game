@@ -50,6 +50,10 @@ class AbilityClass:
         self.value = value
         self.upgrade_demand = ability_upgrade_point[self.value + 1]
 
+    def add_ability(self):
+        self.value += 1
+        self.upgrade_demand = ability_upgrade_point[self.value + 1]
+
 
 class AttributeClusterClass:
     def __init__(self, char_obj):
