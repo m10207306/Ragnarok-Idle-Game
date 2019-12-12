@@ -333,7 +333,7 @@ class WindowClass:
         sur, rect = self.render_and_return_rect(font, str(char_obj.ability.status_point), Black)
         rect.top, rect.right = 255, right_idx2
         return_sur.blit(sur, rect)
-        sur, rect = self.render_and_return_rect(font, "仙境情懷", Black)
+        sur, rect = self.render_and_return_rect(font, "~ * 仙境情懷 * ~", Black)
         rect.top, rect.right = 271, right_idx2
         return_sur.blit(sur, rect)
         return return_sur, return_sur.get_rect()

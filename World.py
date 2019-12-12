@@ -76,7 +76,7 @@ class WorldClass:
             if self.current_pos != map_idx:
                 self.window.interlude_black_window()
                 self.window.set_bg_image(os.path.join("BG_Image", map_data[0] + ".png"), 255)
-                self.window.play_bgm(os.path.join("BG_Music", map_data[0] + ".mp3"))
+                self.window.play_bgm(os.path.join("BG_Music", map_data[3] + ".mp3"))
                 self.current_pos = map_idx
             if map_data[2] == 1:
                 idx, map_idx = self.city_run(map_idx)
@@ -111,12 +111,13 @@ class WorldClass:
     def city_standby(self, map_idx):
         self.Char_obj.ability.status_point = 100
         animate_group = None
+        name_pos = (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60)
         while True:
             self.window.clock.tick(self.window.fps)
             content = self.window.get_key()
             if content == "a":
                 print("\n>> Attribute Page")
-                self.ability_page(animate_group)
+                self.ability_page(animate_group, name_pos)
                 return True, map_idx
             elif content == "i":
                 print("\n>> Item Page")
@@ -171,7 +172,7 @@ class WorldClass:
             if content == "esc":
                 return False, None
             elif content == "a":
-                self.ability_page(char_group)
+                self.ability_page(char_group, char_name_pos)
                 return True, map_idx
             elif content == "f":
                 self.field_attack(map_idx)
@@ -400,13 +401,12 @@ class WorldClass:
                 pygame.display.update()
             count += 1
 
-    def ability_page(self, animate_group):
+    def ability_page(self, animate_group, char_name_pos):   # 需要再傳入名稱位置是因為城鎮跟野外的角色高度不同
         ability_sur, rect = self.window.create_equip_ability_win(self.Char_obj)
         rect.topleft = (20, 200)
         ability_handle = self.Char_obj.ability
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
         char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
-        char_name_pos = (char_pos[0], char_pos[1] - 70)
         self.window.screen.blit(ability_sur, rect)
         self.window.reset_chat_message()
         self.window.set_chat_window(["---------- 人物素質與裝備操作頁面 ----------",
@@ -435,6 +435,7 @@ class WorldClass:
                     ability_handle.status_point -= ability_handle.ability[idx].upgrade_demand
                     ability_handle.ability[idx].add_ability()
                     self.Char_obj.attribute.transform(self.Char_obj, self.Char_obj.equipment)         # 重新根據素質計算能力值
+                    idx = None
             if content == "esc":
                 self.window.screen.blit(self.window.background.subsurface(rect), rect)  # 關閉視窗
                 pygame.display.update()

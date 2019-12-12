@@ -81,7 +81,7 @@ class AttributeClusterClass:
     def transform(self, char_obj, equipment):
         ability = char_obj.ability
         atk_addition = ability.get_ability("luk").value / 3 + ability.get_ability("dex").value / 5 + char_obj.base_level / 4
-        self.max_hp = 35 + char_obj.base_level * 60
+        self.max_hp = round(35 + char_obj.base_level * 60 * (100 + ability.get_ability("vit").value) / 100)
         self.max_sp = round((char_obj.base_level * 3) * (100 + ability.get_ability("int").value) / 100)
         self.char_atk = round(ability.get_ability("str").value + atk_addition)
         self.weapon_atk = equipment[4][1]
