@@ -48,6 +48,15 @@ class WindowClass:
         self.background.set_alpha(alpha)
         self.screen.blit(self.background, (0, 0))
 
+    def set_map_icon(self, file_path):
+        img = pygame.image.load(file_path).convert_alpha()
+        rect = img.get_rect()
+        img2 = pygame.Surface((int(rect.width/2), int(rect.height/2))).convert_alpha()
+        pygame.transform.scale(img, (int(rect.width/2), int(rect.height/2)), img2)
+        rect = img2.get_rect()
+        rect.topright = (self.width, 0)
+        self.screen.blit(img2, rect)
+
     def set_message_box(self, center_pos, text):
         # text = ["str1", "str2", "str3" ...]
         # return rect if message_box
@@ -118,7 +127,7 @@ class WindowClass:
                     self.screen.blit(text_surface, rect)
                     pygame.display.update()
 
-    def set_chat_window(self, content, color):
+    def set_chat_window(self, content, color, bg = None):
         # content = ["str1", "str2", ...]
         # can store 15 lines content
         size = (680, 235)
@@ -133,8 +142,11 @@ class WindowClass:
         self.set_text(text_surface, self.chat_message, self.chat_color, (0, 0))
         text_surface.set_colorkey(Black)
         text_surface.convert()
-
-        sub_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
+        sub_bg = None
+        if bg is None:
+            sub_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
+        else:
+            sub_bg = bg.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
         self.screen.blit(sub_bg, (0, self.height - size[1]))
         self.screen.blit(chat_surface, (0, self.height - size[1]))
         self.screen.blit(text_surface, (0, self.height - size[1]))
@@ -418,6 +430,14 @@ class WindowClass:
                     return "enter"
                 elif event.key == pygame.K_BACKSPACE:
                     return "backspace"
+                elif event.key == pygame.K_UP:
+                    return "up"
+                elif event.key == pygame.K_DOWN:
+                    return "down"
+                elif event.key == pygame.K_LEFT:
+                    return "left"
+                elif event.key == pygame.K_RIGHT:
+                    return "right"
                 else:
                     return event.unicode
 

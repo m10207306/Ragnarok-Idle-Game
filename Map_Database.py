@@ -29,3 +29,7 @@ map_data = \
         ["gef_fild10",   "吉芬 區域10",                  2,     "gef_fild02_03_10",             []],
         ["gef_fild11",   "吉芬 區域11",                  2,     "gef_fild11",                   []]
     ]
+
+
+if __name__ == "__main__":
+    print(len(map_data))

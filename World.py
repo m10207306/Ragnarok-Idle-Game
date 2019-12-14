@@ -73,11 +73,16 @@ class WorldClass:
                 self.window.interlude_black_window()
                 break
             map_data = Map_Database.map_data[map_idx]
-            if self.current_pos != map_idx:
+            if self.current_pos != map_idx:                     # 換地圖時：過場、換bgm、更新目前位置
                 self.window.interlude_black_window()
-                self.window.set_bg_image(os.path.join("BG_Image", map_data[0] + ".png"), 255)
-                self.window.play_bgm(os.path.join("BG_Music", map_data[3] + ".mp3"))
+                if self.current_pos is None:
+                    self.window.play_bgm(os.path.join("BG_Music", map_data[3] + ".mp3"))
+                elif self.current_pos is not None:
+                    if Map_Database.map_data[self.current_pos][3] != map_data[3]:
+                        self.window.play_bgm(os.path.join("BG_Music", map_data[3] + ".mp3"))
                 self.current_pos = map_idx
+            self.window.set_bg_image(os.path.join("BG_Image", map_data[0] + ".png"), 255)   # 考慮到地圖移動時按esc，固定每次回來都reset背景跟map icon
+            self.window.set_map_icon(os.path.join("Map_Image", map_data[0] + ".png"))
             if map_data[2] == 1:
                 idx, map_idx = self.city_run(map_idx)
             elif map_data[2] == 2:
@@ -100,13 +105,12 @@ class WorldClass:
                                          "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
             pygame.display.update()
             idx, new_idx = self.city_standby(map_idx)
-
             if (not idx) and (new_idx != map_idx):  # Case1: 換地圖 -> 回到transfer station並回傳新的map_idx
                 return True, new_idx
             if (not idx) and (new_idx is None):     # Case2: 離開遊戲回到主畫面 -> 回到transfer station並中斷，回到更上層的Main
                 return False, None
             if idx and (new_idx == map_idx):        # Case3: 保持在這個地圖，重置畫面，通常就是idx是True，new_idx等於map_idx
-                continue
+                return True, map_idx
 
     def city_standby(self, map_idx):
         self.Char_obj.ability.status_point = 100
@@ -123,8 +127,14 @@ class WorldClass:
                 print("\n>> Item Page")
                 return True, map_idx
             elif content == "m":
-                print("\n>> Moving")
-                return False, 1                     # 因為還沒完成地圖網路，預設切換至prt_fild08
+                print("\n>> Map Moving in city")
+                mov_idx = self.moving_page()
+                if mov_idx is not None:
+                    map_idx = map_idx if mov_idx > 26 else mov_idx
+                    map_idx = map_idx if mov_idx < 0 else mov_idx
+                    return False, map_idx
+                else:
+                    return True, map_idx
             elif content == "esc":
                 print("\n>> Exit")
                 return False, None
@@ -151,8 +161,8 @@ class WorldClass:
                 return True, new_idx
             if (not idx) and (new_idx is None):         # 回主畫面
                 return False, None
-            if idx and (new_idx == map_idx):            # 保持目前地圖
-                continue
+            if idx and (new_idx == map_idx):            # 保持目前地圖，但是回到transform station重置BG與Map_icon
+                return True, map_idx
 
     def field_standby(self, map_idx):
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
@@ -179,7 +189,13 @@ class WorldClass:
                 return True, map_idx
             elif content == "m":
                 print("Map Moving in field")
-                return False, 0             # 因為還沒完成地圖網路，預設回到普隆德拉
+                mov_idx = self.moving_page()
+                if mov_idx is not None:
+                    map_idx = map_idx if mov_idx > 26 else mov_idx
+                    map_idx = map_idx if mov_idx < 0 else mov_idx
+                    return False, map_idx
+                else:
+                    return True, map_idx
             if count % 6 == 0:
                 if count == 6:              # 如果沒有這行，逃離戰鬥時動畫會有一瞬間的斷層，因為clear需要根據上一次的draw來clear，但是第一次是沒有得clear的
                     self.window.screen.blit(self.window.background.subsurface(char_animate_obj.rect), char_animate_obj.rect)
@@ -452,3 +468,40 @@ class WorldClass:
             self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
             pygame.display.update()
             count += 1
+
+    def moving_page(self):
+        img = pygame.image.load(os.path.join("Map_Image", "all_map.png")).convert_alpha()
+        height_idx = 0
+        height_idx_list = [0, 40, 80, 120, 160, 200, 240, 275]
+        cmd = ""
+        cmd_rect = pygame.Rect(0, 747, 680, 20)
+        cmd_bg = self.window.create_color_surface(Black, cmd_rect, 150)
+        while True:
+            self.window.clock.tick(self.attack_fps)
+            content = self.window.get_key()
+            if content in ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"]:
+                cmd += content
+            elif content == "backspace":
+                cmd = cmd[:-1]
+            elif content == "esc":
+                return None
+            elif content == "enter":
+                return int(cmd)
+            elif content == "up":
+                height_idx = height_idx - 1 if height_idx > 0 else 0
+            elif content == "down":
+                height_idx = height_idx + 1 if height_idx < len(height_idx_list) - 1 else len(height_idx_list) - 1
+
+            img_cut = img.subsurface(pygame.Rect(0, height_idx_list[height_idx], 1024, 768))
+            self.window.screen.blit(img_cut, (0, 0))
+            self.window.reset_chat_message()
+            self.window.set_chat_window(["---------- 地圖移動頁面 ----------",
+                                         "按下 [Esc] 回上一層",
+                                         "輸入預計前往的地圖"], [Green, Green, Green], bg=img_cut)
+            self.window.screen.blit(img_cut.subsurface(cmd_rect), cmd_rect)
+            self.window.screen.blit(cmd_bg, cmd_rect)
+            self.window.screen.blit(self.window.font.render("預計前往地圖號碼：" + cmd, True, Green), cmd_rect)
+            pygame.display.update()
+
+
+
