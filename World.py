@@ -130,7 +130,7 @@ class WorldClass:
                 print("\n>> Map Moving in city")
                 mov_idx = self.moving_page()
                 if mov_idx is not None:
-                    map_idx = map_idx if mov_idx > 26 else mov_idx
+                    map_idx = map_idx if mov_idx > len(Map_Database.map_data) else mov_idx
                     map_idx = map_idx if mov_idx < 0 else mov_idx
                     return False, map_idx
                 else:
@@ -191,7 +191,7 @@ class WorldClass:
                 print("Map Moving in field")
                 mov_idx = self.moving_page()
                 if mov_idx is not None:
-                    map_idx = map_idx if mov_idx > 26 else mov_idx
+                    map_idx = map_idx if mov_idx > len(Map_Database.map_data) else mov_idx
                     map_idx = map_idx if mov_idx < 0 else mov_idx
                     return False, map_idx
                 else:
