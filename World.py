@@ -76,16 +76,16 @@ class WorldClass:
             if self.current_pos != map_idx:                     # 換地圖時：過場、換bgm、更新目前位置
                 self.window.interlude_black_window()
                 if self.current_pos is None:
-                    self.window.play_bgm(os.path.join("BG_Music", map_data[3] + ".mp3"))
+                    self.window.play_bgm(os.path.join("BG_Music", map_data[4] + ".mp3"))
                 elif self.current_pos is not None:
-                    if Map_Database.map_data[self.current_pos][3] != map_data[3]:
-                        self.window.play_bgm(os.path.join("BG_Music", map_data[3] + ".mp3"))
+                    if Map_Database.map_data[self.current_pos][4] != map_data[4]:
+                        self.window.play_bgm(os.path.join("BG_Music", map_data[4] + ".mp3"))
                 self.current_pos = map_idx
-            self.window.set_bg_image(os.path.join("BG_Image", map_data[0] + ".png"), 255)   # 考慮到地圖移動時按esc，固定每次回來都reset背景跟map icon
-            self.window.set_map_icon(os.path.join("Map_Image", map_data[0] + ".png"))
-            if map_data[2] == 1:
+            self.window.set_bg_image(os.path.join("BG_Image", map_data[1] + ".png"), 255)   # 考慮到地圖移動時按esc，固定每次回來都reset背景跟map icon
+            self.window.set_map_icon(os.path.join("Map_Image", map_data[1] + ".png"))
+            if map_data[3] == 1:
                 idx, map_idx = self.city_run(map_idx)
-            elif map_data[2] == 2:
+            elif map_data[3] == 2:
                 idx, map_idx = self.field_run(map_idx)
 
     def city_run(self, map_idx):
@@ -98,7 +98,7 @@ class WorldClass:
                                        (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
             self.window.reset_chat_message()
             self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
-                                         "你的位置在: " + map_data[1],
+                                         "你的位置在: " + map_data[2],
                                          "按下 [A]ttribute 到人物素質介面",
                                          "         [I]tem 到物品介面",
                                          "         [M]ove 地圖移動",
@@ -130,8 +130,8 @@ class WorldClass:
                 print("\n>> Map Moving in city")
                 mov_idx = self.moving_page()
                 if mov_idx is not None:
-                    map_idx = map_idx if mov_idx > len(Map_Database.map_data) else mov_idx
-                    map_idx = map_idx if mov_idx < 0 else mov_idx
+                    map_idx = len(Map_Database.map_data)-1 if mov_idx > len(Map_Database.map_data)-1 else mov_idx
+                    map_idx = 0 if mov_idx < 0 else mov_idx
                     return False, map_idx
                 else:
                     return True, map_idx
@@ -150,7 +150,7 @@ class WorldClass:
         while idx:
             self.window.set_status_window(self.Char_obj)
             self.window.reset_chat_message()
-            self.window.set_chat_window(["你的位置在: " + map_data[1],
+            self.window.set_chat_window(["你的位置在: " + map_data[2],
                                          "按 [F]ight 開始戰鬥",
                                          "     [A]ttribute 人物素質頁面",
                                          "     [M]ove 地圖移動",
@@ -191,8 +191,8 @@ class WorldClass:
                 print("Map Moving in field")
                 mov_idx = self.moving_page()
                 if mov_idx is not None:
-                    map_idx = map_idx if mov_idx > len(Map_Database.map_data) else mov_idx
-                    map_idx = map_idx if mov_idx < 0 else mov_idx
+                    map_idx = len(Map_Database.map_data)-1 if mov_idx > len(Map_Database.map_data)-1 else mov_idx
+                    map_idx = 0 if mov_idx < 0 else mov_idx
                     return False, map_idx
                 else:
                     return True, map_idx
@@ -211,7 +211,7 @@ class WorldClass:
     def field_attack(self, map_idx):
         map_data = Map_Database.map_data[map_idx]
         self.window.reset_chat_message()
-        self.window.set_chat_window(["你的位置在: " + map_data[1],
+        self.window.set_chat_window(["你的位置在: " + map_data[2],
                                      "按 [Esc] 逃離戰鬥"], [Green, Green])
         pygame.display.update()
         # 這裡還缺個Random怪物的部分
