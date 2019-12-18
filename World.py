@@ -89,9 +89,8 @@ class WorldClass:
                 idx, map_idx = self.field_run(map_idx)
 
     def city_run(self, map_idx):
-        idx = True
         map_data = Map_Database.map_data[map_idx]
-        while idx:
+        while True:
             self.window.set_sit_char(self.Char_obj.sit_img_path,
                                      (self.window.width * 0.4, self.window.height * 0.55))
             self.window.set_text_block(self.window.screen, self.Char_obj.char_name,
@@ -104,12 +103,12 @@ class WorldClass:
                                          "         [M]ove 地圖移動",
                                          "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
             pygame.display.update()
-            idx, new_idx = self.city_standby(map_idx)
-            if (not idx) and (new_idx != map_idx):  # Case1: 換地圖 -> 回到transfer station並回傳新的map_idx
+            new_idx = self.city_standby(map_idx)
+            if new_idx != map_idx:  # Case1: 換地圖 -> 回到transfer station並回傳新的map_idx
                 return True, new_idx
-            if (not idx) and (new_idx is None):     # Case2: 離開遊戲回到主畫面 -> 回到transfer station並中斷，回到更上層的Main
+            if new_idx is None:     # Case2: 離開遊戲回到主畫面 -> 回到transfer station並中斷，回到更上層的Main
                 return False, None
-            if idx and (new_idx == map_idx):        # Case3: 保持在這個地圖，重置畫面，通常就是idx是True，new_idx等於map_idx
+            if new_idx == map_idx:        # Case3: 保持在這個地圖，重置畫面，通常就是idx是True，new_idx等於map_idx
                 return True, map_idx
 
     def city_standby(self, map_idx):
@@ -122,22 +121,22 @@ class WorldClass:
             if content == "a":
                 print("\n>> Attribute Page")
                 self.ability_page(animate_group, name_pos)
-                return True, map_idx
+                return map_idx
             elif content == "i":
                 print("\n>> Item Page")
-                return True, map_idx
+                return map_idx
             elif content == "m":
                 print("\n>> Map Moving in city")
                 mov_idx = self.moving_page()
                 if mov_idx is not None:
                     map_idx = len(Map_Database.map_data)-1 if mov_idx > len(Map_Database.map_data)-1 else mov_idx
                     map_idx = 0 if mov_idx < 0 else mov_idx
-                    return False, map_idx
+                    return map_idx
                 else:
-                    return True, map_idx
+                    return map_idx
             elif content == "esc":
                 print("\n>> Exit")
-                return False, None
+                return None
 
             self.window.set_status_window(self.Char_obj)                        # 更新左上角狀態欄
             self.window.create_health_bar(self.window.screen, self.Char_obj,    # 更新hp/sp bar
@@ -145,9 +144,8 @@ class WorldClass:
             pygame.display.update()
 
     def field_run(self, map_idx):
-        idx = True
         map_data = Map_Database.map_data[map_idx]
-        while idx:
+        while True:
             self.window.set_status_window(self.Char_obj)
             self.window.reset_chat_message()
             self.window.set_chat_window(["你的位置在: " + map_data[2],
@@ -156,12 +154,12 @@ class WorldClass:
                                          "     [M]ove 地圖移動",
                                          "     [Esc] 回主畫面"], [Green, Green, Green, Green, Green])
             pygame.display.update()
-            idx, new_idx = self.field_standby(map_idx)
-            if (not idx) and (new_idx != map_idx):      # 切換地圖
+            new_idx = self.field_standby(map_idx)
+            if new_idx != map_idx:      # 切換地圖
                 return True, new_idx
-            if (not idx) and (new_idx is None):         # 回主畫面
+            if new_idx is None:         # 回主畫面
                 return False, None
-            if idx and (new_idx == map_idx):            # 保持目前地圖，但是回到transform station重置BG與Map_icon
+            if new_idx == map_idx:            # 保持目前地圖，但是回到transform station重置BG與Map_icon
                 return True, map_idx
 
     def field_standby(self, map_idx):
@@ -180,22 +178,22 @@ class WorldClass:
             self.window.clock.tick(self.attack_fps)
             content = self.window.get_key()
             if content == "esc":
-                return False, None
+                return None
             elif content == "a":
                 self.ability_page(char_group, char_name_pos)
-                return True, map_idx
+                return map_idx
             elif content == "f":
                 self.field_attack(map_idx)
-                return True, map_idx
+                return map_idx
             elif content == "m":
                 print("Map Moving in field")
                 mov_idx = self.moving_page()
                 if mov_idx is not None:
                     map_idx = len(Map_Database.map_data)-1 if mov_idx > len(Map_Database.map_data)-1 else mov_idx
                     map_idx = 0 if mov_idx < 0 else mov_idx
-                    return False, map_idx
+                    return map_idx
                 else:
-                    return True, map_idx
+                    return map_idx
             if count % 6 == 0:
                 if count == 6:              # 如果沒有這行，逃離戰鬥時動畫會有一瞬間的斷層，因為clear需要根據上一次的draw來clear，但是第一次是沒有得clear的
                     self.window.screen.blit(self.window.background.subsurface(char_animate_obj.rect), char_animate_obj.rect)
