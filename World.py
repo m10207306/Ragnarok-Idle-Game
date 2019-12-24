@@ -470,14 +470,14 @@ class WorldClass:
     def moving_page(self):
         img = pygame.image.load(os.path.join("Map_Image", "all_map.png")).convert_alpha()
         map_data = Map_Database.map_data[self.current_pos]
-        pygame.draw.rect(img, Blue, map_data[6])        # 框出目前地圖
+        pygame.draw.rect(img, Blue, map_data[6], 3)        # 框出目前地圖
 
         next_map_list = map_data[5]
         next_map_name = []
         for i in range(len(next_map_list)):             # 框出可前往地圖
             next_map_data = Map_Database.map_data[next_map_list[i]]
-            pygame.draw.rect(img, Green, next_map_data[6])
-            next_map_name.append("      No. " + str(next_map_data[0]) + " " + next_map_data[2])
+            pygame.draw.rect(img, Green, next_map_data[6], 3)
+            next_map_name.append("      No. " + str(next_map_data[0]) + "   " + next_map_data[2])
 
         # 調整視野用參數
         height_idx = 0
@@ -508,7 +508,10 @@ class WorldClass:
             self.window.reset_chat_message()
             self.window.set_chat_window(["---------- 地圖移動頁面 ----------",
                                          "按下 [Esc] 回上一層",
-                                         "可前往以下地圖："] + next_map_name, [Green, Green, Green] + [Green] * len(next_map_name), bg=img_cut)
+                                         "目前所在位置： No. " + str(map_data[0]) + "    " + map_data[2],
+                                         "可前往以下地圖："] + next_map_name,
+                                        [Green, Green, Green, Green] + [Green] * len(next_map_name),
+                                        bg = img_cut)
             self.window.screen.blit(img_cut.subsurface(cmd_rect), cmd_rect)
             self.window.screen.blit(cmd_bg, cmd_rect)
             self.window.screen.blit(self.window.font.render("預計前往地圖號碼：" + cmd, True, Green), cmd_rect)
