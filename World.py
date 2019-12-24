@@ -481,7 +481,7 @@ class WorldClass:
 
         # 調整視野用參數
         height_idx = 0
-        height_idx_list = [0, 40, 80, 120, 160, 200, 240, 275]
+        height_idx_list = [0, 100, 200, 300, 400, 500]
 
         # key in 內容
         cmd = ""
@@ -497,7 +497,10 @@ class WorldClass:
             elif content == "esc":
                 return None
             elif content == "enter":
-                return int(cmd)
+                if int(cmd) in next_map_list:
+                    return int(cmd)
+                else:
+                    cmd = ""
             elif content == "up":
                 height_idx = height_idx - 1 if height_idx > 0 else 0
             elif content == "down":
@@ -508,9 +511,10 @@ class WorldClass:
             self.window.reset_chat_message()
             self.window.set_chat_window(["---------- 地圖移動頁面 ----------",
                                          "按下 [Esc] 回上一層",
+                                         "         [方向鍵 - 上] or [方向鍵 - 下] 捲動地圖",
                                          "目前所在位置： No. " + str(map_data[0]) + "    " + map_data[2],
                                          "可前往以下地圖："] + next_map_name,
-                                        [Green, Green, Green, Green] + [Green] * len(next_map_name),
+                                        [Green, Green, Green, Green, Green] + [Green] * len(next_map_name),
                                         bg = img_cut)
             self.window.screen.blit(img_cut.subsurface(cmd_rect), cmd_rect)
             self.window.screen.blit(cmd_bg, cmd_rect)
