@@ -185,7 +185,6 @@ class WorldClass:
                 return map_idx
             elif content == "f":
                 self.field_attack(map_idx)
-                return map_idx
             elif content == "m":
                 print("Map Moving in field")
                 mov_idx = self.moving_page()
