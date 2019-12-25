@@ -8,6 +8,7 @@ White = (255, 255, 255)
 Red = (255, 0, 0)
 Green = (0, 255, 0)
 Blue = (0, 0, 255)
+Yellow = (255, 222, 0)
 
 
 class WorldClass:
@@ -470,7 +471,7 @@ class WorldClass:
     def moving_page(self):
         img = pygame.image.load(os.path.join("Map_Image", "all_map.png")).convert_alpha()
         map_data = Map_Database.map_data[self.current_pos]
-        pygame.draw.rect(img, Blue, map_data[6], 3)        # 框出目前地圖
+        pygame.draw.rect(img, Yellow, map_data[6], 3)        # 框出目前地圖
 
         next_map_list = map_data[5]
         next_map_name = []
@@ -497,10 +498,11 @@ class WorldClass:
             elif content == "esc":
                 return None
             elif content == "enter":
-                if int(cmd) in next_map_list:
-                    return int(cmd)
-                else:
-                    cmd = ""
+                return int(cmd)
+                # if int(cmd) in next_map_list:
+                #     return int(cmd)
+                # else:
+                #     cmd = ""
             elif content == "up":
                 height_idx = height_idx - 1 if height_idx > 0 else 0
             elif content == "down":
@@ -514,7 +516,7 @@ class WorldClass:
                                          "         [方向鍵 - 上] or [方向鍵 - 下] 捲動地圖",
                                          "目前所在位置： No. " + str(map_data[0]) + "    " + map_data[2],
                                          "可前往以下地圖："] + next_map_name,
-                                        [Green, Green, Green, Green, Green] + [Green] * len(next_map_name),
+                                        [Green, Green, Green, Yellow, Green] + [Green] * len(next_map_name),
                                         bg = img_cut)
             self.window.screen.blit(img_cut.subsurface(cmd_rect), cmd_rect)
             self.window.screen.blit(cmd_bg, cmd_rect)
