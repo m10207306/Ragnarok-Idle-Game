@@ -1,4 +1,4 @@
-import os, math                                     # Built-in Library
+import os, math, random                                     # Built-in Library
 import Character, Battle_Utility, Map_Database              # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
@@ -213,8 +213,7 @@ class WorldClass:
         self.window.set_chat_window(["你的位置在: " + map_data[2],
                                      "按 [Esc] 逃離戰鬥"], [Green, Green])
         pygame.display.update()
-        # 這裡還缺個Random怪物的部分
-        monster = Character.MonsterClass(0)
+        monster = Character.MonsterClass(random.choice(map_data[7]))
 
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
         mons_pos = (self.window.width * 0.6, self.window.height * 0.55)
