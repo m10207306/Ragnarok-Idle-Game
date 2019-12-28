@@ -90,20 +90,7 @@ class WorldClass:
                 idx, map_idx = self.field_run(map_idx)
 
     def city_run(self, map_idx):
-        map_data = Map_Database.map_data[map_idx]
         while True:
-            self.window.set_sit_char(self.Char_obj.sit_img_path,
-                                     (self.window.width * 0.4, self.window.height * 0.55))
-            self.window.set_text_block(self.window.screen, self.Char_obj.char_name,
-                                       (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
-            self.window.reset_chat_message()
-            self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
-                                         "你的位置在: " + map_data[2],
-                                         "按下 [A]ttribute 到人物素質介面",
-                                         "         [I]tem 到物品介面",
-                                         "         [M]ove 地圖移動",
-                                         "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
-            pygame.display.update()
             new_idx = self.city_standby(map_idx)
             if new_idx != map_idx:  # Case1: 換地圖 -> 回到transfer station並回傳新的map_idx
                 return True, new_idx
@@ -113,7 +100,7 @@ class WorldClass:
                 return True, map_idx
 
     def city_standby(self, map_idx):
-        self.Char_obj.ability.status_point = 100
+        map_data = Map_Database.map_data[map_idx]
         animate_group = None
         name_pos = (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60)
         while True:
@@ -139,22 +126,24 @@ class WorldClass:
                 print("\n>> Exit")
                 return None
 
+            self.window.set_sit_char(self.Char_obj.sit_img_path,
+                                     (self.window.width * 0.4, self.window.height * 0.55))
+            self.window.set_text_block(self.window.screen, self.Char_obj.char_name,
+                                       (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
+            self.window.reset_chat_message()
+            self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
+                                         "你的位置在: " + map_data[2],
+                                         "按下 [A]ttribute 到人物素質介面",
+                                         "         [I]tem 到物品介面",
+                                         "         [M]ove 地圖移動",
+                                         "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
             self.window.set_status_window(self.Char_obj)                        # 更新左上角狀態欄
             self.window.create_health_bar(self.window.screen, self.Char_obj,    # 更新hp/sp bar
                                           (self.window.width * 0.4, self.window.height * 0.55 + 50))
             pygame.display.update()
 
     def field_run(self, map_idx):
-        map_data = Map_Database.map_data[map_idx]
         while True:
-            self.window.set_status_window(self.Char_obj)
-            self.window.reset_chat_message()
-            self.window.set_chat_window(["你的位置在: " + map_data[2],
-                                         "按 [F]ight 開始戰鬥",
-                                         "     [A]ttribute 人物素質頁面",
-                                         "     [M]ove 地圖移動",
-                                         "     [Esc] 回主畫面"], [Green, Green, Green, Green, Green])
-            pygame.display.update()
             new_idx = self.field_standby(map_idx)
             if new_idx != map_idx:      # 切換地圖
                 return True, new_idx
@@ -164,6 +153,7 @@ class WorldClass:
                 return True, map_idx
 
     def field_standby(self, map_idx):
+        map_data = Map_Database.map_data[map_idx]
         char_pos = (self.window.width * 0.4, self.window.height * 0.55)
         char_name_pos = (char_pos[0], char_pos[1] - 70)
         char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
@@ -201,9 +191,16 @@ class WorldClass:
                     char_group.clear(self.window.screen, self.window.background)
                 char_group.update(1, 255)
                 char_group.draw(self.window.screen)
-                self.window.set_text_block(self.window.screen, self.Char_obj.char_name, char_name_pos)
-                self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
-                pygame.display.update()
+            self.window.set_text_block(self.window.screen, self.Char_obj.char_name, char_name_pos)
+            self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
+            self.window.reset_chat_message()
+            self.window.set_chat_window(["你的位置在: " + map_data[2],
+                                         "按 [F]ight 開始戰鬥",
+                                         "     [A]ttribute 人物素質頁面",
+                                         "     [M]ove 地圖移動",
+                                         "     [Esc] 回主畫面"], [Green, Green, Green, Green, Green])
+            self.window.set_status_window(self.Char_obj)
+            pygame.display.update()
             count += 1
 
     def field_attack(self, map_idx):
@@ -362,6 +359,9 @@ class WorldClass:
                     char_animate_group.clear(self.window.screen, self.window.background)
                     char_animate_group.update(3, 255)
                     char_animate_group.draw(self.window.screen)
+                    self.window.set_text_block(self.window.screen,
+                                               "Lv." + str(monster.base_level) + "   " + monster.mons_zh_name,
+                                               mons_name_pos)
                 self.window.set_text_block(self.window.screen, self.Char_obj.char_name, char_name_pos)
                 self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
                 alpha -= 20
@@ -396,6 +396,7 @@ class WorldClass:
                 if char_dead:
                     self.Char_obj.respawn()
                 self.window.screen.blit(self.window.background.subsurface(rect), rect)  # 清除message_box
+                mons_animate_group.clear(self.window.screen, self.window.background)
                 pygame.display.update()
                 return
 
@@ -408,6 +409,9 @@ class WorldClass:
                     mons_animate_group.clear(self.window.screen, self.window.background)
                     mons_animate_group.update(1, 255)
                     mons_animate_group.draw(self.window.screen)
+                    self.window.set_text_block(self.window.screen,
+                                               "Lv." + str(monster.base_level) + "   " + monster.mons_zh_name,
+                                               mons_name_pos)
                 self.window.set_text_block(self.window.screen, self.Char_obj.char_name, char_name_pos)
                 self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
                 self.window.set_status_window(self.Char_obj)
