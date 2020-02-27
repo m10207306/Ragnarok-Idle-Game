@@ -14,6 +14,7 @@ Font_size = 12
 class WindowClass:
     def __init__(self):
         pygame.init()
+        logo = pygame.image.load(os.path.join("BG_Image", "logo.png"))
         pygame.display.set_icon(logo)
         pygame.display.set_caption("Ragnarok Idle")
         pygame.mouse.set_visible(False)
