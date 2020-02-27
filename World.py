@@ -1,5 +1,5 @@
-import os, math, random                                     # Built-in Library
-import Character, Battle_Utility, Map_Database              # 自己的Code
+import os, math, random                                     # Python Built-in Library
+import Character, Animate_Utility, Map_Database             # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
 
@@ -12,56 +12,11 @@ Yellow = (255, 222, 0)
 
 
 class WorldClass:
-    def __init__(self, window_screen):
+    def __init__(self, window_screen, name, ini_ability):
         self.window = window_screen
         self.current_pos = None
         self.attack_fps = 60
-        self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
-        # 清理背景跟重置背景
-        rect = self.window.set_message_box(self.window.background.get_rect().center, ["請輸入角色名稱: (英文)"])
-        # return message box 的 rect address
-        name = ""
-        while name == "":
-            name = self.window.get_cmd(Black, pygame.Rect(rect.center[0] - 126, rect.center[1] - 11, 252, 22))
-
-        ini_ability = self.initialize_ability(name)         # 設定初始素質
         self.Char_obj = Character.CharacterClass(name, ini_ability)
-
-    def initialize_ability(self, name):
-        str_, agi_, vit_, int_, dex_, luk_ = 5, 5, 5, 5, 5, 5
-        win_sur, rect = self.window.create_ability_initial_win([str_, agi_, vit_, int_, dex_, luk_], name)
-        rect.center = self.window.screen.get_rect().center
-        self.window.screen.blit(win_sur, rect)
-        pygame.display.update()
-        while True:
-            self.window.clock.tick(10)
-            content = self.window.get_key()
-            if content == "s":
-                str_ = str_ + 1 if str_ < 9 else 9
-                int_ = int_ - 1 if int_ > 1 else 1
-            elif content == "a":
-                agi_ = agi_ + 1 if agi_ < 9 else 9
-                luk_ = luk_ - 1 if luk_ > 1 else 1
-            elif content == "v":
-                vit_ = vit_ + 1 if vit_ < 9 else 9
-                dex_ = dex_ - 1 if dex_ > 1 else 1
-            elif content == "i":
-                int_ = int_ + 1 if int_ < 9 else 9
-                str_ = str_ - 1 if str_ > 1 else 1
-            elif content == "d":
-                dex_ = dex_ + 1 if dex_ < 9 else 9
-                vit_ = vit_ - 1 if vit_ > 1 else 1
-            elif content == "l":
-                luk_ = luk_ + 1 if luk_ < 9 else 9
-                agi_ = agi_ - 1 if agi_ > 1 else 1
-            elif content == "esc":
-                str_, agi_, vit_, int_, dex_, luk_ = 5, 5, 5, 5, 5, 5
-            if content is not None:
-                win_sur, _ = self.window.create_ability_initial_win([str_, agi_, vit_, int_, dex_, luk_], name)
-                self.window.screen.blit(win_sur, rect)
-                pygame.display.update()
-            if content == "enter":
-                return [str_, agi_, vit_, int_, dex_, luk_]
 
     def transfer_station(self, map_idx):
         # 轉運站：基本上要切換場景的時候都透過這Function，並且控制背景與BGM
@@ -131,12 +86,12 @@ class WorldClass:
             self.window.set_text_block(self.window.screen, self.Char_obj.char_name,
                                        (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
             self.window.reset_chat_message()
-            self.window.set_chat_window(["嗨, " + self.Char_obj.char_name,
+            self.window.set_chat_window(["Hi, " + self.Char_obj.char_name,
                                          "你的位置在: " + map_data[2],
                                          "按下 [A]ttribute 到人物素質介面",
-                                         "         [I]tem 到物品介面",
-                                         "         [M]ove 地圖移動",
-                                         "         [Esc] 回主畫面"], [Green, Green, Green, Green, Green, Green])
+                                         "     [I]tem      到物品介面",
+                                         "     [M]ove      地圖移動",
+                                         "     [Esc]       回主畫面"], [Green, Green, Green, Green, Green, Green])
             self.window.set_status_window(self.Char_obj)                        # 更新左上角狀態欄
             self.window.create_health_bar(self.window.screen, self.Char_obj,    # 更新hp/sp bar
                                           (self.window.width * 0.4, self.window.height * 0.55 + 50))
@@ -158,7 +113,7 @@ class WorldClass:
         char_name_pos = (char_pos[0], char_pos[1] - 70)
         char_health_bar_pos = (char_pos[0], char_pos[1] + 50)
         char_group = pygame.sprite.Group()
-        char_animate_obj = Battle_Utility.Animate(self.window,
+        char_animate_obj = Animate_Utility.Animate(self.window,
                                                   self.Char_obj.standby_img_path,
                                                   self.Char_obj.standby_img_path,
                                                   self.Char_obj.dead_img_path,
@@ -195,10 +150,10 @@ class WorldClass:
             self.window.create_health_bar(self.window.screen, self.Char_obj, char_health_bar_pos)
             self.window.reset_chat_message()
             self.window.set_chat_window(["你的位置在: " + map_data[2],
-                                         "按 [F]ight 開始戰鬥",
-                                         "     [A]ttribute 人物素質頁面",
-                                         "     [M]ove 地圖移動",
-                                         "     [Esc] 回主畫面"], [Green, Green, Green, Green, Green])
+                                         "按 [F]ight      開始戰鬥",
+                                         "   [A]ttribute  人物素質頁面",
+                                         "   [M]ove       地圖移動",
+                                         "   [Esc]        回主畫面"], [Green, Green, Green, Green, Green])
             self.window.set_status_window(self.Char_obj)
             pygame.display.update()
             count += 1
@@ -219,9 +174,9 @@ class WorldClass:
         char_animate_group = pygame.sprite.Group()
         mons_animate_group = pygame.sprite.Group()
         damage_group = pygame.sprite.Group()
-        Battle_Utility.Damage.AllGroup = damage_group
+        Animate_Utility.Damage.AllGroup = damage_group
 
-        char_animate = Battle_Utility.Animate(self.window,
+        char_animate = Animate_Utility.Animate(self.window,
                                               self.Char_obj.standby_img_path,
                                               self.Char_obj.attack_img_path,
                                               self.Char_obj.dead_img_path,
@@ -231,7 +186,7 @@ class WorldClass:
                                               (mons_pos[0], mons_pos[1] - 110))
         char_animate_group.add(char_animate)
 
-        mons_animate = Battle_Utility.Animate(self.window,
+        mons_animate = Animate_Utility.Animate(self.window,
                                               monster.standby_img_path,
                                               monster.attack_img_path,
                                               monster.dead_img_path,
