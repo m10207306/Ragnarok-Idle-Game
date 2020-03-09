@@ -214,6 +214,7 @@ class PointerAnimate(pygame.sprite.Sprite):
             self.image = self.animate_list[self.ani_count]
             self.ani_count = self.ani_count + 1 if self.ani_count < len(self.animate_list)-1 else 0
         self.frame = self.frame + 1 if self.frame < self.fps_space-1 else 0
+        return self.rect.topleft
 
 
 class ButtonAnimate(pygame.sprite.Sprite):
@@ -223,11 +224,21 @@ class ButtonAnimate(pygame.sprite.Sprite):
         self.image = btn_list[0]
         self.rect = self.image.get_rect()
         self.rect.center = center_pos
+        self.freeze = False                     # 停止反應
 
-    def update(self, btn_type):
-        if btn_type == 1:                       # 正常情況
-            self.image = self.btn_list[0]
-        elif btn_type == 2:                     # 鼠標移上去
-            self.image = self.btn_list[1]
-        elif btn_type == 3:                     # 按下去
-            self.image = self.btn_list[2]
+    def update(self, ptr_topleft, mouse_type):
+        if not self.freeze:                         # 如果freeze了就不該有任何反應(原則上應該會一直保持在正常情況)
+            enter = False
+            if self.rect.collidepoint(ptr_topleft):
+                if len(mouse_type) == 0:            # 鼠標移上去但是沒按
+                    self.image = self.btn_list[1]
+                elif "down" in mouse_type:          # 按下去
+                    self.image = self.btn_list[2]
+                elif "up" in mouse_type or "click" in mouse_type:
+                    self.image = self.btn_list[2]
+                    enter = True
+            else:
+                self.image = self.btn_list[0]       # 正常情況
+            return enter
+        else:
+            return False

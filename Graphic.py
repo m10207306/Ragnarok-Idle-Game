@@ -27,25 +27,28 @@ class WindowClass:
         self.background = pygame.Surface(self.screen.get_size())
         self.font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", Font_size)
         self.clock = pygame.time.Clock()
+        self.miss_template = pygame.image.load(os.path.join("Info_Image", "miss.png")).convert_alpha()
+        self.message_win_template = pygame.image.load(os.path.join("Info_Image", "Win_msgbox.png")).convert_alpha()
+        self.chat_input_template = pygame.image.load(os.path.join("Info_Image", "dialog_bg.png")).convert_alpha()
+        self.status_win_template = pygame.image.load(os.path.join("Info_Image", "basewin_mini.png")).convert_alpha()
+        self.equip_ability_template = pygame.image.load(os.path.join("Info_Image", "equipwin_bg.png")).convert_alpha()
+        self.create_char_template = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
+        self.button_template = pygame.image.load(os.path.join("Info_Image", "txtbox_btn.png")).convert_alpha()
+        self.cri_template = pygame.image.load(os.path.join("Info_Image", "critical.png")).convert_alpha()
         self.damage_template = []
         self.damage_cri_template = []
-        self.miss_template = []
-        self.cri_template = []
         self.pointer_template = []
-        self.txt_win_template = None
-        self.message_win_template = pygame.image.load(os.path.join("Info_Image", "Win_msgbox.png")).convert_alpha()
-        self.equip_ability_template = []
-        self.create_char_template = []
-        self.button_template = []
+        self.txt_win_template = []
         self.btn_ok_template = []
         self.btn_cancel_template = []
         self.btn_ability_template = []
+        self.btn_inter_template = []
         self.load_template_image()
 
     def clear_screen(self):
         self.screen.blit(self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 255), (0, 0))
 
-    def set_bg_image(self, file_path, alpha):
+    def set_bg_image(self, file_path, alpha):       # 更新背景，並儲存背景
         self.clear_screen()
         img = pygame.image.load(file_path).convert_alpha()
         # Resize the surface to new resolution and output to dest_surface
@@ -54,42 +57,29 @@ class WindowClass:
         self.background.set_alpha(alpha)
         self.screen.blit(self.background, (0, 0))
 
-    def set_map_icon(self, file_path):
+    def get_map_icon(self, file_path):          # 產生小地圖
         img = pygame.image.load(file_path).convert_alpha()
         rect = img.get_rect()
-        img2 = pygame.Surface((int(rect.width/2), int(rect.height/2))).convert_alpha()
-        pygame.transform.scale(img, (int(rect.width/2), int(rect.height/2)), img2)
-        rect = img2.get_rect()
-        rect.topright = (self.width, 0)
-        self.screen.blit(img2, rect)
+        return self.get_resize_surface(img, (rect.width//2, rect.height//2))                # 縮小成1/4
 
-    def set_message_box(self, text):
-        # text = ["str1", "str2", "str3" ...]
-        # return rect if message_box
-        img = self.message_win_template.copy()
-        # img.set_colorkey(img.get_at((0, 0)))
-        dest_rect = img.get_rect()
-        color = []
-        for i in range(len(text)):
-            color.append(Black)
-        self.set_text(img, text, color, (dest_rect.width * 0.05, dest_rect.height * 0.20))
-        return img
+    def get_resize_surface(self, img1, target_size):
+        img2 = pygame.Surface(target_size).convert_alpha()
+        pygame.transform.scale(img1, target_size, img2)
+        return img2
 
-    # def set_message_box(self, center_pos, text):
+    # def set_message_box(self, text):            # 原本預設的一個系統視窗，現在不用了
     #     # text = ["str1", "str2", "str3" ...]
     #     # return rect if message_box
-    #     img = pygame.image.load(os.path.join("Info_Image", "Win_msgbox.png")).convert_alpha()
+    #     img = self.message_win_template.copy()
     #     # img.set_colorkey(img.get_at((0, 0)))
     #     dest_rect = img.get_rect()
     #     color = []
     #     for i in range(len(text)):
     #         color.append(Black)
     #     self.set_text(img, text, color, (dest_rect.width * 0.05, dest_rect.height * 0.20))
-    #     dest_rect.center = center_pos
-    #     rect = self.screen.blit(img, dest_rect)
-    #     return rect
+    #     return img
 
-    def set_text(self, surface, text, color, offset):
+    def set_text(self, surface, text, color, offset):       # 在輸入的Surface上畫上文字，並且如果文字太長會自動換行
         # It seems that surface needs always be converted
         # offset = (width_offset, height_offset)
         # color = (R, G, B)
@@ -119,101 +109,104 @@ class WindowClass:
         rect = self.screen.blit(surface, rect)
         return rect
 
-    def get_cmd(self, background_color, rect):
-        # return cmd when enter pressed, or return "" when esc pressed
-        self.set_block(background_color, rect)
-        pygame.display.update()
-        cmd = ""
-        while True:
-            self.clock.tick(self.fps)
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:     # delete final char
-                        cmd = cmd[:-1]
-                    elif event.key == pygame.K_RETURN:      # return current cmd
-                        self.set_block(Black, rect)
-                        return cmd
-                    elif event.key == pygame.K_ESCAPE:      # reset current cmd and clear block
-                        cmd = ""
-                        self.set_block(Black, rect)
-                    else:
-                        if len(cmd) < 12:                   # 考慮到status window，限制只能輸入12個字
-                            cmd += event.unicode
-                    self.set_block(Black, rect)
-                    text_surface = pygame.Surface(rect.size)
-                    self.set_text(text_surface, [cmd], [White], (3, 3))
-                    self.screen.blit(text_surface, rect)
-                    pygame.display.update()
+    # def get_cmd(self, background_color, rect):
+    #     # return cmd when enter pressed, or return "" when esc pressed
+    #     self.set_block(background_color, rect)
+    #     pygame.display.update()
+    #     cmd = ""
+    #     while True:
+    #         self.clock.tick(self.fps)
+    #         for event in pygame.event.get():
+    #             if event.type == pygame.KEYDOWN:
+    #                 if event.key == pygame.K_BACKSPACE:     # delete final char
+    #                     cmd = cmd[:-1]
+    #                 elif event.key == pygame.K_RETURN:      # return current cmd
+    #                     self.set_block(Black, rect)
+    #                     return cmd
+    #                 elif event.key == pygame.K_ESCAPE:      # reset current cmd and clear block
+    #                     cmd = ""
+    #                     self.set_block(Black, rect)
+    #                 else:
+    #                     if len(cmd) < 12:                   # 考慮到status window，限制只能輸入12個字
+    #                         cmd += event.unicode
+    #                 self.set_block(Black, rect)
+    #                 text_surface = pygame.Surface(rect.size)
+    #                 self.set_text(text_surface, [cmd], [White], (3, 3))
+    #                 self.screen.blit(text_surface, rect)
+    #                 pygame.display.update()
 
-    def set_chat_window(self, content, color, bg = None):
+    def get_chat_win(self, content, color):      # 創造聊天室
         # content = ["str1", "str2", ...]
         # can store 15 lines content
-        size = (680, 235)
+        size = (600, 235)
         line_limit = 15
-        if not len(self.chat_message) < line_limit:
-            self.chat_message.pop(-1)                            # remove first element
-        self.chat_message = content + self.chat_message         # concatenate 2 list, keep 17 elements in list
+        self.chat_message = content + self.chat_message  # concatenate 2 list, keep 15 elements in list
         self.chat_color = color + self.chat_color
-        chat_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
+        while not len(self.chat_message) < line_limit:
+            self.chat_message.pop(-1)                           # 刪除最舊的訊息
+            self.chat_color.pop(-1)
+        chat_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1])).copy()
+        chat_ground_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
+        chat_bg.blit(chat_ground_surface, (0, 0))
+        self.set_text(chat_bg, self.chat_message, self.chat_color, (0, 0))
+        return chat_bg
 
-        text_surface = pygame.Surface(size)
-        self.set_text(text_surface, self.chat_message, self.chat_color, (0, 0))
-        text_surface.set_colorkey(Black)
-        text_surface.convert()
-        sub_bg = None
-        if bg is None:
-            sub_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
-        else:
-            sub_bg = bg.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
-        self.screen.blit(sub_bg, (0, self.height - size[1]))
-        self.screen.blit(chat_surface, (0, self.height - size[1]))
-        self.screen.blit(text_surface, (0, self.height - size[1]))
+    # def get_chat_window(self, content, color, bg = None):
+    #     # content = ["str1", "str2", ...]
+    #     # can store 15 lines content
+    #     size = (680, 235)
+    #     line_limit = 15
+    #     if not len(self.chat_message) < line_limit:
+    #         self.chat_message.pop(-1)                            # remove first element
+    #     self.chat_message = content + self.chat_message         # concatenate 2 list, keep 17 elements in list
+    #     self.chat_color = color + self.chat_color
+    #     chat_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
+    #
+    #     text_surface = pygame.Surface(size)
+    #     self.set_text(text_surface, self.chat_message, self.chat_color, (0, 0))
+    #     text_surface.set_colorkey(Black)
+    #     text_surface.convert()
+    #     sub_bg = None
+    #     if bg is None:
+    #         sub_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
+    #     else:
+    #         sub_bg = bg.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
+    #     self.screen.blit(sub_bg, (0, self.height - size[1]))
+    #     self.screen.blit(chat_surface, (0, self.height - size[1]))
+    #     self.screen.blit(text_surface, (0, self.height - size[1]))
 
-    def set_status_window(self, char_obj):
+    def get_status_win(self, char_obj): # 創造人物基本資訊視窗
         # char_obj = Character Class Object
-        img = pygame.image.load(os.path.join("Info_Image", "basewin_mini.png")).convert_alpha()
-        # img.set_colorkey(img.get_at((0, 0)))        # Turn the default purple to transparent (need convert() first)
+        img = self.status_win_template.copy()
         img = self.set_status_text(img, char_obj)
-        self.screen.blit(img, (0, 0))
+        return img
 
-    def reset_chat_message(self):
+    def reset_chat_message(self):       # 清空聊天室的聊天內容
         self.chat_message = []
         self.chat_color = []
 
-    def set_sit_char(self, sit_image_path, pos):
-        img = pygame.image.load(sit_image_path).convert_alpha()
-        width, height = img.get_size()
-        rect = pygame.Rect(0, 0, width, height)
-        rect.center = pos
-        self.screen.blit(img, rect)
+    # def set_sit_char(self, sit_image_path, pos):
+    #     img = pygame.image.load(sit_image_path).convert_alpha()
+    #     width, height = img.get_size()
+    #     rect = pygame.Rect(0, 0, width, height)
+    #     rect.center = pos
+    #     self.screen.blit(img, rect)
 
-    def load_template_image(self):
-        self.equip_ability_template = pygame.image.load(os.path.join("Info_Image", "equipwin_bg.png")).convert_alpha()
-        self.create_char_template = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
-        self.button_template = pygame.image.load(os.path.join("Info_Image", "txtbox_btn.png")).convert_alpha()
-        damage_img = pygame.image.load(os.path.join("Info_Image", "damage.png")).convert_alpha()
-        damage_cri_img = pygame.image.load(os.path.join("Info_Image", "damage_Critical.png")).convert_alpha()
-        pointer_img = pygame.image.load(os.path.join("Info_Image", "pointer.png")).convert_alpha()
-        self.miss_template = pygame.image.load(os.path.join("Info_Image", "miss.png")).convert_alpha()
-        self.cri_template = pygame.image.load(os.path.join("Info_Image", "critical.png")).convert_alpha()
+    def load_template_image(self):      # 載入影像，通常是需要做些處理或是格式安排的部分才放在這
         self.txt_win_template = \
         [
             [pygame.image.load(os.path.join("Info_Image", "titlebar_left.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "titlebar_mid.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "titlebar_right.png")).convert_alpha()],
-
             [pygame.image.load(os.path.join("Info_Image", "txtbox_lu.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "txtbox_mu.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "txtbox_ru.png")).convert_alpha()],
-
             [pygame.image.load(os.path.join("Info_Image", "txtbox_lm.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "txtbox_mm.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "txtbox_rm.png")).convert_alpha()],
-
             [pygame.image.load(os.path.join("Info_Image", "txtbox_ld.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "txtbox_md.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "txtbox_rd.png")).convert_alpha()],
-
             [pygame.image.load(os.path.join("Info_Image", "btnbar_left.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "btnbar_mid.png")).convert_alpha(),
              pygame.image.load(os.path.join("Info_Image", "btnbar_right.png")).convert_alpha()]
@@ -225,6 +218,32 @@ class WindowClass:
         self.btn_cancel_template = [pygame.image.load(os.path.join("Info_Image", "btn_cancel.png")).convert_alpha(),
                                     pygame.image.load(os.path.join("Info_Image", "btn_cancel_a.png")).convert_alpha(),
                                     pygame.image.load(os.path.join("Info_Image", "btn_cancel_b.png")).convert_alpha()]
+        self.btn_inter_template = [
+                                    [pygame.image.load(os.path.join("Info_Image", "btn_battle_1.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_battle_2.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_battle_3.png")).convert_alpha()],
+                                    [pygame.image.load(os.path.join("Info_Image", "btn_equip_1.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_equip_2.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_equip_3.png")).convert_alpha()],
+                                    [pygame.image.load(os.path.join("Info_Image", "btn_info_1.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_info_2.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_info_3.png")).convert_alpha()],
+                                    [pygame.image.load(os.path.join("Info_Image", "btn_item_1.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_item_2.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_item_3.png")).convert_alpha()],
+                                    [pygame.image.load(os.path.join("Info_Image", "btn_map_1.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_map_2.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_map_3.png")).convert_alpha()],
+                                    [pygame.image.load(os.path.join("Info_Image", "btn_skill_1.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_skill_2.png")).convert_alpha(),
+                                     pygame.image.load(os.path.join("Info_Image", "btn_skill_3.png")).convert_alpha()]
+                                  ]
+        # 把每個Button送進去resize，然後長寬各乘2倍
+        self.btn_inter_template = \
+            [[self.get_resize_surface(j, [k*2 for k in j.get_size()]) for j in i] for i in self.btn_inter_template]
+        damage_img = pygame.image.load(os.path.join("Info_Image", "damage.png")).convert_alpha()
+        damage_cri_img = pygame.image.load(os.path.join("Info_Image", "damage_Critical.png")).convert_alpha()
+        pointer_img = pygame.image.load(os.path.join("Info_Image", "pointer.png")).convert_alpha()
         damage_width = 10
         damage_height = 13
         ptr_width = 22
@@ -235,31 +254,49 @@ class WindowClass:
         for i in range(1, 30):
             self.pointer_template.append(pointer_img.subsurface(pygame.Rect((i-1) * ptr_width, 0, ptr_width, ptr_height)))
 
-    def set_text_block(self, surface, text, center_pos):
+    def get_text_block(self, text, center_pos):     # 用於一塊底色(半透明)+文字的Surface
         text_surface = self.font.render(text, True, White)
         rect1 = text_surface.get_rect()
-        rect1.center = center_pos
         text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
         rect2 = text_base.get_rect()
         rect2.center = center_pos
-        surface.blit(self.background.subsurface(rect2), rect2)
-        surface.blit(text_base, rect2)
-        surface.blit(text_surface, rect1)
-        return rect2
+        bg = self.background.subsurface(rect2).copy()
+        rect1.center = bg.get_rect().center
+        bg.blit(text_base, (0, 0))
+        bg.blit(text_surface, rect1)
+        return bg
+
+    # def get_text_block(self, text):     # 用於一塊底色(半透明)+文字的Surface
+    #     text_surface = self.font.render(text, True, White)
+    #     rect1 = text_surface.get_rect()
+    #     text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
+    #     return text_base, text_surface
+
+    # def set_text_block(self, surface, text, center_pos):
+    #     text_surface = self.font.render(text, True, White)
+    #     rect1 = text_surface.get_rect()
+    #     rect1.center = center_pos
+    #     text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
+    #     rect2 = text_base.get_rect()
+    #     rect2.center = center_pos
+    #     surface.blit(self.background.subsurface(rect2), rect2)
+    #     surface.blit(text_base, rect2)
+    #     surface.blit(text_surface, rect1)
+    #     return rect2
 
     def interlude_black_window(self):       # 漸黑屏轉場
         count = 1
         black_sur = self.create_color_surface(Black, pygame.Rect(0, 0, self.width, self.height), 40)
         while True:
             self.clock.tick(self.fps)
-            self.get_key()
+            self.input_detect()         # 有點不確定為什麼沒有這行就會有問題
             if count > 25:
                 break
             self.screen.blit(black_sur, (0, 0))
             pygame.display.update()
             count += 1
 
-    def create_ability_initial_win(self, ability):
+    def create_ability_initial_win(self, ability):      # 創角初始素質的介面
         return_sur = self.create_char_template.copy()
         stand_char = pygame.image.load(os.path.join("Char_Image", "Novice", "Stand.png")).convert_alpha()
         rect = stand_char.get_rect()
@@ -336,7 +373,7 @@ class WindowClass:
         # return_sur.blit(self.font.render(name, True, Black), (65, 245))
         return return_sur
 
-    def create_equip_ability_win(self, char_obj):
+    def create_equip_ability_win(self, char_obj):       # 裝備+素質狀態的介面
         font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 10)
         attribute = char_obj.attribute
         return_sur = self.equip_ability_template.copy()
@@ -402,7 +439,7 @@ class WindowClass:
         return_sur.blit(sur, rect)
         return return_sur, return_sur.get_rect()
 
-    def generate_txt_win(self, width_px, height_px):  # 原則上輸入的最小尺寸應胎是60 x 60
+    def generate_txt_win(self, width_px, height_px):  # 創造客製化尺寸的系統視窗文字區域，原則上輸入的最小尺寸應胎是60 x 60
         txt_width = 20      # 分割模板的尺寸
         txt_height = 20
 
@@ -429,7 +466,7 @@ class WindowClass:
                 win.blit(self.txt_win_template[height_type][width_type], (j * txt_width, i * txt_height))
         return win
 
-    def generate_titlebar(self, width_px):
+    def generate_titlebar(self, width_px):          # 創造客製化尺寸的系統視窗的上方Bar與下方Button Bar
         titlebar_width = 20
         titlebar_height = 17
         btnbar_width = 20
@@ -458,8 +495,8 @@ class WindowClass:
         return sur, sur.get_rect()
 
     @staticmethod
-    def create_health_bar(surface, char_obj, center_pos):
-        hp_ratio = math.floor(char_obj.hp / char_obj.attribute.max_hp * 100 / 2)    # 0 - 100 整數
+    def get_health_bar(char_obj):               # 創造HP/SP Bar
+        hp_ratio = math.floor(char_obj.hp / char_obj.attribute.max_hp * 100 / 2)  # 0 - 100 整數
         sp_ratio = math.floor(char_obj.sp / char_obj.attribute.max_sp * 100 / 2)
         hp_color = (13, 242, 39)
         sp_color = (9, 90, 219)
@@ -470,18 +507,16 @@ class WindowClass:
         bar_surface.fill(empty_color)
 
         if hp_ratio > 0:
-            hp_bar = pygame.Surface((hp_ratio, height/2)).convert()
+            hp_bar = pygame.Surface((hp_ratio, height / 2)).convert()
             hp_bar.fill(hp_color)
             bar_surface.blit(hp_bar, (0, 0))
         if sp_ratio > 0:
-            sp_bar = pygame.Surface((sp_ratio, height/2)).convert()
+            sp_bar = pygame.Surface((sp_ratio, height / 2)).convert()
             sp_bar.fill(sp_color)
-            bar_surface.blit(sp_bar, (0, height/2))
+            bar_surface.blit(sp_bar, (0, height / 2))
 
         pygame.draw.rect(bar_surface, border_color, (0, 0, width, height), 1)
-        rect = bar_surface.get_rect()
-        rect.center = center_pos
-        surface.blit(bar_surface, rect)
+        return bar_surface
 
     @staticmethod
     def create_transparent_surface(width, height):
@@ -521,27 +556,6 @@ class WindowClass:
         pygame.mixer.init()
         pygame.mixer.music.load(path)
         pygame.mixer.music.play(loops = -1)
-
-    @staticmethod
-    def get_key():
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    return "esc"
-                elif event.key == pygame.K_RETURN:
-                    return "enter"
-                elif event.key == pygame.K_BACKSPACE:
-                    return "backspace"
-                elif event.key == pygame.K_UP:
-                    return "up"
-                elif event.key == pygame.K_DOWN:
-                    return "down"
-                elif event.key == pygame.K_LEFT:
-                    return "left"
-                elif event.key == pygame.K_RIGHT:
-                    return "right"
-                else:
-                    return event.unicode
 
     @staticmethod
     def input_detect():

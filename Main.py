@@ -25,29 +25,25 @@ class Ragnarok:
         black_surf = pygame.Surface(self.window.background.get_size())
         black_surf.fill((0, 0, 0))
 
-        info_group = pygame.sprite.Group()
-        text_group = pygame.sprite.Group()
-        btn_group = pygame.sprite.Group()
-        ptr_group = pygame.sprite.Group()
-        txt_win = self.window.generate_txt_win(300, 200)
+        info_group, text_group, btn_group, ptr_group = pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group()
+        txt_win = self.window.generate_txt_win(300, 150)
         title_bar, btn_bar = self.window.generate_titlebar(300)
         self.window.set_text(title_bar, ["選擇遊戲伺服器"], [Black], (15, 0))
         window_center = self.window.background.get_rect().center
 
-        info_group.add(Animate_Utility.InfoWindowAnimate(txt_win, self.window.background.get_rect().center))
+        info_group.add(Animate_Utility.InfoWindowAnimate(txt_win, [window_center[0], window_center[1] + 20]))
         str1 = " 開始新遊戲 - 9487人                          "
-        text_group.add(Animate_Utility.TextAnimate(self.window.font.render(str1, True, Black), str1, (window_center[0] - txt_win.get_size()[0] / 2 + 12, window_center[1] - txt_win.get_size()[1] / 2 + 5)))
+        text_group.add(Animate_Utility.TextAnimate(self.window.font.render(str1, True, Black), str1, (window_center[0] - txt_win.get_size()[0] / 2 + 12, window_center[1] - txt_win.get_size()[1] / 2 + 25)))
         str2 = " 載入舊檔 - 9527人                            "
-        text_group.add(Animate_Utility.TextAnimate(self.window.font.render(str2, True, Black), str2, (window_center[0] - txt_win.get_size()[0] / 2 + 12, window_center[1] - txt_win.get_size()[1] / 2 + 22)))
+        text_group.add(Animate_Utility.TextAnimate(self.window.font.render(str2, True, Black), str2, (window_center[0] - txt_win.get_size()[0] / 2 + 12, window_center[1] - txt_win.get_size()[1] / 2 + 42)))
         str3 = " 離開遊戲 - 0人                               "
-        text_group.add(Animate_Utility.TextAnimate(self.window.font.render(str3, True, Black), str3, (window_center[0] - txt_win.get_size()[0] / 2 + 12, window_center[1] - txt_win.get_size()[1] / 2 + 39)))
-        btn_group.add(Animate_Utility.ButtonAnimate(self.window.btn_ok_template, (window_center[0] + txt_win.get_size()[0] / 2 - 32, window_center[1] + txt_win.get_size()[1] / 2 + 14)))
+        text_group.add(Animate_Utility.TextAnimate(self.window.font.render(str3, True, Black), str3, (window_center[0] - txt_win.get_size()[0] / 2 + 12, window_center[1] - txt_win.get_size()[1] / 2 + 59)))
+        btn_group.add(Animate_Utility.ButtonAnimate(self.window.btn_ok_template, (window_center[0] + txt_win.get_size()[0] / 2 - 32, window_center[1] + txt_win.get_size()[1] / 2 + 34)))
         ptr_group.add(Animate_Utility.PointerAnimate(self.window.pointer_template, pygame.mouse.get_pos(), 7))
 
         opt_select = None
         while True:
             self.window.clock.tick(self.window.fps)
-            enter = None
             key, key_type, mouse, mouse_type = self.window.input_detect()
             if "escape" in key:
                 return False
@@ -58,7 +54,6 @@ class Ragnarok:
 
             info_group.update(None, None)
             ptr_group.update(pygame.mouse.get_pos())
-
             ptr_tip_pos = ptr_group.sprites()[0].rect.topleft               # 因為mouse.get_pos不等於系統中滑鼠的尖端，所以要用這比較迂迴的方法
 
             for idx, text in enumerate(text_group):
@@ -70,17 +65,10 @@ class Ragnarok:
                     for text2 in group2:                                    # 如果有其中一個sprite被按下，其他的要reset背景色
                         text2.update(self.window.font.render(text2.text, True, Black), text2.text, None)
 
-            if len(mouse_type) == 0 and btn_group.sprites()[0].rect.collidepoint(ptr_tip_pos):  # 滑鼠在按鍵上，但是沒按
-                btn_group.update(2)
-            elif "down" in mouse_type and btn_group.sprites()[0].rect.collidepoint(ptr_tip_pos):     # 滑鼠按下按鍵
-                btn_group.update(3)
-            elif ("up" in mouse_type or "click" in mouse_type) and btn_group.sprites()[0].rect.collidepoint(ptr_tip_pos):               # 滑鼠在按鍵上放開
-                enter = True
-            else:
-                btn_group.update(1)
+            enter = btn_group.sprites()[0].update(ptr_tip_pos, mouse_type)
 
-            self.window.screen.blit(title_bar, (window_center[0] - txt_win.get_size()[0] / 2, window_center[1] - txt_win.get_size()[1]/2 - 17))
-            self.window.screen.blit(btn_bar, (window_center[0] - txt_win.get_size()[0] / 2, window_center[1] + txt_win.get_size()[1]/2))
+            self.window.screen.blit(title_bar, (window_center[0] - txt_win.get_size()[0] / 2, window_center[1] - txt_win.get_size()[1]/2 + 3))
+            self.window.screen.blit(btn_bar, (window_center[0] - txt_win.get_size()[0] / 2, window_center[1] + txt_win.get_size()[1]/2 + 20))
             info_group.draw(self.window.screen)
             text_group.draw(self.window.screen)
             btn_group.draw(self.window.screen)
@@ -90,7 +78,6 @@ class Ragnarok:
             if opt_select == 0 and enter:
                 name, ability_list = self.initialize_ability()
                 world_obj = World.WorldClass(self.window, name, ability_list)
-                self.window.interlude_black_window()
                 world_obj.transfer_station(0)       # 預設前往普隆德拉
                 print(">> Create Character")
                 return True
@@ -109,24 +96,26 @@ class Ragnarok:
         black_surf = pygame.Surface(self.window.screen.get_size())
         black_surf.fill(Black)
         name_topleft = (288, 457)
-        str_btn = [pygame.image.load(os.path.join("Info_Image", "arw-str0.png")).convert_alpha(), None,
-                   pygame.image.load(os.path.join("Info_Image", "arw-str1.png")).convert_alpha()]
-        agi_btn = [pygame.image.load(os.path.join("Info_Image", "arw-agi0.png")).convert_alpha(), None,
-                   pygame.image.load(os.path.join("Info_Image", "arw-agi1.png")).convert_alpha()]
-        vit_btn = [pygame.image.load(os.path.join("Info_Image", "arw-vit0.png")).convert_alpha(), None,
-                   pygame.image.load(os.path.join("Info_Image", "arw-vit1.png")).convert_alpha()]
-        dex_btn = [pygame.image.load(os.path.join("Info_Image", "arw-dex0.png")).convert_alpha(), None,
-                   pygame.image.load(os.path.join("Info_Image", "arw-dex1.png")).convert_alpha()]
-        int_btn = [pygame.image.load(os.path.join("Info_Image", "arw-int0.png")).convert_alpha(), None,
-                   pygame.image.load(os.path.join("Info_Image", "arw-int1.png")).convert_alpha()]
-        luk_btn = [pygame.image.load(os.path.join("Info_Image", "arw-luk0.png")).convert_alpha(), None,
-                   pygame.image.load(os.path.join("Info_Image", "arw-luk1.png")).convert_alpha()]
+        str_btn = [pygame.image.load(os.path.join("Info_Image", "arw-str0.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-str1.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-str2.png")).convert_alpha()]
+        agi_btn = [pygame.image.load(os.path.join("Info_Image", "arw-agi0.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-agi1.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-agi2.png")).convert_alpha()]
+        vit_btn = [pygame.image.load(os.path.join("Info_Image", "arw-vit0.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-vit1.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-vit2.png")).convert_alpha()]
+        dex_btn = [pygame.image.load(os.path.join("Info_Image", "arw-dex0.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-dex1.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-dex2.png")).convert_alpha()]
+        int_btn = [pygame.image.load(os.path.join("Info_Image", "arw-int0.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-int1.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-int2.png")).convert_alpha()]
+        luk_btn = [pygame.image.load(os.path.join("Info_Image", "arw-luk0.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-luk1.png")).convert_alpha(),
+                   pygame.image.load(os.path.join("Info_Image", "arw-luk2.png")).convert_alpha()]
 
-        info_group = pygame.sprite.Group()
-        text_group = pygame.sprite.Group()
-        ptr_group = pygame.sprite.Group()
-        btn_group = pygame.sprite.Group()
-        ability_btn_group = pygame.sprite.Group()
+        info_group, text_group, ptr_group, btn_group, ability_btn_group = pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group()
 
         info_group.add(Animate_Utility.InfoWindowAnimate(win_sur, self.window.screen.get_rect().center))
         text_group.add(Animate_Utility.TextAnimate(self.window.font.render("Key in", True, Black), "Key in", name_topleft))
@@ -143,7 +132,6 @@ class Ragnarok:
         name = "Key in"
         while True:
             self.window.clock.tick(60)
-            enter = None
             key, key_id, mouse, mouse_type = self.window.input_detect()
             if "escape" in key:
                 return False
@@ -168,23 +156,13 @@ class Ragnarok:
 
             text_group.update(self.window.font.render(name, True, Black), name, name_topleft)
             for idx, abi_btn in enumerate(ability_btn_group.sprites()):
-                if ("click" in mouse_type or "down" in mouse_type) and abi_btn.rect.collidepoint(ptr_tip_pos):
-                    abi_btn.update(3)
+                if abi_btn.update(ptr_tip_pos, mouse_type):
                     ability_list[idx] = ability_list[idx] + 1 if ability_list[idx] < 9 else 9
                     ability_list[5-idx] = ability_list[5-idx] - 1 if ability_list[5-idx] > 1 else 1
-                else:
-                    abi_btn.update(1)
             win_sur = self.window.create_ability_initial_win(ability_list)
             info_group.update(win_sur, None)
 
-            if len(mouse_type) == 0 and btn_group.sprites()[0].rect.collidepoint(ptr_tip_pos):  # 滑鼠在按鍵上，但是沒按
-                btn_group.update(2)
-            elif "down" in mouse_type and btn_group.sprites()[0].rect.collidepoint(ptr_tip_pos):     # 滑鼠按下按鍵
-                btn_group.update(3)
-            elif ("up" in mouse_type or "click" in mouse_type) and btn_group.sprites()[0].rect.collidepoint(ptr_tip_pos):               # 滑鼠在按鍵上放開
-                enter = True
-            else:
-                btn_group.update(1)
+            enter = btn_group.sprites()[0].update(ptr_tip_pos, mouse_type)
 
             info_group.draw(self.window.screen)
             text_group.draw(self.window.screen)
