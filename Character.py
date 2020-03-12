@@ -1,4 +1,6 @@
 import os, math
+os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
+import pygame                                       # 3rd party Library
 import Attribute, Monster_Database
 
 
@@ -35,6 +37,18 @@ class CharacterClass:
         self.standby_img_path = os.path.join("Char_Image", self.job_name, "Standby_Dagger.png")
         self.attack_img_path = os.path.join("Char_Image", self.job_name, "Attack_Dagger.png")
         self.dead_img_path = os.path.join("Char_Image", self.job_name, "Dead.png")
+
+        self.sit_img = pygame.image.load(self.sit_img_path).convert_alpha()
+        self.stand_img = pygame.image.load(self.stand_img_path).convert_alpha()
+        self.dead_img = pygame.image.load(self.dead_img_path).convert_alpha()
+        self.standby_img = []
+        self.attack_img = []
+        img1 = pygame.image.load(self.standby_img_path).convert_alpha()
+        img2 = pygame.image.load(self.attack_img_path).convert_alpha()
+        width, height = 200, 200
+        for i in range(1, img1.get_size()[0] // width):
+            self.standby_img.append(img1.subsurface(pygame.Rect((i-1) * width, 0, width, height)))
+            self.attack_img.append(img2.subsurface(pygame.Rect((i - 1) * width, 0, width, height)))
 
     def get_exp(self, base_exp, job_exp):
         if self.base_level < 99:        # 確認是否階段性滿等

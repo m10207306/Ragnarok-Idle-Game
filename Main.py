@@ -20,7 +20,7 @@ class Ragnarok:
             idx = self.standby()
 
     def standby(self):
-        # fps大概58-60
+        # fps大概53-62
         self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
         black_surf = pygame.Surface(self.window.background.get_size())
         black_surf.fill((0, 0, 0))
@@ -42,8 +42,10 @@ class Ragnarok:
         ptr_group.add(Animate_Utility.PointerAnimate(self.window.pointer_template, pygame.mouse.get_pos(), 7))
 
         opt_select = None
+        fps_list = []
         while True:
             self.window.clock.tick(self.window.fps)
+            fps_list.append(self.window.clock.get_fps())
             key, key_type, mouse, mouse_type = self.window.input_detect()
             if "escape" in key:
                 return False
@@ -76,9 +78,12 @@ class Ragnarok:
             pygame.display.update()
 
             if opt_select == 0 and enter:
+                print("Menu Stage")
+                self.window.fps_analysis(fps_list)
                 name, ability_list = self.initialize_ability()
                 world_obj = World.WorldClass(self.window, name, ability_list)
                 world_obj.transfer_station(0)       # 預設前往普隆德拉
+                self.window.reset_chat_message()    # 如果走到這邊代表已經退出遊戲，需要清除聊天框內的訊息
                 print(">> Create Character")
                 return True
             elif opt_select == 1 and enter:
@@ -130,8 +135,10 @@ class Ragnarok:
         ability_btn_group.add(Animate_Utility.ButtonAnimate(int_btn, (str_pos[0],      str_pos[1] + 200)))
 
         name = "Key in"
+        fps_list = []
         while True:
             self.window.clock.tick(60)
+            fps_list.append(self.window.clock.get_fps())
             key, key_id, mouse, mouse_type = self.window.input_detect()
             if "escape" in key:
                 return False
@@ -173,6 +180,8 @@ class Ragnarok:
             pygame.display.update()
 
             if enter:
+                print("Ability Initialization")
+                self.window.fps_analysis(fps_list)
                 return name, ability_list
 
 

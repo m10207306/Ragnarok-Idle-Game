@@ -33,7 +33,6 @@ class WindowClass:
         self.status_win_template = pygame.image.load(os.path.join("Info_Image", "basewin_mini.png")).convert_alpha()
         self.equip_ability_template = pygame.image.load(os.path.join("Info_Image", "equipwin_bg.png")).convert_alpha()
         self.create_char_template = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
-        self.button_template = pygame.image.load(os.path.join("Info_Image", "txtbox_btn.png")).convert_alpha()
         self.cri_template = pygame.image.load(os.path.join("Info_Image", "critical.png")).convert_alpha()
         self.damage_template = []
         self.damage_cri_template = []
@@ -43,6 +42,7 @@ class WindowClass:
         self.btn_cancel_template = []
         self.btn_ability_template = []
         self.btn_inter_template = []
+        self.btn_r_arw_template = []
         self.load_template_image()
 
     def clear_screen(self):
@@ -57,27 +57,18 @@ class WindowClass:
         self.background.set_alpha(alpha)
         self.screen.blit(self.background, (0, 0))
 
-    def get_map_icon(self, file_path):          # 產生小地圖
+    def get_map_icon(self, file_path):          # 產生小地圖(半透明)
         img = pygame.image.load(file_path).convert_alpha()
         rect = img.get_rect()
-        return self.get_resize_surface(img, (rect.width//2, rect.height//2))                # 縮小成1/4
+        img2 = pygame.Surface((rect.width//2, rect.height//2)).convert()
+        img2.set_alpha(200)
+        pygame.transform.scale(img, (rect.width//2, rect.height//2), img2)
+        return img2
 
     def get_resize_surface(self, img1, target_size):
         img2 = pygame.Surface(target_size).convert_alpha()
         pygame.transform.scale(img1, target_size, img2)
         return img2
-
-    # def set_message_box(self, text):            # 原本預設的一個系統視窗，現在不用了
-    #     # text = ["str1", "str2", "str3" ...]
-    #     # return rect if message_box
-    #     img = self.message_win_template.copy()
-    #     # img.set_colorkey(img.get_at((0, 0)))
-    #     dest_rect = img.get_rect()
-    #     color = []
-    #     for i in range(len(text)):
-    #         color.append(Black)
-    #     self.set_text(img, text, color, (dest_rect.width * 0.05, dest_rect.height * 0.20))
-    #     return img
 
     def set_text(self, surface, text, color, offset):       # 在輸入的Surface上畫上文字，並且如果文字太長會自動換行
         # It seems that surface needs always be converted
@@ -109,71 +100,21 @@ class WindowClass:
         rect = self.screen.blit(surface, rect)
         return rect
 
-    # def get_cmd(self, background_color, rect):
-    #     # return cmd when enter pressed, or return "" when esc pressed
-    #     self.set_block(background_color, rect)
-    #     pygame.display.update()
-    #     cmd = ""
-    #     while True:
-    #         self.clock.tick(self.fps)
-    #         for event in pygame.event.get():
-    #             if event.type == pygame.KEYDOWN:
-    #                 if event.key == pygame.K_BACKSPACE:     # delete final char
-    #                     cmd = cmd[:-1]
-    #                 elif event.key == pygame.K_RETURN:      # return current cmd
-    #                     self.set_block(Black, rect)
-    #                     return cmd
-    #                 elif event.key == pygame.K_ESCAPE:      # reset current cmd and clear block
-    #                     cmd = ""
-    #                     self.set_block(Black, rect)
-    #                 else:
-    #                     if len(cmd) < 12:                   # 考慮到status window，限制只能輸入12個字
-    #                         cmd += event.unicode
-    #                 self.set_block(Black, rect)
-    #                 text_surface = pygame.Surface(rect.size)
-    #                 self.set_text(text_surface, [cmd], [White], (3, 3))
-    #                 self.screen.blit(text_surface, rect)
-    #                 pygame.display.update()
-
     def get_chat_win(self, content, color):      # 創造聊天室
         # content = ["str1", "str2", ...]
         # can store 15 lines content
-        size = (600, 235)
-        line_limit = 15
-        self.chat_message = content + self.chat_message  # concatenate 2 list, keep 15 elements in list
-        self.chat_color = color + self.chat_color
+        size = (600, 221)
+        line_limit = 12
+        self.chat_message = self.chat_message + content  # concatenate 2 list, keep 15 elements in list
+        self.chat_color = self.chat_color + color
         while not len(self.chat_message) < line_limit:
-            self.chat_message.pop(-1)                           # 刪除最舊的訊息
-            self.chat_color.pop(-1)
-        chat_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1])).copy()
+            self.chat_message.pop(0)                           # 刪除最舊的訊息
+            self.chat_color.pop(0)
+        chat_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1] - self.chat_input_template.get_size()[1], size[0], size[1])).copy()
         chat_ground_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
         chat_bg.blit(chat_ground_surface, (0, 0))
         self.set_text(chat_bg, self.chat_message, self.chat_color, (0, 0))
         return chat_bg
-
-    # def get_chat_window(self, content, color, bg = None):
-    #     # content = ["str1", "str2", ...]
-    #     # can store 15 lines content
-    #     size = (680, 235)
-    #     line_limit = 15
-    #     if not len(self.chat_message) < line_limit:
-    #         self.chat_message.pop(-1)                            # remove first element
-    #     self.chat_message = content + self.chat_message         # concatenate 2 list, keep 17 elements in list
-    #     self.chat_color = color + self.chat_color
-    #     chat_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
-    #
-    #     text_surface = pygame.Surface(size)
-    #     self.set_text(text_surface, self.chat_message, self.chat_color, (0, 0))
-    #     text_surface.set_colorkey(Black)
-    #     text_surface.convert()
-    #     sub_bg = None
-    #     if bg is None:
-    #         sub_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
-    #     else:
-    #         sub_bg = bg.subsurface(pygame.Rect(0, self.height - size[1], size[0], size[1]))
-    #     self.screen.blit(sub_bg, (0, self.height - size[1]))
-    #     self.screen.blit(chat_surface, (0, self.height - size[1]))
-    #     self.screen.blit(text_surface, (0, self.height - size[1]))
 
     def get_status_win(self, char_obj): # 創造人物基本資訊視窗
         # char_obj = Character Class Object
@@ -184,13 +125,6 @@ class WindowClass:
     def reset_chat_message(self):       # 清空聊天室的聊天內容
         self.chat_message = []
         self.chat_color = []
-
-    # def set_sit_char(self, sit_image_path, pos):
-    #     img = pygame.image.load(sit_image_path).convert_alpha()
-    #     width, height = img.get_size()
-    #     rect = pygame.Rect(0, 0, width, height)
-    #     rect.center = pos
-    #     self.screen.blit(img, rect)
 
     def load_template_image(self):      # 載入影像，通常是需要做些處理或是格式安排的部分才放在這
         self.txt_win_template = \
@@ -238,6 +172,9 @@ class WindowClass:
                                      pygame.image.load(os.path.join("Info_Image", "btn_skill_2.png")).convert_alpha(),
                                      pygame.image.load(os.path.join("Info_Image", "btn_skill_3.png")).convert_alpha()]
                                   ]
+        self.btn_r_arw_template = [pygame.image.load(os.path.join("Info_Image", "arw_right0.png")).convert_alpha(),
+                                   pygame.image.load(os.path.join("Info_Image", "arw_right1.png")).convert_alpha(),
+                                   pygame.image.load(os.path.join("Info_Image", "arw_right2.png")).convert_alpha()]
         # 把每個Button送進去resize，然後長寬各乘2倍
         self.btn_inter_template = \
             [[self.get_resize_surface(j, [k*2 for k in j.get_size()]) for j in i] for i in self.btn_inter_template]
@@ -248,10 +185,10 @@ class WindowClass:
         damage_height = 13
         ptr_width = 22
         ptr_height = 31
-        for i in range(1, 11):
+        for i in range(1, damage_img.get_size()[0] // damage_width):
             self.damage_template.append(damage_img.subsurface(pygame.Rect((i-1) * damage_width, 0, damage_width, damage_height)))
             self.damage_cri_template.append(damage_cri_img.subsurface(pygame.Rect((i-1) * damage_width, 0, damage_width, damage_height)))
-        for i in range(1, 30):
+        for i in range(1, pointer_img.get_size()[0] // ptr_width):
             self.pointer_template.append(pointer_img.subsurface(pygame.Rect((i-1) * ptr_width, 0, ptr_width, ptr_height)))
 
     def get_text_block(self, text, center_pos):     # 用於一塊底色(半透明)+文字的Surface
@@ -265,24 +202,6 @@ class WindowClass:
         bg.blit(text_base, (0, 0))
         bg.blit(text_surface, rect1)
         return bg
-
-    # def get_text_block(self, text):     # 用於一塊底色(半透明)+文字的Surface
-    #     text_surface = self.font.render(text, True, White)
-    #     rect1 = text_surface.get_rect()
-    #     text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
-    #     return text_base, text_surface
-
-    # def set_text_block(self, surface, text, center_pos):
-    #     text_surface = self.font.render(text, True, White)
-    #     rect1 = text_surface.get_rect()
-    #     rect1.center = center_pos
-    #     text_base = self.create_color_surface(Black, pygame.Rect(rect1.x, rect1.y, rect1.width+12, rect1.height+4), 128)
-    #     rect2 = text_base.get_rect()
-    #     rect2.center = center_pos
-    #     surface.blit(self.background.subsurface(rect2), rect2)
-    #     surface.blit(text_base, rect2)
-    #     surface.blit(text_surface, rect1)
-    #     return rect2
 
     def interlude_black_window(self):       # 漸黑屏轉場
         count = 1
@@ -377,67 +296,83 @@ class WindowClass:
         font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 10)
         attribute = char_obj.attribute
         return_sur = self.equip_ability_template.copy()
-        stand_char = pygame.image.load(char_obj.stand_img_path).convert_alpha()
+        stand_char = char_obj.stand_img
         rect = stand_char.get_rect()
         rect.center = (143, 95)
-        right_idx1, right_idx2 = 190, 272
+        return_sur.blit(stand_char, rect)
 
+        right_idx1, right_idx2 = 190, 272
         str_ = char_obj.ability.get_ability('str').value
         agi_ = char_obj.ability.get_ability('agi').value
         vit_ = char_obj.ability.get_ability('vit').value
         int_ = char_obj.ability.get_ability('int').value
         dex_ = char_obj.ability.get_ability('dex').value
         luk_ = char_obj.ability.get_ability('luk').value
-        return_sur.blit(font.render(str(str_) + " + 0", True, Black), (53, 190))
-        return_sur.blit(font.render(str(agi_) + " + 0", True, Black), (53, 206))
-        return_sur.blit(font.render(str(vit_) + " + 0", True, Black), (53, 222))
-        return_sur.blit(font.render(str(int_) + " + 0", True, Black), (53, 238))
-        return_sur.blit(font.render(str(dex_) + " + 0", True, Black), (53, 254))
-        return_sur.blit(font.render(str(luk_) + " + 0", True, Black), (53, 270))
-        if char_obj.ability.status_point > char_obj.ability.get_ability("str").upgrade_demand:
-            return_sur.blit(self.button_template, (89, 191))
-        if char_obj.ability.status_point > char_obj.ability.get_ability("agi").upgrade_demand:
-            return_sur.blit(self.button_template, (89, 207))
-        if char_obj.ability.status_point > char_obj.ability.get_ability("vit").upgrade_demand:
-            return_sur.blit(self.button_template, (89, 223))
-        if char_obj.ability.status_point > char_obj.ability.get_ability("int").upgrade_demand:
-            return_sur.blit(self.button_template, (89, 239))
-        if char_obj.ability.status_point > char_obj.ability.get_ability("dex").upgrade_demand:
-            return_sur.blit(self.button_template, (89, 255))
-        if char_obj.ability.status_point > char_obj.ability.get_ability("luk").upgrade_demand:
-            return_sur.blit(self.button_template, (89, 271))
-        return_sur.blit(stand_char, rect)
+
+        pos1 = 54
+        pos2, p2_step = 188, 16
+        # 目前基礎素質
+        return_sur.blit(font.render(str(str_), True, Black), (pos1, pos2))
+        return_sur.blit(font.render(str(agi_), True, Black), (pos1, pos2 + p2_step))
+        return_sur.blit(font.render(str(vit_), True, Black), (pos1, pos2 + 2 * p2_step))
+        return_sur.blit(font.render(str(int_), True, Black), (pos1, pos2 + 3 * p2_step))
+        return_sur.blit(font.render(str(dex_), True, Black), (pos1, pos2 + 4 * p2_step))
+        return_sur.blit(font.render(str(luk_), True, Black), (pos1, pos2 + 5 * p2_step))
+        ability_step, plus_step = 12, 7
+        return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2))
+        return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + p2_step))
+        return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + 2 * p2_step))
+        return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + 3 * p2_step))
+        return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + 4 * p2_step))
+        return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + 5 * p2_step))
+        # 裝備素質 or job加成
+        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2))
+        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + p2_step))
+        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 2 * p2_step))
+        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 3 * p2_step))
+        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 4 * p2_step))
+        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 5 * p2_step))
+        # 升級素質所需升級點
+        pos1_up = pos1 + 48
+        return_sur.blit(font.render(str(char_obj.ability.get_ability("str").upgrade_demand), True, Black), (pos1_up, pos2))
+        return_sur.blit(font.render(str(char_obj.ability.get_ability("agi").upgrade_demand), True, Black), (pos1_up, pos2 + p2_step))
+        return_sur.blit(font.render(str(char_obj.ability.get_ability("vit").upgrade_demand), True, Black), (pos1_up, pos2 + 2 * p2_step))
+        return_sur.blit(font.render(str(char_obj.ability.get_ability("int").upgrade_demand), True, Black), (pos1_up, pos2 + 3 * p2_step))
+        return_sur.blit(font.render(str(char_obj.ability.get_ability("dex").upgrade_demand), True, Black), (pos1_up, pos2 + 4 * p2_step))
+        return_sur.blit(font.render(str(char_obj.ability.get_ability("luk").upgrade_demand), True, Black), (pos1_up, pos2 + 5 * p2_step))
+
         sur, rect = self.render_and_return_rect(font, str(attribute.total_atk[0]) + " - " + str(attribute.total_atk[1]), Black)
-        rect.top, rect.right = 191, right_idx1
+        rect.top, rect.right = 188, right_idx1
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.total_matk[0]) + " - " + str(attribute.total_matk[1]), Black)
-        rect.top, rect.right = 207, right_idx1
+        rect.top, rect.right = 204, right_idx1
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.hit), Black)
-        rect.top, rect.right = 223, right_idx1
+        rect.top, rect.right = 220, right_idx1
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.cri), Black)
-        rect.top, rect.right = 239, right_idx1
+        rect.top, rect.right = 236, right_idx1
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.total_defence), Black)
-        rect.top, rect.right = 191, right_idx2
+        rect.top, rect.right = 188, right_idx2
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.total_mdefence), Black)
-        rect.top, rect.right = 207, right_idx2
+        rect.top, rect.right = 204, right_idx2
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.flee), Black)
-        rect.top, rect.right = 223, right_idx2
+        rect.top, rect.right = 220, right_idx2
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.aspd), Black)
-        rect.top, rect.right = 239, right_idx2
+        rect.top, rect.right = 236, right_idx2
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(char_obj.ability.status_point), Black)
-        rect.top, rect.right = 255, right_idx2
+        rect.top, rect.right = 252, right_idx2
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, "~ * 仙境情懷 * ~", Black)
-        rect.top, rect.right = 271, right_idx2
+        rect.top, rect.right = 268, right_idx2
         return_sur.blit(sur, rect)
-        return return_sur, return_sur.get_rect()
+        #      裝備欄                                               素質欄
+        return return_sur.subsurface(pygame.Rect(0, 0, 280, 166)), return_sur.subsurface(pygame.Rect(0, 167, 280, 120))
 
     def generate_txt_win(self, width_px, height_px):  # 創造客製化尺寸的系統視窗文字區域，原則上輸入的最小尺寸應胎是60 x 60
         txt_width = 20      # 分割模板的尺寸
@@ -488,6 +423,20 @@ class WindowClass:
                 btn_bar.blit(self.txt_win_template[4][1], (i * btnbar_width, 0))
 
         return title_bar, btn_bar
+
+    @staticmethod
+    def fps_analysis(fps_list):
+        if len(fps_list) > 30:
+            del fps_list[0:29]
+        print("FPS: ", str(min(fps_list)), " - ", str(max(fps_list)))
+
+    @staticmethod
+    def combine_sprite(*input_group):
+        all_group = pygame.sprite.Group()
+        for group in input_group:
+            for sprite in group:
+                all_group.add(sprite)
+        return all_group
 
     @staticmethod
     def render_and_return_rect(font, text, color):
