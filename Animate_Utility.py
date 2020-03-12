@@ -9,6 +9,89 @@ Green = (0, 255, 0)
 Blue = (0, 0, 255)
 
 
+class CharAnimate(pygame.sprite.Sprite):
+    def __init__(self, graphic_obj, char_obj, enemy_obj, center_pos):
+        super().__init__()
+        self.window = graphic_obj
+        self.char = char_obj
+        self.enemy = enemy_obj
+        self.default_width = 200
+        self.image = None
+        self.rect = pygame.Rect(0, 0, self.default_width, self.default_width)
+        self.rect.center = center_pos
+        self.standby_image = char_obj.standby_img
+        self.attack_image = char_obj.attack_img
+        self.dead_image = char_obj.dead_img
+        self.image_count = len(self.standby_image)    # 原則上是6
+        self.animate_idx = 0
+        self.frame = 0              # 從0開始才可以第1個frame就有動作
+        self.min_att_interval = 8   # 最小的攻擊動畫frame間隔
+        self.min_att_total_frame = self.min_att_interval * self.image_count     # 攻擊完整動畫所佔的最多Frame
+        self.attack_frame_interval = self.char.attribute.att_frame      # 一次攻擊動畫所佔的Total Frame
+        self.standby_frame_interval = 36                                # 一次待機動畫所佔的Total Frame
+        self.min_std_interval = self.standby_frame_interval / self.image_count   # 每張待機動畫所佔的Frame
+
+    def update(self, ani_type, alpha):     # type = 1: 純待機, type = 2: 攻擊(速度如果太慢也包含一部分待機), type = 3: 死亡
+        if ani_type == 1:
+            self.standby_animate(alpha)
+        elif ani_type == 2:
+            self.attack_animate(alpha)
+        elif ani_type == 3:
+            self.dead_animate(alpha)
+        self.frame = self.frame + 1 if self.frame < self.attack_frame_interval - 2 else 0
+
+    def standby_animate(self, alpha):
+        if self.frame % self.min_std_interval == 0:
+            if alpha < 255:
+                copy = self.standby_image[self.animate_idx].copy()
+                alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
+                alpha_surface.fill((255, 255, 255, alpha))
+                copy.blit(alpha_surface, (0, 0), special_flags = pygame.BLEND_RGBA_MULT)
+                self.image = copy
+            else:
+                self.image = self.standby_image[self.animate_idx]
+            self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+
+    def attack_animate(self, alpha):
+        if self.attack_frame_interval > self.min_att_interval * self.image_count:       # 攻擊太慢，要插入standby動畫
+            if self.frame < self.attack_frame_interval - self.min_att_total_frame:      # 先standby動畫
+                if self.frame % self.min_std_interval == 0:
+                    self.image = self.standby_image[self.animate_idx]
+                    self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+            else:                                                                       # 改成攻擊動畫
+                if self.frame == self.attack_frame_interval - self.min_att_total_frame:
+                    self.animate_idx = 0                                                # 代表剛切換成攻擊動畫，重置動畫idx
+                if (self.frame - (self.attack_frame_interval - self.min_att_total_frame)) % self.min_att_interval == 0:
+                    self.image = self.attack_image[self.animate_idx]
+                    if self.animate_idx == self.image_count - 1:
+                        print("attack calculation")
+                    self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+        else:                                                                           # 攻擊夠快，不用插standby動畫
+            if self.frame % (self.attack_frame_interval // self.image_count) == 0:
+                self.image = self.attack_image[self.animate_idx]
+                if self.animate_idx == self.image_count - 1:                            # 畫到最後一張就開計算攻擊數值
+                    print("attack calculation")
+                self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+        if alpha < 255:
+            copy = self.standby_image[self.animate_idx].copy()
+            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
+            alpha_surface.fill((255, 255, 255, alpha))
+            copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+            self.image = copy
+
+    def dead_animate(self, alpha):
+        if self.frame % self.min_std_interval == 0:
+            if alpha < 255:
+                copy = self.standby_image[self.animate_idx].copy()
+                alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
+                alpha_surface.fill((255, 255, 255, alpha))
+                copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                self.image = copy
+            else:
+                self.image = self.dead_image[self.animate_idx]
+            self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+
+
 class Animate(pygame.sprite.Sprite):
     def __init__(self, graphic_obj, standby_image_path, attack_image_path, dead_image_path, center_pos, attacker=None, defencer=None, damage_pos=None):
         super().__init__()
@@ -16,9 +99,7 @@ class Animate(pygame.sprite.Sprite):
         self.window = graphic_obj
         self.default_width = 200
         self.standby_image = pygame.image.load(standby_image_path).convert_alpha()
-        # self.standby_image.set_colorkey(self.standby_image.get_at((0, 0)))
         self.attack_image = pygame.image.load(attack_image_path).convert_alpha()
-        # self.attack_image.set_colorkey(self.attack_image.get_at((0, 0)))
         self.dead_image = pygame.image.load(dead_image_path).convert_alpha()
         self.image_count = self.standby_image.get_size()[0] / self.default_width  # 原則上是6
         self.current = 0
@@ -71,7 +152,6 @@ class Animate(pygame.sprite.Sprite):
 
     def update_standby(self, alpha):
         copy = self.standby_image_array[self.current - 1].copy()
-        # self.image.set_alpha(alpha)       # 因為使用convert_alpha()處理影像，所以沒辦法直接用surface alpha
         if alpha < 255:
             alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
             alpha_surface.fill((255, 255, 255, alpha))
@@ -80,7 +160,6 @@ class Animate(pygame.sprite.Sprite):
 
     def update_attack(self, alpha):
         copy = self.attack_image_array[self.current - 1]
-        # self.image.set_alpha(alpha)
         if alpha < 255:
             alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
             alpha_surface.fill((255, 255, 255, alpha))

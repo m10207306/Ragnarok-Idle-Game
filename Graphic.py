@@ -185,10 +185,10 @@ class WindowClass:
         damage_height = 13
         ptr_width = 22
         ptr_height = 31
-        for i in range(1, damage_img.get_size()[0] // damage_width):
+        for i in range(1, damage_img.get_size()[0] // damage_width + 1):
             self.damage_template.append(damage_img.subsurface(pygame.Rect((i-1) * damage_width, 0, damage_width, damage_height)))
             self.damage_cri_template.append(damage_cri_img.subsurface(pygame.Rect((i-1) * damage_width, 0, damage_width, damage_height)))
-        for i in range(1, pointer_img.get_size()[0] // ptr_width):
+        for i in range(1, pointer_img.get_size()[0] // ptr_width + 1):
             self.pointer_template.append(pointer_img.subsurface(pygame.Rect((i-1) * ptr_width, 0, ptr_width, ptr_height)))
 
     def get_text_block(self, text, center_pos):     # 用於一塊底色(半透明)+文字的Surface

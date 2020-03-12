@@ -16,11 +16,22 @@ class WorldClass:
         self.window = window_screen
         self.current_pos = None
         self.Char_obj = Character.CharacterClass(name, ini_ability)
+
         # 一些幾乎必備的Animate Group存在這裏，避免每進去一個function要重做一次
+        self.char_pos = (self.window.width * 0.4, self.window.height * 0.55)    # center pos
+        self.mons_pos = (self.window.width * 0.6, self.window.height * 0.55)
+        self.char_name_pos = (self.char_pos[0], self.char_pos[1] - 70)
+        self.mons_name_pos = (self.mons_pos[0], self.mons_pos[1] - 70)
         self.status_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(self.window.status_win_template, (0, 0)))
         self.mini_map_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
         self.health_bar_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
         self.chat_input_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
+        name_text = self.window.get_text_block(self.Char_obj.char_name, self.char_name_pos)
+        self.name_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(name_text, self.char_name_pos))
+        chat = self.window.get_chat_win([], [])
+        self.chat_pos = (chat.get_size()[0] / 2, self.window.height - chat.get_size()[1] / 2 - self.window.chat_input_template.get_size()[1])
+        self.chat_input_pos = (self.window.chat_input_template.get_size()[0] / 2, self.window.height - self.window.chat_input_template.get_size()[1] / 2)
+        self.chat_room_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(chat, self.chat_pos))
         self.ptr_group = pygame.sprite.Group(Animate_Utility.PointerAnimate(self.window.pointer_template, pygame.mouse.get_pos(), 7))
 
         pos = [(self.window.width - 350, self.window.height -  60),
@@ -48,7 +59,6 @@ class WorldClass:
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[3], self.pos2[3]), self.pos2[3]))
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[4], self.pos2[4]), self.pos2[4]))
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[5], self.pos2[5]), self.pos2[5]))
-        self.Char_obj.ability.status_point = 10
 
     def transfer_station(self, map_idx):
         # 轉運站：基本上要切換場景的時候都透過這Function，並且控制背景與BGM
@@ -82,30 +92,19 @@ class WorldClass:
         map_data = Map_Database.map_data[map_idx]
         self.window.set_bg_image(os.path.join("BG_Image", map_data[1] + ".png"), 255)
 
-        char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(), (self.window.width * 0.4, self.window.height * 0.55)))
-        status_win = self.window.get_status_win(self.Char_obj)
-        self.status_group.update(status_win, self.window.status_win_template.get_rect().center)
-        mini_map_win = self.window.get_map_icon(os.path.join("Map_Image", map_data[1] + ".png"))
-        self.mini_map_group.update(mini_map_win, (self.window.width - mini_map_win.get_size()[0]/2, mini_map_win.get_size()[1]/2))
-        self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), (self.window.width * 0.4, self.window.height * 0.55 + 50))
-        self.chat_input_group.update(self.window.chat_input_template, (self.window.chat_input_template.get_size()[0]/2, self.window.height - self.window.chat_input_template.get_size()[1]/2))
-        self.ptr_group.update(pygame.mouse.get_pos())
-
+        char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(self.Char_obj.sit_img, self.char_pos))
+        self.common_group_update()
         chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2]], [Green])
-        chat_room_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(chat, (chat.get_size()[0] / 2, self.window.height - chat.get_size()[1] / 2 - self.window.chat_input_template.get_size()[1])))
-        name_text = self.window.get_text_block(self.Char_obj.char_name, (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
-        text_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(name_text, (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60)))
-        for idx, sprite in enumerate(self.console_text_group.sprites()):
-            sprite.update(self.window.get_text_block(self.console_text[idx], self.pos2[idx]), None)
-            # 因為會因為背景不同而需要重新Update
+        self.chat_room_group.update(chat, None)
 
         all_group = self.window.combine_sprite(char_sit_group, self.status_group, self.mini_map_group,
-                                               self.health_bar_group, chat_room_group, text_group,
+                                               self.health_bar_group, self.chat_room_group, self.name_group,
                                                self.chat_input_group, self.console_btn_group, self.console_text_group,
                                                self.ptr_group)
 
         for sprite in self.console_btn_group.sprites():
             sprite.freeze = False
+        self.console_btn_group.sprites()[3].freeze = True   # Battel btn disable
 
         fps_list = []
         enter = False
@@ -144,32 +143,139 @@ class WorldClass:
                 elif opt_select == 3:
                     print("戰鬥")
                 elif opt_select == 4:
-                    print("地圖")
+                    return self.moving_page(map_idx)
                 elif opt_select == 5:
                     print("技能")
 
     def field_run(self, map_idx):
-        return map_idx
+        map_data = Map_Database.map_data[map_idx]
+        self.window.set_bg_image(os.path.join("BG_Image", map_data[1] + ".png"), 255)
+        self.common_group_update()
+
+        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2]], [Green])
+        self.chat_room_group.update(chat, None)
+
+        char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, None, self.char_pos))
+        for sprite in self.console_btn_group.sprites():     # 所有按鍵都可以使用
+            sprite.freeze = False
+
+        all_group = self.window.combine_sprite(char_group, self.status_group, self.mini_map_group,
+                                               self.health_bar_group, self.chat_room_group, self.name_group,
+                                               self.chat_input_group, self.console_btn_group, self.console_text_group,
+                                               self.ptr_group)
+
+        fps_list = []
+        enter = False
+        opt_select = None
+        while True:
+            self.window.clock.tick(self.window.fps)
+            fps_list.append(self.window.clock.get_fps())
+            key, key_id, mouse, mouse_type = self.window.input_detect()
+            if "escape" in key:
+                print("Field Standby")
+                self.window.fps_analysis(fps_list)
+                return None
+
+            all_group.clear(self.window.screen, self.window.background)
+
+            self.ptr_group.update(pygame.mouse.get_pos())
+            ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
+            self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+            self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
+            char_group.update(1, 255)
+            for idx, btn in enumerate(self.console_btn_group.sprites()):
+                if btn.update(ptr_tip_pos, mouse_type):
+                    opt_select = idx
+                    enter = True
+
+            all_group.draw(self.window.screen)
+            pygame.display.update()
+
+            if enter and opt_select is not None:
+                if opt_select == 0:
+                    self.info_page(map_idx)
+                    return map_idx
+                elif opt_select == 1:
+                    print("物品")
+                elif opt_select == 2:
+                    print("裝備")
+                elif opt_select == 3:
+                    self.fight_run(map_idx)
+                    return map_idx
+                elif opt_select == 4:
+                    return self.moving_page(map_idx)
+                elif opt_select == 5:
+                    print("技能")
+
+    def fight_run(self, map_idx):
+        map_data = Map_Database.map_data[map_idx]
+        self.common_group_update()
+        chat = self.window.get_chat_win(["[系統訊息] 循環戰鬥：再按一次 戰鬥開關 逃離戰鬥"], [Green])
+        self.chat_room_group.update(chat, None)
+
+        for sprite in self.console_btn_group.sprites():
+            sprite.freeze = True
+        self.console_btn_group.sprites()[3].freeze = False   # Battel btn enable, others disable
+
+        while True:
+            monster_obj = Character.MonsterClass(random.choice(map_data[7]))
+            char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, monster_obj, self.char_pos))
+            mons_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, monster_obj, self.Char_obj, self.mons_pos))
+
+            mons_name = self.window.get_text_block(self.Char_obj.char_name, self.mons_name_pos)
+            self.name_group.add(Animate_Utility.InfoWindowAnimate(mons_name, self.mons_name_pos))
+
+            all_group = self.window.combine_sprite(char_group, mons_group, self.status_group, self.mini_map_group,
+                                                   self.health_bar_group, self.chat_room_group, self.name_group,
+                                                   self.chat_input_group, self.console_btn_group, self.console_text_group,
+                                                   self.ptr_group)
+            # 怪物漸進登場
+            count = 0
+            alpha = 255 - 240
+            while True:
+                self.window.clock.tick(self.window.fps)
+                _, _, _, _ = self.window.input_detect()
+                if count > 72:
+                    break
+
+                all_group.clear(self.window.screen, self.window.background)
+
+                self.ptr_group.update(pygame.mouse.get_pos())
+                char_group.sprites()[0].update(1, 255)
+                mons_group.sprites()[0].update(1, alpha)
+                print("count = ", count, ", animate_idx = ", mons_group.sprites()[0].animate_idx)
+                if count % mons_group.sprites()[0].min_std_interval == 0:
+                    alpha += 20
+                all_group.draw(self.window.screen)
+                pygame.display.update()
+                count += 1
+
+            # 正式戰鬥
+
+            while True:
+                
+
+            # if self.console_btn_group.sprites()[3].update(ptr_tip_pos, mouse_type):
+            #     print("Battle Stage")
+            #     self.window.fps_analysis(fps_list)
+            #     return
+            #
+            # if monster_obj.hp <= 0:
+            #     break
+            # elif self.Char_obj.hp <= 0:
+            #     break
+
+            self.name_group.remove(mons_name)
+            return
+
 
     def info_page(self, map_idx):
         # fps 48-52，看起來跟Ability Initialization一樣慢，可能是對多個按鍵進行偵測並做對應處置
-        map_data = Map_Database.map_data[map_idx]
-        char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(),(self.window.width * 0.4, self.window.height * 0.55)))
-        status_win = self.window.get_status_win(self.Char_obj)
-        self.status_group.update(status_win, self.window.status_win_template.get_rect().center)
-        mini_map_win = self.window.get_map_icon(os.path.join("Map_Image", map_data[1] + ".png"))
-        self.mini_map_group.update(mini_map_win,(self.window.width - mini_map_win.get_size()[0] / 2, mini_map_win.get_size()[1] / 2))
-        self.health_bar_group.update(self.window.get_health_bar(self.Char_obj),(self.window.width * 0.4, self.window.height * 0.55 + 50))
-        self.chat_input_group.update(self.window.chat_input_template,(self.window.chat_input_template.get_size()[0] / 2,self.window.height - self.window.chat_input_template.get_size()[1] / 2))
-        self.ptr_group.update(pygame.mouse.get_pos())
-
-        chat = self.window.get_chat_win(["[系統訊息] 角色資訊頁面"], [Green])
-        chat_room_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(chat, (chat.get_size()[0] / 2, self.window.height - chat.get_size()[1] / 2 - self.window.chat_input_template.get_size()[1])))
-        name_text = self.window.get_text_block(self.Char_obj.char_name,(self.window.width * 0.4 - 2, self.window.height * 0.55 - 60))
-        text_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(name_text, (self.window.width * 0.4 - 2, self.window.height * 0.55 - 60)))
-        for idx, sprite in enumerate(self.console_text_group.sprites()):
-            sprite.update(self.window.get_text_block(self.console_text[idx], self.pos2[idx]), None)
-            # 考慮可能有背景不同而需要重新Update
+        # map_data = Map_Database.map_data[map_idx]
+        char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(), self.char_pos))
+        self.common_group_update()
+        chat = self.window.get_chat_win(["[系統訊息] 角色資訊頁面：再按一次 角色資訊 按鈕關閉頁面"], [Green])
+        self.chat_room_group.update(chat, None)
 
         ability_list = ["str", "agi", "vit", "int", "dex", "luk"]
         _, ability_page = self.window.create_equip_ability_win(self.Char_obj)
@@ -189,7 +295,7 @@ class WorldClass:
                 ability_btn_group.add(obj)
 
         all_group = self.window.combine_sprite(char_sit_group, self.status_group, self.mini_map_group,
-                                               self.health_bar_group, chat_room_group, text_group,
+                                               self.health_bar_group, self.chat_room_group, self.name_group,
                                                self.chat_input_group, self.console_btn_group, self.console_text_group,
                                                ability_group, ability_btn_group, self.ptr_group)
 
@@ -237,6 +343,57 @@ class WorldClass:
 
             pygame.display.update()
 
+    def moving_page(self, map_idx):
+        # 暫時停工（等原野部分初步完成）
+        img = pygame.image.load(os.path.join("Map_Image", "all_map.png")).convert_alpha()
+        map_data = Map_Database.map_data[self.current_pos]
+        trans_btn_list = [self.window.create_color_surface(Black, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 0)] * 3
+        pygame.draw.rect(img, Yellow, map_data[6], 3)        # 框出目前地圖
+        btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(trans_btn_list, map_data[6].center))
+
+        next_map_list = map_data[5]
+        next_map_name = []
+        for i in range(len(next_map_list)):             # 框出可前往地圖
+            next_map_data = Map_Database.map_data[next_map_list[i]]
+            pygame.draw.rect(img, Green, next_map_data[6], 3)
+            next_map_name.append("    No. " + str(next_map_data[0]) + " " + next_map_data[2])
+            btn_group.add(Animate_Utility.ButtonAnimate(trans_btn_list, next_map_data[6].center))
+
+        sub_height = 0
+        scroll_step = 10
+        max_height = img.get_size()[1] - 1 - self.window.height - 1 - scroll_step
+        fps_list = []
+        while True:
+            fps_list.append(self.window.clock.get_fps())
+            key, key_id, mouse, mouse_type = self.window.input_detect()
+            if "escape" in key:
+                print("City Standby")
+                self.window.fps_analysis(fps_list)
+                return map_idx
+
+            if "click" in mouse_type or "down" in mouse_type:
+                if 4 in mouse:      # scroll down
+                    sub_height = sub_height + scroll_step if sub_height < max_height else sub_height
+                elif 5 in mouse:    # scroll up
+                    sub_height = sub_height - scroll_step if sub_height > scroll_step else sub_height
+
+            self.window.screen.blit(img.subsurface(pygame.Rect(0, sub_height, self.window.width, self.window.height)), (0, 0))
+            pygame.display.update()
+
+    def common_group_update(self):
+        map_data = Map_Database.map_data[self.current_pos]
+        status_win = self.window.get_status_win(self.Char_obj)
+        self.status_group.update(status_win, self.window.status_win_template.get_rect().center)
+        mini_map_win = self.window.get_map_icon(os.path.join("Map_Image", map_data[1] + ".png"))
+        self.mini_map_group.update(mini_map_win, (self.window.width - mini_map_win.get_size()[0] / 2, mini_map_win.get_size()[1] / 2))
+        self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), (self.char_pos[0], self.char_pos[1] + 50))
+        self.chat_input_group.update(self.window.chat_input_template, self.chat_input_pos)
+        name_text = self.window.get_text_block(self.Char_obj.char_name, self.char_name_pos)
+        self.name_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(name_text, self.char_name_pos))
+        self.ptr_group.update(pygame.mouse.get_pos())
+        for idx, sprite in enumerate(self.console_text_group.sprites()):
+            sprite.update(self.window.get_text_block(self.console_text[idx], self.pos2[idx]), None)
+            # 因為會因為背景不同而需要重新Update
 
     # def transfer_station(self, map_idx):
     #     # 轉運站：基本上要切換場景的時候都透過這Function，並且控制背景與BGM

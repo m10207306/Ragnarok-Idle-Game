@@ -71,7 +71,7 @@ class AttributeClusterClass:
         self.flee = []
         self.cri = []
         self.aspd = []
-        self.att_frq = []           # attack number in one sec
+        self.att_frame = []         # frame number in an attack
         self.total_atk = []
         self.total_matk = []
         self.total_defence = []
@@ -100,7 +100,7 @@ class AttributeClusterClass:
         self.aspd = round(160 + (200 - 150) * (ability.get_ability("agi").value + ability.get_ability("dex").value / 4) / 250)
         self.aspd = 190 if self.aspd > 190 else self.aspd
         self.aspd = 150 if self.aspd < 150 else self.aspd
-        self.att_frq = round(50 / (200 - self.aspd), 1)
+        self.att_frame = round(50 / (200 - self.aspd) * 60)
         self.total_atk = [math.floor((self.char_atk + self.weapon_atk) * 0.9), math.ceil((self.char_atk + self.weapon_atk) * 1.1)]
         self.total_matk = [math.floor((self.char_matk + self.weapon_matk) * 0.9), math.ceil((self.char_matk + self.weapon_matk) * 1.1)]
         self.total_defence = self.defence + self.armor_defence
@@ -117,7 +117,7 @@ class MonsterAttribute:
         self.hit = content[9]
         self.cri = content[13]
         self.aspd = content[10]
-        self.att_frq = round(50 / (200 - self.aspd), 1)
+        self.att_frame = round(50 / (200 - self.aspd) * 60)
 
 
 
