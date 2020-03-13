@@ -57,18 +57,22 @@ class CharacterClass:
             self.base_exp += base_exp
         if self.job_level < job_max_level[self.job_type]:
             self.job_exp += job_exp
-        self.check_level_up()
+        return self.check_level_up()
 
     def check_level_up(self):
+        base_lv_up, job_lv_up = False, False
         if self.base_level < 99 and self.base_exp > self.target_base_exp:
+            base_lv_up = True
             self.base_level += 1
             self.base_exp -= self.target_base_exp
             self.define_base_exp_type()                 # 定義下一級目標經驗值
             self.ability.level_up()                     # 加素質點
         if self.job_level < job_max_level[self.job_type] and self.job_exp > self.target_job_exp:
+            job_lv_up = True
             self.job_level += 1
             self.job_exp -= self.target_job_exp
             self.define_job_exp_type()
+        return base_lv_up, job_lv_up
 
     def define_base_exp_type(self):
         if self.job_type == 1 or self.job_type == 2 or self.job_type == 3:  # 未轉生

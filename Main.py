@@ -134,7 +134,7 @@ class Ragnarok:
         ability_btn_group.add(Animate_Utility.ButtonAnimate(luk_btn, (str_pos[0] + 80, str_pos[1] + 145)))
         ability_btn_group.add(Animate_Utility.ButtonAnimate(int_btn, (str_pos[0],      str_pos[1] + 200)))
 
-        name = "Key in"
+        name = "Player"
         fps_list = []
         while True:
             self.window.clock.tick(60)
@@ -144,7 +144,7 @@ class Ragnarok:
                 return False
 
             for c in key:
-                if name == "Key in":
+                if name == "Player":
                     name = ""
                 if c == "backspace":
                     name = name[:-1]

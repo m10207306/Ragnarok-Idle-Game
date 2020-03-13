@@ -22,6 +22,8 @@ class WorldClass:
         self.mons_pos = (self.window.width * 0.6, self.window.height * 0.55)
         self.char_name_pos = (self.char_pos[0], self.char_pos[1] - 70)
         self.mons_name_pos = (self.mons_pos[0], self.mons_pos[1] - 70)
+        self.char_damage_pos = (self.mons_pos[0], self.mons_pos[1] - 110)
+        self.mons_damage_pos = (self.char_pos[0], self.char_pos[1] - 110)
         self.status_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(self.window.status_win_template, (0, 0)))
         self.mini_map_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
         self.health_bar_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
@@ -34,12 +36,12 @@ class WorldClass:
         self.chat_room_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(chat, self.chat_pos))
         self.ptr_group = pygame.sprite.Group(Animate_Utility.PointerAnimate(self.window.pointer_template, pygame.mouse.get_pos(), 7))
 
-        pos = [(self.window.width - 350, self.window.height -  60),
-               (self.window.width - 200, self.window.height -  60),
-               (self.window.width -  50, self.window.height -  60),
-               (self.window.width - 352, self.window.height - 185),
-               (self.window.width - 200, self.window.height - 185),
-               (self.window.width -  50, self.window.height - 185)]
+        pos = [(self.window.width - 350, self.window.height -  70),
+               (self.window.width - 200, self.window.height -  70),
+               (self.window.width -  50, self.window.height -  70),
+               (self.window.width - 352, self.window.height - 195),
+               (self.window.width - 200, self.window.height - 195),
+               (self.window.width -  50, self.window.height - 195)]
         self.pos2 = [(pos[0][0], pos[0][1] + 45),
                      (pos[1][0], pos[1][1] + 45),
                      (pos[2][0], pos[2][1] + 45),
@@ -94,7 +96,7 @@ class WorldClass:
 
         char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(self.Char_obj.sit_img, self.char_pos))
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2]], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置 - " + map_data[2]], [Green])
         self.chat_room_group.update(chat, None)
 
         all_group = self.window.combine_sprite(char_sit_group, self.status_group, self.mini_map_group,
@@ -155,14 +157,14 @@ class WorldClass:
         chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2]], [Green])
         self.chat_room_group.update(chat, None)
 
-        char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, None, self.char_pos))
+        char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, None, self.char_pos, self.char_damage_pos))
         for sprite in self.console_btn_group.sprites():     # 所有按鍵都可以使用
             sprite.freeze = False
 
         all_group = self.window.combine_sprite(char_group, self.status_group, self.mini_map_group,
                                                self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group, self.console_text_group,
-                                               self.ptr_group)
+                                               self.chat_input_group, self.console_btn_group,
+                                               self.console_text_group, self.ptr_group)
 
         fps_list = []
         enter = False
@@ -210,32 +212,37 @@ class WorldClass:
     def fight_run(self, map_idx):
         map_data = Map_Database.map_data[map_idx]
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 循環戰鬥：再按一次 戰鬥開關 逃離戰鬥"], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 循環戰鬥 - 再按一次 戰鬥開關 逃離戰鬥"], [Green])
         self.chat_room_group.update(chat, None)
 
         for sprite in self.console_btn_group.sprites():
             sprite.freeze = True
-        self.console_btn_group.sprites()[3].freeze = False   # Battel btn enable, others disable
 
         while True:
-            monster_obj = Character.MonsterClass(random.choice(map_data[7]))
-            char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, monster_obj, self.char_pos))
-            mons_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, monster_obj, self.Char_obj, self.mons_pos))
+            mons_obj = Character.MonsterClass(random.choice(map_data[7]))
+            char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, mons_obj, self.char_pos, self.char_damage_pos))
+            mons_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, mons_obj, self.Char_obj, self.mons_pos, self.mons_damage_pos))
+            damage_group = Animate_Utility.DamageAnimate.AllGroup
 
-            mons_name = self.window.get_text_block(self.Char_obj.char_name, self.mons_name_pos)
+            mons_name = self.window.get_text_block("Lv." + str(mons_obj.base_level) + " " + mons_obj.mons_zh_name, self.mons_name_pos)
             self.name_group.add(Animate_Utility.InfoWindowAnimate(mons_name, self.mons_name_pos))
 
-            all_group = self.window.combine_sprite(char_group, mons_group, self.status_group, self.mini_map_group,
-                                                   self.health_bar_group, self.chat_room_group, self.name_group,
-                                                   self.chat_input_group, self.console_btn_group, self.console_text_group,
-                                                   self.ptr_group)
+            all_group = self.window.combine_sprite(char_group, mons_group, self.status_group,
+                                                   self.mini_map_group, self.health_bar_group, self.chat_room_group,
+                                                   self.name_group, self.chat_input_group, self.console_btn_group,
+                                                   self.console_text_group, self.ptr_group)
             # 怪物漸進登場
             count = 0
-            alpha = 255 - 240
+            frame_limit = char_group.sprites()[0].standby_frame_interval
+            animate_count = char_group.sprites()[0].image_count
+            alpha_step = 20
+            alpha = 255 - (alpha_step * frame_limit / animate_count)
+            self.console_btn_group.sprites()[3].image = self.console_btn_group.sprites()[3].btn_list[0]  # 按鍵動畫恢復按下去之前
+            self.console_btn_group.sprites()[3].freeze = True  # 動畫時間不跳出
             while True:
                 self.window.clock.tick(self.window.fps)
                 _, _, _, _ = self.window.input_detect()
-                if count > 72:
+                if count >= frame_limit * 2:
                     break
 
                 all_group.clear(self.window.screen, self.window.background)
@@ -243,30 +250,140 @@ class WorldClass:
                 self.ptr_group.update(pygame.mouse.get_pos())
                 char_group.sprites()[0].update(1, 255)
                 mons_group.sprites()[0].update(1, alpha)
-                print("count = ", count, ", animate_idx = ", mons_group.sprites()[0].animate_idx)
                 if count % mons_group.sprites()[0].min_std_interval == 0:
-                    alpha += 20
+                    alpha += alpha_step
+
                 all_group.draw(self.window.screen)
                 pygame.display.update()
                 count += 1
 
             # 正式戰鬥
-
+            char_group.sprites()[0].reset_frame_animate()
+            mons_group.sprites()[0].reset_frame_animate()
+            mons_dead = False
+            char_dead = False
+            fps_list = []
+            self.console_btn_group.sprites()[3].freeze = False  # 正式戰鬥可以跳出
             while True:
-                
+                self.window.clock.tick(self.window.fps)
+                fps_list.append(self.window.clock.get_fps())
+                key, key_id, mouse, mouse_type = self.window.input_detect()
 
-            # if self.console_btn_group.sprites()[3].update(ptr_tip_pos, mouse_type):
-            #     print("Battle Stage")
-            #     self.window.fps_analysis(fps_list)
-            #     return
-            #
-            # if monster_obj.hp <= 0:
-            #     break
-            # elif self.Char_obj.hp <= 0:
-            #     break
+                all_group.clear(self.window.screen, self.window.background)
+                damage_group.clear(self.window.screen, self.window.background)
+                # 因為damage_group會動態增加sprite跟減少，所以沒辦法在外面一次塞進去all_group裡
+
+                self.ptr_group.update(pygame.mouse.get_pos())
+                ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
+                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
+
+                if self.console_btn_group.sprites()[3].update(ptr_tip_pos, mouse_type):
+                    print("Battle Stage")
+                    self.window.fps_analysis(fps_list)
+                    return
+
+                char_group.update(2, 255)
+                mons_group.update(2, 255)
+                damage_group.update()
+
+                damage_group.draw(self.window.screen)
+                all_group.draw(self.window.screen)
+                pygame.display.update()
+
+                if mons_obj.hp <= 0:
+                    mons_dead = True
+                    break
+                elif self.Char_obj.hp <= 0:
+                    self.Char_obj.hp = 0
+                    char_dead = True
+                    break
+
+            print("Battle Stage")
+            self.window.fps_analysis(fps_list)
+
+            # 死亡動畫
+            char_group.sprites()[0].reset_frame_animate()
+            mons_group.sprites()[0].reset_frame_animate()
+            count = 0
+            self.console_btn_group.sprites()[3].freeze = True  # 死亡與總結階段無法跳出
+            while True:
+                self.window.clock.tick(self.window.fps)
+                _, _, _, _ = self.window.input_detect()
+
+                if count >= frame_limit and len(damage_group.sprites()) == 0:
+                    break
+
+                all_group.clear(self.window.screen, self.window.background)
+                damage_group.clear(self.window.screen, self.window.background)
+
+                self.ptr_group.update(pygame.mouse.get_pos())
+                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
+                damage_group.update()
+
+                if mons_dead:
+                    char_group.sprites()[0].update(1, 255)
+                    if count < frame_limit:                     # 正常來說應該播過一次死亡動畫就會定格在最後一張動畫
+                        mons_group.sprites()[0].update(3, 255)  # 但是勝者會持續待機動畫
+                elif char_dead:
+                    mons_group.sprites()[0].update(1, 255)
+                    if count < frame_limit:
+                        char_group.sprites()[0].update(3, 255)
+
+                damage_group.draw(self.window.screen)
+                all_group.draw(self.window.screen)
+
+                pygame.display.update()
+                count += 1
+
+            # 戰鬥結果總結（經驗值處理）
+            count = 0
+            self.console_btn_group.sprites()[3].freeze = False  # 死亡與總結階段無法跳出
+            sys_message = "[戰鬥結果] - "
+            lv_up_message = "[系統訊息] "
+            if mons_dead:
+                base_lv_up, job_lv_up = self.Char_obj.get_exp(mons_obj.base_exp, mons_obj.job_exp)
+                sys_message += "勝利！ 獲得 Base Exp " + str(mons_obj.base_exp) + ", Job Exp " + str(mons_obj.job_exp)
+                if base_lv_up:
+                    lv_up_message += "Base Level Up! " + str(self.Char_obj.base_level - 1) + " -> " + str(self.Char_obj.base_level)
+                if base_lv_up and job_lv_up:
+                    lv_up_message += " | "
+                if job_lv_up:
+                    lv_up_message += "Job Level Up! " + str(self.Char_obj.job_level - 1) + " -> " + str(self.Char_obj.job_level)
+            elif char_dead:
+                self.Char_obj.exp_punish()
+                sys_message += "失敗！ 損失 2% Base / Job Exp"
+            chat_list = [sys_message]
+            if lv_up_message != "[系統訊息] ":
+                chat_list.append(lv_up_message)
+            chat = self.window.get_chat_win(chat_list, [Green] * len(chat_list))
+            self.chat_room_group.update(chat, None)
+            while True:
+                self.window.clock.tick(self.window.fps)
+                _, _, _, _ = self.window.input_detect()
+
+                if count >= frame_limit:
+                    if mons_dead:
+                        break
+                    elif char_dead:
+                        self.Char_obj.respawn()
+                        return
+                all_group.clear(self.window.screen, self.window.background)
+
+                self.ptr_group.update(pygame.mouse.get_pos())
+                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
+                if mons_dead:
+                    char_group.sprites()[0].update(1, 255)
+                elif char_dead:
+                    mons_group.sprites()[0].update(1, 255)
+
+                all_group.draw(self.window.screen)
+                pygame.display.update()
+                count += 1
 
             self.name_group.remove(mons_name)
-            return
 
 
     def info_page(self, map_idx):
@@ -274,7 +391,7 @@ class WorldClass:
         # map_data = Map_Database.map_data[map_idx]
         char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(), self.char_pos))
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 角色資訊頁面：再按一次 角色資訊 按鈕關閉頁面"], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 角色資訊頁面 - 再按一次 角色資訊 按鈕關閉頁面"], [Green])
         self.chat_room_group.update(chat, None)
 
         ability_list = ["str", "agi", "vit", "int", "dex", "luk"]

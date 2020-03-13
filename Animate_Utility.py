@@ -10,7 +10,7 @@ Blue = (0, 0, 255)
 
 
 class CharAnimate(pygame.sprite.Sprite):
-    def __init__(self, graphic_obj, char_obj, enemy_obj, center_pos):
+    def __init__(self, graphic_obj, char_obj, enemy_obj, center_pos, damage_pos):
         super().__init__()
         self.window = graphic_obj
         self.char = char_obj
@@ -19,6 +19,7 @@ class CharAnimate(pygame.sprite.Sprite):
         self.image = None
         self.rect = pygame.Rect(0, 0, self.default_width, self.default_width)
         self.rect.center = center_pos
+        self.damage_pos = damage_pos
         self.standby_image = char_obj.standby_img
         self.attack_image = char_obj.attack_img
         self.dead_image = char_obj.dead_img
@@ -28,7 +29,7 @@ class CharAnimate(pygame.sprite.Sprite):
         self.min_att_interval = 8   # 最小的攻擊動畫frame間隔
         self.min_att_total_frame = self.min_att_interval * self.image_count     # 攻擊完整動畫所佔的最多Frame
         self.attack_frame_interval = self.char.attribute.att_frame      # 一次攻擊動畫所佔的Total Frame
-        self.standby_frame_interval = 36                                # 一次待機動畫所佔的Total Frame
+        self.standby_frame_interval = 42                                # 一次待機動畫所佔的Total Frame
         self.min_std_interval = self.standby_frame_interval / self.image_count   # 每張待機動畫所佔的Frame
 
     def update(self, ani_type, alpha):     # type = 1: 純待機, type = 2: 攻擊(速度如果太慢也包含一部分待機), type = 3: 死亡
@@ -50,28 +51,28 @@ class CharAnimate(pygame.sprite.Sprite):
                 self.image = copy
             else:
                 self.image = self.standby_image[self.animate_idx]
-            self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+            self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
 
     def attack_animate(self, alpha):
-        if self.attack_frame_interval > self.min_att_interval * self.image_count:       # 攻擊太慢，要插入standby動畫
+        if self.attack_frame_interval > self.min_att_total_frame:       # 攻擊太慢，要插入standby動畫
             if self.frame < self.attack_frame_interval - self.min_att_total_frame:      # 先standby動畫
                 if self.frame % self.min_std_interval == 0:
                     self.image = self.standby_image[self.animate_idx]
-                    self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+                    self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
             else:                                                                       # 改成攻擊動畫
                 if self.frame == self.attack_frame_interval - self.min_att_total_frame:
                     self.animate_idx = 0                                                # 代表剛切換成攻擊動畫，重置動畫idx
                 if (self.frame - (self.attack_frame_interval - self.min_att_total_frame)) % self.min_att_interval == 0:
                     self.image = self.attack_image[self.animate_idx]
                     if self.animate_idx == self.image_count - 1:
-                        print("attack calculation")
-                    self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+                        DamageAnimate.AllGroup.add(DamageAnimate(self.window, self.char, self.enemy, self.damage_pos))
+                    self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
         else:                                                                           # 攻擊夠快，不用插standby動畫
             if self.frame % (self.attack_frame_interval // self.image_count) == 0:
                 self.image = self.attack_image[self.animate_idx]
                 if self.animate_idx == self.image_count - 1:                            # 畫到最後一張就開計算攻擊數值
-                    print("attack calculation")
-                self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+                    DamageAnimate.AllGroup.add(DamageAnimate(self.window, self.char, self.enemy, self.damage_pos))
+                self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
         if alpha < 255:
             copy = self.standby_image[self.animate_idx].copy()
             alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
@@ -82,118 +83,43 @@ class CharAnimate(pygame.sprite.Sprite):
     def dead_animate(self, alpha):
         if self.frame % self.min_std_interval == 0:
             if alpha < 255:
-                copy = self.standby_image[self.animate_idx].copy()
+                copy = self.dead_image[self.animate_idx].copy()
                 alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
                 alpha_surface.fill((255, 255, 255, alpha))
                 copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
                 self.image = copy
             else:
                 self.image = self.dead_image[self.animate_idx]
-            self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 2 else 0
+            self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
+
+    def reset_frame_animate(self):
+        self.frame = 0
+        self.animate_idx = 0
 
 
-class Animate(pygame.sprite.Sprite):
-    def __init__(self, graphic_obj, standby_image_path, attack_image_path, dead_image_path, center_pos, attacker=None, defencer=None, damage_pos=None):
-        super().__init__()
-        # 想以sprite.group的方式來控制動畫 property 中 image 與 rect 是必須的
-        self.window = graphic_obj
-        self.default_width = 200
-        self.standby_image = pygame.image.load(standby_image_path).convert_alpha()
-        self.attack_image = pygame.image.load(attack_image_path).convert_alpha()
-        self.dead_image = pygame.image.load(dead_image_path).convert_alpha()
-        self.image_count = self.standby_image.get_size()[0] / self.default_width  # 原則上是6
-        self.current = 0
-        self.current_type = 0
-        self.standby_image_array = []
-        self.attack_image_array = []
-        self.dead_image_array = []
-        self.center_pos = center_pos
-        for i in range(1, int(self.image_count) + 1):  # Parsing 攻擊動畫
-            self.standby_image_array.append(self.standby_image.subsurface(pygame.Rect((i - 1) * self.default_width,
-                                                                                      0,
-                                                                                      self.default_width,
-                                                                                      self.default_width)))
-            self.attack_image_array.append(self.attack_image.subsurface(pygame.Rect((i - 1) * self.default_width,
-                                                                                    0,
-                                                                                    self.default_width,
-                                                                                    self.default_width)))
-            self.dead_image_array.append(self.dead_image.subsurface(pygame.Rect((i - 1) * self.default_width,
-                                                                                0,
-                                                                                self.default_width,
-                                                                                self.default_width)))
-        self.rect = pygame.Rect(0, 0, self.default_width, self.default_width)
-        self.rect.center = self.center_pos
-        self.image = []
-        self.attacker = attacker
-        self.defencer = defencer
-        self.damage_pos = damage_pos
-
-    def update(self, type_flag, alpha):
-        # Sprite.Group()當中override掉的function
-        # type_flag: 1 = standby, 2 = attack, 3 = dead
-        # 如果輸入進來的type_flag跟目前的self.current_type不同，則self.current歸0(代表動畫重置)
-        if type_flag != self.current_type:
-            self.current = 0
-            self.current_type = type_flag
-        if self.current == self.image_count:  # 動畫播完reset重播
-            self.current = 0
-        self.current += 1
-        if type_flag == 1:  # 待機動畫
-            self.update_standby(alpha)
-        elif type_flag == 2:  # 攻擊動畫
-            self.update_attack(alpha)
-            if self.current == self.image_count:
-                Damage.AllGroup.add(Damage(self.window, self.attacker, self.defencer, self.damage_pos))
-        elif type_flag == 3:  # 死亡動畫
-            self.update_dead(alpha)
-        else:
-            print("Error Animation Update: parameter - type_flag = ", type_flag)
-            return
-
-    def update_standby(self, alpha):
-        copy = self.standby_image_array[self.current - 1].copy()
-        if alpha < 255:
-            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
-            alpha_surface.fill((255, 255, 255, alpha))
-            copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        self.image = copy
-
-    def update_attack(self, alpha):
-        copy = self.attack_image_array[self.current - 1]
-        if alpha < 255:
-            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
-            alpha_surface.fill((255, 255, 255, alpha))
-            copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        self.image = copy
-
-    def update_dead(self, alpha):
-        copy = self.dead_image_array[self.current - 1]
-        if alpha < 255:
-            alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
-            alpha_surface.fill((255, 255, 255, alpha))
-            copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
-        self.image = copy
-
-
-class Damage(pygame.sprite.Sprite):
-    AllGroup = None
+class DamageAnimate(pygame.sprite.Sprite):
+    AllGroup = pygame.sprite.Group()
 
     def __init__(self, graphic_obj, attacker, defencer, pos):
         super().__init__()
         self.window = graphic_obj
-        self.image = self.window.create_transparent_surface(70, 60)  # transparent surface
+        self.damage_max_digit = 6                                       # 傷害最大位數
+        self.damage_width, self.damage_height = self.window.damage_template[0].get_size()
+        self.image = self.window.create_transparent_surface(self.damage_max_digit * self.damage_width,  self.window.cri_template.get_size()[1])  # transparent surface
         self.rect = self.image.get_rect()
         self.rect.center = pos  # set to target position
         damage, flag = self.calculate_damage(attacker, defencer)  # 傷害計算(普通、爆擊、迴避，含音效)
         defencer.hp -= damage  # 傷害傳遞
-        rect1 = pygame.Rect(0, 0, 70, 60)
+        rect1 = self.image.get_rect()
         if flag == 3:  # 迴避
             rect2 = self.window.miss_template.get_rect()
             rect2.center = rect1.center
             self.image.blit(self.window.miss_template, rect2)
         elif flag == 1 or flag == 2:  # 普通or爆擊，差別在是否有爆擊動畫與數字顏色
             if flag == 2:
-                self.image.blit(self.window.cri_template, (0, 0))
+                rect3 = self.window.cri_template.get_rect()
+                rect3.center = rect1.center
+                self.image.blit(self.window.cri_template, rect3)
             damage_sur = self.generate_surface(damage, flag)
             rect2 = damage_sur.get_rect()
             rect2.center = rect1.center
@@ -201,14 +127,14 @@ class Damage(pygame.sprite.Sprite):
         self.life = 0  # 傷害數字動畫壽命(40個frame)
 
     def generate_surface(self, damage, flag):
-        damage = 9999999 if damage > 9999999 else damage
+        damage = 999999 if damage > 999999 else damage
         damage_value = [int(d) for d in str(damage)]
-        damage_surface = self.window.create_transparent_surface(10 * len(damage_value), 13)
+        damage_surface = self.window.create_transparent_surface(self.damage_width * len(damage_value), self.damage_height)
         for i in range(len(damage_value)):
             if flag == 1:
-                damage_surface.blit(self.window.damage_template[damage_value[i]], (i * 10, 0))
+                damage_surface.blit(self.window.damage_template[damage_value[i]], (i * self.damage_width, 0))
             elif flag == 2:
-                damage_surface.blit(self.window.damage_cri_template[damage_value[i]], (i * 10, 0))
+                damage_surface.blit(self.window.damage_cri_template[damage_value[i]], (i * self.damage_width, 0))
         return damage_surface
 
     def calculate_damage(self, attacker, defencer):
@@ -233,7 +159,7 @@ class Damage(pygame.sprite.Sprite):
 
     def update(self):
         if self.life >= 40:
-            Damage.AllGroup.remove(self)
+            DamageAnimate.AllGroup.remove(self)
         self.rect.y -= 2
         self.life += 1
 

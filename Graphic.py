@@ -181,11 +181,13 @@ class WindowClass:
         damage_img = pygame.image.load(os.path.join("Info_Image", "damage.png")).convert_alpha()
         damage_cri_img = pygame.image.load(os.path.join("Info_Image", "damage_Critical.png")).convert_alpha()
         pointer_img = pygame.image.load(os.path.join("Info_Image", "pointer.png")).convert_alpha()
-        damage_width = 10
-        damage_height = 13
+        damage_img = self.get_resize_surface(damage_img, (int(damage_img.get_size()[0] * 1.5), int(damage_img.get_size()[1] * 1.5)))
+        damage_cri_img = self.get_resize_surface(damage_cri_img, (int(damage_cri_img.get_size()[0] * 1.5), int(damage_cri_img.get_size()[1] * 1.5)))
+        damage_width = damage_img.get_size()[0] / 10
+        damage_height = damage_img.get_size()[1]
         ptr_width = 22
         ptr_height = 31
-        for i in range(1, damage_img.get_size()[0] // damage_width + 1):
+        for i in range(1, damage_img.get_size()[0] // int(damage_width) + 1):
             self.damage_template.append(damage_img.subsurface(pygame.Rect((i-1) * damage_width, 0, damage_width, damage_height)))
             self.damage_cri_template.append(damage_cri_img.subsurface(pygame.Rect((i-1) * damage_width, 0, damage_width, damage_height)))
         for i in range(1, pointer_img.get_size()[0] // ptr_width + 1):
@@ -425,6 +427,22 @@ class WindowClass:
         return title_bar, btn_bar
 
     @staticmethod
+    def set_status_text(surface, char_obj):
+        temp_font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 11)
+        name_render = temp_font.render(char_obj.char_name, True, Black)
+        exp_percentrage = round(char_obj.base_exp / char_obj.target_base_exp * 100, 1)
+        # status1 = "Lv.100 / Assassin Cross / Lv.70 / Exp.100.0 %"     # 極限測試
+        # status2 = "HP 99999/99999 | SP 9999/9999 | 10000000Z"
+        status1 = "Lv." + str(char_obj.base_level) + " / " + char_obj.job_name + " / Lv." + str(char_obj.job_level) + " / Exp. " + str(exp_percentrage) + " %"
+        status2 = "HP " + str(char_obj.hp) + " / " + str(char_obj.attribute.max_hp) + "| SP " + str(char_obj.sp) + " / " + str(char_obj.attribute.max_sp) + " | " + str(Character.tool_money_format(char_obj.zeny)) + " Z"
+        surface.blit(name_render, (19, 0))
+        status1_render = temp_font.render(status1, True, Black)
+        surface.blit(status1_render, (6, 17))
+        status2_render = temp_font.render(status2, True, Black)
+        surface.blit(status2_render, (6, 33))
+        return surface
+
+    @staticmethod
     def fps_analysis(fps_list):
         if len(fps_list) > 30:
             del fps_list[0:29]
@@ -483,22 +501,7 @@ class WindowClass:
         surface.set_alpha(alpha)
         return surface.convert()
 
-    @staticmethod
-    def set_status_text(surface, char_obj):
-        temp_font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 11)
-        name_render = temp_font.render(char_obj.char_name, True, Black)
-        exp_percentrage = round(char_obj.base_exp / char_obj.target_base_exp * 100, 2)
-        status1 = "Lv." + str(char_obj.base_level) + " / " + char_obj.job_name + " / Lv." + str(char_obj.job_level) + " / Exp. " + str(exp_percentrage) + "%"
-        status2 = "HP " + str(char_obj.hp) + " / " + str(char_obj.attribute.max_hp) + "| SP " + str(char_obj.sp) + " / " + str(char_obj.attribute.max_sp) + " | " + str(Character.tool_money_format(char_obj.zeny)) + " Z"
-        max_width, max_height = surface.get_size()
-        surface.blit(name_render, (0.02 * max_width, 0.05 * max_height))
-        status1_render = temp_font.render(status1, True, Black)
-        width, height = status1_render.get_size()
-        surface.blit(status1_render, (0.95 * max_width - width, 0.05 * max_height))
-        status2_render = temp_font.render(status2, True, Black)
-        width, height = status2_render.get_size()
-        surface.blit(status2_render, (0.95 * max_width - width, 0.50 * max_height))
-        return surface
+
 
     @staticmethod
     def play_bgm(path):
