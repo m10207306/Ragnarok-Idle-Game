@@ -10,7 +10,7 @@ Blue = (0, 0, 255)
 
 
 class CharAnimate(pygame.sprite.Sprite):
-    def __init__(self, graphic_obj, char_obj, enemy_obj, center_pos, damage_pos):
+    def __init__(self, graphic_obj, char_obj, enemy_obj, center_pos, damage_pos, damage_group):
         super().__init__()
         self.window = graphic_obj
         self.char = char_obj
@@ -20,6 +20,7 @@ class CharAnimate(pygame.sprite.Sprite):
         self.rect = pygame.Rect(0, 0, self.default_width, self.default_width)
         self.rect.center = center_pos
         self.damage_pos = damage_pos
+        self.damage_group = damage_group
         self.standby_image = char_obj.standby_img
         self.attack_image = char_obj.attack_img
         self.dead_image = char_obj.dead_img
@@ -39,7 +40,11 @@ class CharAnimate(pygame.sprite.Sprite):
             self.attack_animate(alpha)
         elif ani_type == 3:
             self.dead_animate(alpha)
-        self.frame = self.frame + 1 if self.frame < self.attack_frame_interval - 2 else 0
+
+        if ani_type == 2:
+            self.frame = self.frame + 1 if self.frame <= self.attack_frame_interval - 2 else 0
+        else:
+            self.frame = self.frame + 1 if self.frame <= self.standby_frame_interval - 2 else 0
 
     def standby_animate(self, alpha):
         if self.frame % self.min_std_interval == 0:
@@ -65,13 +70,13 @@ class CharAnimate(pygame.sprite.Sprite):
                 if (self.frame - (self.attack_frame_interval - self.min_att_total_frame)) % self.min_att_interval == 0:
                     self.image = self.attack_image[self.animate_idx]
                     if self.animate_idx == self.image_count - 1:
-                        DamageAnimate.AllGroup.add(DamageAnimate(self.window, self.char, self.enemy, self.damage_pos))
+                        self.damage_group.add(DamageAnimate(self.window, self.char, self.enemy, self.damage_pos, self.damage_group))
                     self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
         else:                                                                           # 攻擊夠快，不用插standby動畫
             if self.frame % (self.attack_frame_interval // self.image_count) == 0:
                 self.image = self.attack_image[self.animate_idx]
                 if self.animate_idx == self.image_count - 1:                            # 畫到最後一張就開計算攻擊數值
-                    DamageAnimate.AllGroup.add(DamageAnimate(self.window, self.char, self.enemy, self.damage_pos))
+                    self.damage_group.add(DamageAnimate(self.window, self.char, self.enemy, self.damage_pos, self.damage_group))
                 self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
         if alpha < 255:
             copy = self.standby_image[self.animate_idx].copy()
@@ -98,9 +103,10 @@ class CharAnimate(pygame.sprite.Sprite):
 
 
 class DamageAnimate(pygame.sprite.Sprite):
-    AllGroup = pygame.sprite.Group()
+    char_damage = pygame.sprite.Group()
+    mons_damage = pygame.sprite.Group()
 
-    def __init__(self, graphic_obj, attacker, defencer, pos):
+    def __init__(self, graphic_obj, attacker, defencer, pos, group):
         super().__init__()
         self.window = graphic_obj
         self.damage_max_digit = 6                                       # 傷害最大位數
@@ -108,19 +114,22 @@ class DamageAnimate(pygame.sprite.Sprite):
         self.image = self.window.create_transparent_surface(self.damage_max_digit * self.damage_width,  self.window.cri_template.get_size()[1])  # transparent surface
         self.rect = self.image.get_rect()
         self.rect.center = pos  # set to target position
-        damage, flag = self.calculate_damage(attacker, defencer)  # 傷害計算(普通、爆擊、迴避，含音效)
-        defencer.hp -= damage  # 傷害傳遞
+        self.attacker = attacker
+        self.defencer = defencer
+        self.group = group
+        self.damage, self.flag = self.calculate_damage(attacker, defencer)  # 傷害計算(普通、爆擊、迴避，含音效)
+        defencer.hp -= self.damage  # 傷害傳遞
         rect1 = self.image.get_rect()
-        if flag == 3:  # 迴避
+        if self.flag == 3:  # 迴避
             rect2 = self.window.miss_template.get_rect()
             rect2.center = rect1.center
             self.image.blit(self.window.miss_template, rect2)
-        elif flag == 1 or flag == 2:  # 普通or爆擊，差別在是否有爆擊動畫與數字顏色
-            if flag == 2:
+        elif self.flag == 1 or self.flag == 2:  # 普通or爆擊，差別在是否有爆擊動畫與數字顏色
+            if self.flag == 2:
                 rect3 = self.window.cri_template.get_rect()
                 rect3.center = rect1.center
                 self.image.blit(self.window.cri_template, rect3)
-            damage_sur = self.generate_surface(damage, flag)
+            damage_sur = self.generate_surface(self.damage, self.flag)
             rect2 = damage_sur.get_rect()
             rect2.center = rect1.center
             self.image.blit(damage_sur, rect2)
@@ -157,9 +166,24 @@ class DamageAnimate(pygame.sprite.Sprite):
         # return damage_value, type    type1 = 普通  type2 = 爆擊  type3 = miss
         return round(damage_value), 1
 
+    def get_battle_msg(self):
+        message = "[戰鬥訊息] [" + \
+                  (self.attacker.char_name if hasattr(self.attacker, "char_name") else self.attacker.mons_zh_name) + \
+                  "] 攻擊 [" + \
+                  (self.defencer.char_name if hasattr(self.defencer, "char_name") else self.defencer.mons_zh_name) + "]"
+        if self.flag == 3:
+            message += " 未命中！"
+        else:
+            message += " 命中！ 造成 " + str(self.damage) + " 點"
+            if self.flag == 1:
+                message += " 一般傷害！"
+            elif self.flag == 2:
+                message += " 致命傷害！"
+        return message
+
     def update(self):
         if self.life >= 40:
-            DamageAnimate.AllGroup.remove(self)
+            self.group.remove(self)
         self.rect.y -= 2
         self.life += 1
 

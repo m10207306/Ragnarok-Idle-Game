@@ -82,7 +82,7 @@ class Ragnarok:
                 self.window.fps_analysis(fps_list)
                 name, ability_list = self.initialize_ability()
                 world_obj = World.WorldClass(self.window, name, ability_list)
-                world_obj.transfer_station(1)       # 預設前往普隆德拉
+                world_obj.transfer_station(64)       # 預設前往普隆德拉
                 self.window.reset_chat_message()    # 如果走到這邊代表已經退出遊戲，需要清除聊天框內的訊息
                 print(">> Create Character")
                 return True

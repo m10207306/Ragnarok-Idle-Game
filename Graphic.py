@@ -57,6 +57,12 @@ class WindowClass:
         self.background.set_alpha(alpha)
         self.screen.blit(self.background, (0, 0))
 
+    def set_bg_by_surface(self, surface, alpha):
+        self.clear_screen()
+        pygame.transform.scale(surface, self.screen.get_size(), self.background)
+        self.background.set_alpha(alpha)
+        self.screen.blit(self.background, (0, 0))
+
     def get_map_icon(self, file_path):          # 產生小地圖(半透明)
         img = pygame.image.load(file_path).convert_alpha()
         rect = img.get_rect()
@@ -100,7 +106,7 @@ class WindowClass:
         rect = self.screen.blit(surface, rect)
         return rect
 
-    def get_chat_win(self, content, color):      # 創造聊天室
+    def get_chat_win(self, content, color, only_input_chat_content = False):      # 創造聊天室
         # content = ["str1", "str2", ...]
         # can store 15 lines content
         size = (600, 221)
@@ -110,11 +116,12 @@ class WindowClass:
         while not len(self.chat_message) < line_limit:
             self.chat_message.pop(0)                           # 刪除最舊的訊息
             self.chat_color.pop(0)
-        chat_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1] - self.chat_input_template.get_size()[1], size[0], size[1])).copy()
-        chat_ground_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
-        chat_bg.blit(chat_ground_surface, (0, 0))
-        self.set_text(chat_bg, self.chat_message, self.chat_color, (0, 0))
-        return chat_bg
+        if not only_input_chat_content:
+            chat_bg = self.background.subsurface(pygame.Rect(0, self.height - size[1] - self.chat_input_template.get_size()[1], size[0], size[1])).copy()
+            chat_ground_surface = self.create_color_surface(Black, pygame.Rect(0, 0, size[0], size[1]), 150)
+            chat_bg.blit(chat_ground_surface, (0, 0))
+            self.set_text(chat_bg, self.chat_message, self.chat_color, (0, 0))
+            return chat_bg
 
     def get_status_win(self, char_obj): # 創造人物基本資訊視窗
         # char_obj = Character Class Object

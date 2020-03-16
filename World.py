@@ -9,6 +9,8 @@ Red = (255, 0, 0)
 Green = (0, 255, 0)
 Blue = (0, 0, 255)
 Yellow = (255, 222, 0)
+Orange = (255, 170, 0)
+Battle_Meg_Color = (0, 196, 255)
 
 
 class WorldClass:
@@ -84,7 +86,6 @@ class WorldClass:
                 map_idx = self.city_standby(map_idx)
             elif map_data[3] == 2:
                 map_idx = self.field_run(map_idx)
-
             # Case1: new_idx = current_pos 保持在這個地圖，重置畫面
             # Case2: map_idx != current_pos 換地圖 -> 回到transfer station以new_idx跑新地圖
             # Case3: new_idx = None 離開遊戲回到主畫面 -> 回到transfer station並中斷，回到更上層的Main
@@ -157,7 +158,7 @@ class WorldClass:
         chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2]], [Green])
         self.chat_room_group.update(chat, None)
 
-        char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, None, self.char_pos, self.char_damage_pos))
+        char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, None, self.char_pos, self.char_damage_pos, None))
         for sprite in self.console_btn_group.sprites():     # 所有按鍵都可以使用
             sprite.freeze = False
 
@@ -220,9 +221,10 @@ class WorldClass:
 
         while True:
             mons_obj = Character.MonsterClass(random.choice(map_data[7]))
-            char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, mons_obj, self.char_pos, self.char_damage_pos))
-            mons_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, mons_obj, self.Char_obj, self.mons_pos, self.mons_damage_pos))
-            damage_group = Animate_Utility.DamageAnimate.AllGroup
+            char_dmg_group = Animate_Utility.DamageAnimate.char_damage
+            mons_dmg_group = Animate_Utility.DamageAnimate.mons_damage
+            char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, mons_obj, self.char_pos, self.char_damage_pos, char_dmg_group))
+            mons_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, mons_obj, self.Char_obj, self.mons_pos, self.mons_damage_pos, mons_dmg_group))
 
             mons_name = self.window.get_text_block("Lv." + str(mons_obj.base_level) + " " + mons_obj.mons_zh_name, self.mons_name_pos)
             self.name_group.add(Animate_Utility.InfoWindowAnimate(mons_name, self.mons_name_pos))
@@ -239,8 +241,10 @@ class WorldClass:
             alpha = 255 - (alpha_step * frame_limit / animate_count)
             self.console_btn_group.sprites()[3].image = self.console_btn_group.sprites()[3].btn_list[0]  # 按鍵動畫恢復按下去之前
             self.console_btn_group.sprites()[3].freeze = True  # 動畫時間不跳出
+            fps_list = []
             while True:
                 self.window.clock.tick(self.window.fps)
+                fps_list.append(self.window.clock.get_fps())
                 _, _, _, _ = self.window.input_detect()
                 if count >= frame_limit * 2:
                     break
@@ -257,20 +261,27 @@ class WorldClass:
                 pygame.display.update()
                 count += 1
 
+            print("Monster Come Out Stage")
+            self.window.fps_analysis(fps_list)
+
             # 正式戰鬥
+            # 如果加入即時更新戰報fps會降到45-50，不加入則大概55-60，優化後可以加入訊息還是保持在55-60
+            # 攻速最快190的情況下fps大概在50-55
             char_group.sprites()[0].reset_frame_animate()
             mons_group.sprites()[0].reset_frame_animate()
             mons_dead = False
             char_dead = False
             fps_list = []
             self.console_btn_group.sprites()[3].freeze = False  # 正式戰鬥可以跳出
+            chat_update = False
             while True:
                 self.window.clock.tick(self.window.fps)
                 fps_list.append(self.window.clock.get_fps())
                 key, key_id, mouse, mouse_type = self.window.input_detect()
 
                 all_group.clear(self.window.screen, self.window.background)
-                damage_group.clear(self.window.screen, self.window.background)
+                char_dmg_group.clear(self.window.screen, self.window.background)
+                mons_dmg_group.clear(self.window.screen, self.window.background)
                 # 因為damage_group會動態增加sprite跟減少，所以沒辦法在外面一次塞進去all_group裡
 
                 self.ptr_group.update(pygame.mouse.get_pos())
@@ -279,15 +290,29 @@ class WorldClass:
                 self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
 
                 if self.console_btn_group.sprites()[3].update(ptr_tip_pos, mouse_type):
+                    char_dmg_group.empty()      # 調離戰鬥時清除傷害紀錄
+                    mons_dmg_group.empty()
                     print("Battle Stage")
                     self.window.fps_analysis(fps_list)
                     return
 
                 char_group.update(2, 255)
+                if len(char_dmg_group.sprites()) != 0 and (char_dmg_group.sprites()[-1].life == 0):
+                    self.window.get_chat_win([char_dmg_group.sprites()[-1].get_battle_msg()], [Battle_Meg_Color], True)
+                    chat_update = True
                 mons_group.update(2, 255)
-                damage_group.update()
+                if len(mons_dmg_group.sprites()) != 0 and (mons_dmg_group.sprites()[-1].life == 0):
+                    self.window.get_chat_win([mons_dmg_group.sprites()[-1].get_battle_msg()], [Battle_Meg_Color], True)
+                    chat_update = True
+                char_dmg_group.update()
+                mons_dmg_group.update()
+                if chat_update:             # 有更新訊息才update chat room，不然fps會降到45
+                    chat = self.window.get_chat_win([], [])
+                    self.chat_room_group.update(chat, None)
+                    chat_update = False
 
-                damage_group.draw(self.window.screen)
+                char_dmg_group.draw(self.window.screen)
+                mons_dmg_group.draw(self.window.screen)
                 all_group.draw(self.window.screen)
                 pygame.display.update()
 
@@ -307,35 +332,43 @@ class WorldClass:
             mons_group.sprites()[0].reset_frame_animate()
             count = 0
             self.console_btn_group.sprites()[3].freeze = True  # 死亡與總結階段無法跳出
+            fps_list = []
             while True:
                 self.window.clock.tick(self.window.fps)
+                fps_list.append(self.window.clock.get_fps())
                 _, _, _, _ = self.window.input_detect()
 
-                if count >= frame_limit and len(damage_group.sprites()) == 0:
+                if count >= frame_limit and len(char_dmg_group.sprites()) == 0 and len(mons_dmg_group.sprites()) == 0:
                     break
 
                 all_group.clear(self.window.screen, self.window.background)
-                damage_group.clear(self.window.screen, self.window.background)
+                char_dmg_group.clear(self.window.screen, self.window.background)
+                mons_dmg_group.clear(self.window.screen, self.window.background)
 
                 self.ptr_group.update(pygame.mouse.get_pos())
                 self.status_group.update(self.window.get_status_win(self.Char_obj), None)
                 self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-                damage_group.update()
+                char_dmg_group.update()
+                mons_dmg_group.update()
 
                 if mons_dead:
-                    char_group.sprites()[0].update(1, 255)
-                    if count < frame_limit:                     # 正常來說應該播過一次死亡動畫就會定格在最後一張動畫
-                        mons_group.sprites()[0].update(3, 255)  # 但是勝者會持續待機動畫
+                    char_group.sprites()[0].update(1, 255)      # 勝者會持續待機動畫
+                    if count < frame_limit:
+                        mons_group.sprites()[0].update(3, 255)  # 播過一次死亡動畫就會定格在最後一張動畫
                 elif char_dead:
                     mons_group.sprites()[0].update(1, 255)
                     if count < frame_limit:
                         char_group.sprites()[0].update(3, 255)
 
-                damage_group.draw(self.window.screen)
+                char_dmg_group.draw(self.window.screen)
+                mons_dmg_group.draw(self.window.screen)
                 all_group.draw(self.window.screen)
 
                 pygame.display.update()
                 count += 1
+
+            print("Dead Animate Stage")
+            self.window.fps_analysis(fps_list)
 
             # 戰鬥結果總結（經驗值處理）
             count = 0
@@ -384,7 +417,6 @@ class WorldClass:
                 count += 1
 
             self.name_group.remove(mons_name)
-
 
     def info_page(self, map_idx):
         # fps 48-52，看起來跟Ability Initialization一樣慢，可能是對多個按鍵進行偵測並做對應處置
@@ -461,40 +493,84 @@ class WorldClass:
             pygame.display.update()
 
     def moving_page(self, map_idx):
-        # 暫時停工（等原野部分初步完成）
         img = pygame.image.load(os.path.join("Map_Image", "all_map.png")).convert_alpha()
         map_data = Map_Database.map_data[self.current_pos]
-        trans_btn_list = [self.window.create_color_surface(Black, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 0)] * 3
-        pygame.draw.rect(img, Yellow, map_data[6], 3)        # 框出目前地圖
-        btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(trans_btn_list, map_data[6].center))
+        curr_btn_list = [self.window.create_transparent_surface(Map_Database.map_size, Map_Database.map_size),
+                         self.window.create_transparent_surface(Map_Database.map_size, Map_Database.map_size),
+                         self.window.create_transparent_surface(Map_Database.map_size, Map_Database.map_size)]
+        pygame.draw.rect(curr_btn_list[0], Blue, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 4)
+        pygame.draw.rect(curr_btn_list[1], Green, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 8)
+        pygame.draw.rect(curr_btn_list[2], Red, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 2)
 
-        next_map_list = map_data[5]
-        next_map_name = []
+        next_btn_list = [self.window.create_transparent_surface(Map_Database.map_size, Map_Database.map_size),
+                         self.window.create_transparent_surface(Map_Database.map_size, Map_Database.map_size),
+                         self.window.create_transparent_surface(Map_Database.map_size, Map_Database.map_size)]
+        pygame.draw.rect(next_btn_list[0], Green, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 4)
+        pygame.draw.rect(next_btn_list[1], Green, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 8)
+        pygame.draw.rect(next_btn_list[2], Green, pygame.Rect(0, 0, Map_Database.map_size, Map_Database.map_size), 2)
+
+        btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(curr_btn_list, map_data[6].center))
+        next_map_list = map_data[5].copy()
+        next_map_name = ["[系統訊息] 此地可移動前往以下地點："]
         for i in range(len(next_map_list)):             # 框出可前往地圖
             next_map_data = Map_Database.map_data[next_map_list[i]]
-            pygame.draw.rect(img, Green, next_map_data[6], 3)
-            next_map_name.append("    No. " + str(next_map_data[0]) + " " + next_map_data[2])
-            btn_group.add(Animate_Utility.ButtonAnimate(trans_btn_list, next_map_data[6].center))
+            next_map_name.append("  No. " + str(next_map_data[0]) + " " + next_map_data[2])
+            btn_group.add(Animate_Utility.ButtonAnimate(next_btn_list, next_map_data[6].center))
+        next_map_list.insert(0, map_idx)                # 對應到整個btn的順序(目前位置, 可前往地圖編碼1, 可前往地圖編碼2...)
+        self.window.get_chat_win(next_map_name, [Orange] * len(next_map_name), True)
 
-        sub_height = 0
+        sub_height, height_record = 0, 0
         scroll_step = 10
         max_height = img.get_size()[1] - 1 - self.window.height - 1 - scroll_step
+        self.window.set_bg_by_surface(img.subsurface(pygame.Rect(0, sub_height, self.window.width, self.window.height)), 255)
+        self.common_group_update()
+        chat = self.window.get_chat_win([], [])
+        self.chat_room_group.update(chat, None)
+        all_group = self.window.combine_sprite([btn_group, self.chat_room_group, self.chat_input_group,
+                                                self.console_btn_group, self.console_text_group, self.ptr_group])
+        for btn in self.console_btn_group.sprites():
+            btn.freeze = True
+        self.console_btn_group.sprites()[4].freeze = False
         fps_list = []
         while True:
+            self.window.clock.tick(self.window.fps)
             fps_list.append(self.window.clock.get_fps())
             key, key_id, mouse, mouse_type = self.window.input_detect()
             if "escape" in key:
-                print("City Standby")
+                print("Map Moving Stage")
                 self.window.fps_analysis(fps_list)
                 return map_idx
 
             if "click" in mouse_type or "down" in mouse_type:
-                if 4 in mouse:      # scroll down
+                if 4 in mouse:      # 滾輪，影像往上
                     sub_height = sub_height + scroll_step if sub_height < max_height else sub_height
-                elif 5 in mouse:    # scroll up
+                    if height_record != sub_height:             # 表示sub_height有所變動，因此按鍵的Rect也要跟著變動
+                        for btn in btn_group:
+                            btn.rect.center = (btn.rect.center[0], btn.rect.center[1] - scroll_step)
+                    height_record = sub_height if height_record != sub_height else height_record    # 假設這個Frame的sub_height有變更，則更新紀錄
+                elif 5 in mouse:    # 滾輪，影像往下
                     sub_height = sub_height - scroll_step if sub_height > scroll_step else sub_height
+                    if height_record != sub_height:
+                        for btn in btn_group:
+                            btn.rect.center = (btn.rect.center[0], btn.rect.center[1] + scroll_step)
+                    height_record = sub_height if height_record != sub_height else height_record
+                chat = self.window.get_chat_win([], [])
+                self.chat_room_group.update(chat, None)
 
-            self.window.screen.blit(img.subsurface(pygame.Rect(0, sub_height, self.window.width, self.window.height)), (0, 0))
+            self.window.set_bg_by_surface(img.subsurface(pygame.Rect(0, sub_height, self.window.width, self.window.height)), 255)
+
+            self.ptr_group.update(pygame.mouse.get_pos())
+            ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
+            for idx, btn in enumerate(btn_group):
+                if btn.update(ptr_tip_pos, mouse_type):
+                    return next_map_list[idx]
+
+            if self.console_btn_group.sprites()[4].update(ptr_tip_pos, mouse_type):
+                print("Map Moving Stage")
+                self.window.fps_analysis(fps_list)
+                return map_idx
+
+            all_group.draw(self.window.screen)
             pygame.display.update()
 
     def common_group_update(self):
