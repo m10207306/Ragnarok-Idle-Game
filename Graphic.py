@@ -43,6 +43,9 @@ class WindowClass:
         self.btn_ability_template = []
         self.btn_inter_template = []
         self.btn_r_arw_template = []
+        self.item_tab_template = []
+        self.item_base_template = []
+        self.item_base_template2 = []
         self.load_template_image()
 
     def clear_screen(self):
@@ -182,6 +185,15 @@ class WindowClass:
         self.btn_r_arw_template = [pygame.image.load(os.path.join("Info_Image", "arw_right0.png")).convert_alpha(),
                                    pygame.image.load(os.path.join("Info_Image", "arw_right1.png")).convert_alpha(),
                                    pygame.image.load(os.path.join("Info_Image", "arw_right2.png")).convert_alpha()]
+        self.item_tab_template = [pygame.image.load(os.path.join("Info_Image", "tab_itm_01.png")).convert_alpha(),
+                                  pygame.image.load(os.path.join("Info_Image", "tab_itm_02.png")).convert_alpha(),
+                                  pygame.image.load(os.path.join("Info_Image", "tab_itm_03.png")).convert_alpha()]
+        self.item_base_template = [pygame.image.load(os.path.join("Info_Image", "itemwin_left.png")).convert_alpha(),
+                                   pygame.image.load(os.path.join("Info_Image", "itemwin_mid.png")).convert_alpha(),
+                                   pygame.image.load(os.path.join("Info_Image", "itemwin_right.png")).convert_alpha()]
+        self.item_base_template2 = [pygame.image.load(os.path.join("Info_Image", "itemwin_left2.png")).convert_alpha(),
+                                    pygame.image.load(os.path.join("Info_Image", "itemwin_mid2.png")).convert_alpha(),
+                                    pygame.image.load(os.path.join("Info_Image", "itemwin_right2.png")).convert_alpha()]
         # 把每個Button送進去resize，然後長寬各乘2倍
         self.btn_inter_template = \
             [[self.get_resize_surface(j, [k*2 for k in j.get_size()]) for j in i] for i in self.btn_inter_template]
@@ -408,6 +420,60 @@ class WindowClass:
                 else:
                     width_type = 1
                 win.blit(self.txt_win_template[height_type][width_type], (j * txt_width, i * txt_height))
+        return win
+
+    def get_item_base_win(self, item_type):
+        width, height = 260, 173
+        win = pygame.Surface((width, height)).convert_alpha()
+
+        title_bar, btn_bar = self.generate_titlebar(width)
+        win.blit(title_bar, (0, 0))
+        win.blit(self.item_tab_template[item_type], (0, 17))
+        win.blit(btn_bar, (0, 145))
+
+        return win
+
+    def get_item_list_win(self, item_list):
+        item_num = len(item_list)
+        item_in_row = 7
+        edge_width, block_width, height = 40, 32, 32
+        row_num = int(math.ceil(item_num / item_in_row))
+        row_num = 4 if row_num < 4 else row_num
+        win_width = (item_in_row - 2) * block_width + 2 * edge_width
+        win_height = row_num * height
+
+        win = pygame.Surface((win_width, win_height)).convert_alpha()
+        cur_width, cur_height = 0, 0
+        for r in range(row_num):
+            win.blit(self.item_base_template[0], (cur_width, cur_height))
+            cur_width += edge_width
+            for i in range(5):
+                win.blit(self.item_base_template[1], (cur_width, cur_height))
+                cur_width += block_width
+            win.blit(self.item_base_template[2], (cur_width, cur_height))
+            cur_width = 0
+            cur_height += height
+
+        count = 1
+        cur_width, cur_height = 24, 14
+        width_space, height_space = 32, 32
+        amount_bias = 10
+        font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 10)
+        for item in item_list:
+            rect = item.icon_image.get_rect()
+            rect.center = (cur_width, cur_height)
+            win.blit(item.icon_image, rect)
+            amount = font.render(str(item.amount), True, Black)
+            rect = amount.get_rect()
+            rect.center = (cur_width + amount_bias, cur_height + amount_bias)
+            win.blit(amount, rect)
+            cur_width += width_space
+            if count == 7:
+                count = 1
+                cur_width = 24
+                cur_height += height_space
+            else:
+                count += 1
         return win
 
     def generate_titlebar(self, width_px):          # 創造客製化尺寸的系統視窗的上方Bar與下方Button Bar

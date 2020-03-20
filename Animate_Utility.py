@@ -263,7 +263,7 @@ class ButtonAnimate(pygame.sprite.Sprite):
                     self.image = self.btn_list[1]
                 elif "down" in mouse_type:          # 按下去
                     self.image = self.btn_list[2]
-                elif "up" in mouse_type or "click" in mouse_type:
+                elif "up" in mouse_type or "click" in mouse_type:   # 放開來
                     self.image = self.btn_list[2]
                     enter = True
             else:

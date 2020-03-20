@@ -1,13 +1,14 @@
 import os, math
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # 3rd party Library
-import Attribute, Monster_Database
+import Attribute, Item, Monster_Database
 
 
 class CharacterClass:
     def __init__(self, name, ini_ability):
         self.char_name = name
-        self.job_name = "Novice"
+        self.job_idx = 0
+        self.job_name = job_name_list[self.job_idx]
         self.job_type = 1
 
         self.base_level = 1
@@ -21,13 +22,50 @@ class CharacterClass:
         self.target_job_exp = 0
         self.define_job_exp_type()
 
-        self.equipment = [[], [], [], ["棉襯衫", 10], ["短劍", 17], [], [], [], [], []]
-        # Temp Version
-        # head_up, head_mid, head_down, body, R-hand, L-hand, robe, shoes, accessory1, accessory2
-        self.item = []
+        self.item = Item.ItemList()
+        self.item.add_item(Item.ItemObj(0, 0, self, 1))
+        self.item.add_item(Item.ItemObj(0, 0, self, 9))
+        self.item.add_item(Item.ItemObj(0, 1, self, 10))
+        self.item.add_item(Item.ItemObj(0, 2, self, 10))
+        self.item.add_item(Item.ItemObj(0, 3, self, 10))
+        self.item.add_item(Item.ItemObj(0, 4, self, 10))
+        self.item.add_item(Item.ItemObj(0, 5, self, 10))
+        self.item.add_item(Item.ItemObj(0, 6, self, 10))
+        self.item.add_item(Item.ItemObj(0, 7, self, 10))
+        self.item.add_item(Item.ItemObj(0, 8, self, 10))
+        self.item.add_item(Item.ItemObj(0, 9, self, 10))
+        self.item.add_item(Item.ItemObj(0, 10, self, 10))
+        self.item.add_item(Item.ItemObj(0, 11, self, 10))
+        self.item.add_item(Item.ItemObj(0, 12, self, 10))
+        self.item.add_item(Item.ItemObj(0, 13, self, 10))
+        self.item.add_item(Item.ItemObj(0, 14, self, 10))
+        self.item.add_item(Item.ItemObj(0, 15, self, 10))
+        self.item.add_item(Item.ItemObj(0, 16, self, 10))
+        self.item.add_item(Item.ItemObj(0, 17, self, 10))
+        self.item.add_item(Item.ItemObj(0, 18, self, 10))
+        self.item.add_item(Item.ItemObj(0, 19, self, 10))
+        self.item.add_item(Item.ItemObj(0, 20, self, 10))
+        self.item.add_item(Item.ItemObj(0, 21, self, 10))
+        self.item.add_item(Item.ItemObj(0, 22, self, 10))
+        self.item.add_item(Item.ItemObj(0, 23, self, 10))
+        self.item.add_item(Item.ItemObj(0, 24, self, 10))
+        self.item.add_item(Item.ItemObj(0, 25, self, 10))
+        self.item.add_item(Item.ItemObj(0, 26, self, 10))
+        self.item.add_item(Item.ItemObj(0, 27, self, 10))
+        self.item.add_item(Item.ItemObj(0, 28, self, 10))
+        self.item.add_item(Item.ItemObj(0, 29, self, 10))
+        self.item.add_item(Item.ItemObj(0, 30, self, 10))
+        self.item.add_item(Item.ItemObj(1, 1, self, 1))
+        self.item.add_item(Item.ItemObj(1, 0, self, 1))
+        self.item.add_item(Item.ItemObj(1, 1, self, 1))
+        self.item.add_item(Item.ItemObj(1, 0, self, 1))
+        self.equipment = None
+        # self.equipment = Item.EquipmentList()
+        # self.equipment.equip(Item.ItemObj(1, 0, self, 1), self.item)
+        # self.equipment.equip(Item.ItemObj(1, 1, self, 1), self.item)
 
-        self.ability = Attribute.AbilityClusterClass(ini_ability)          # control str, agi, vit ...etc
-        self.attribute = Attribute.AttributeClusterClass(self)  # generate atk, def, flee ...etc
+        self.ability = Attribute.AbilityClusterClass(ini_ability)       # control str, agi, vit ...etc
+        self.attribute = Attribute.AttributeClusterClass(self)          # generate atk, def, flee ...etc
 
         self.hp = self.attribute.max_hp
         self.sp = self.attribute.max_sp
@@ -117,6 +155,11 @@ def tool_money_format(money):
     return money_str
 
 
+job_name_list = ["Novice", "Swordman",    "Magician",    "Thief",         "Acolyte",     "Archer", "Merchant",
+                           "Knight",      "Wizard",      "Assasin",       "Priest",      "Hunter", "Blacksmith",
+                           "Crusader",    "Sage",        "Rogue",         "Monk",        "Bard",   "Alchemist",
+                           "Lord Knight", "High Wizard", "Assasin Cross", "High Priest", "Sniper", "Whitesmith",
+                           "Paladin",     "Professor",   "Stalker",       "Champion",    "Crown",  "Creator"]
 # Base Level 經驗表(轉生前)
 base_exp_list1 = [0, 0, 550, 900, 1500, 2200, 3200, 3800, 4200, 4550, 5000, 5500, 6000, 6100, 6350, 6700, 7350, 8000, 8400, 8800, 9200, 9700, 10300, 11000, 11800, 13000, 14000, 15000, 16000, 17000, 18000, 19000, 20000, 21000, 22000, 23200, 24000, 26000, 27500, 29000, 30000, 31500, 33000, 34000, 36000, 37500, 38000, 40000, 42000, 44500, 47000, 49000, 51000, 53000, 55000, 57000, 59000, 61500, 63000, 65000, 67000, 69000, 70000, 73000, 77000, 80000, 84000, 88000, 91000, 95000, 110000, 128000, 140000, 155000, 163000, 170000, 180000, 188000, 195000, 200000, 230000, 260000, 300000, 350000, 400000, 480000, 550000, 600000, 680000, 750000, 900000, 1000000, 1200000, 1500000, 1800000, 2100000, 2400000, 2800000, 3300000, 4000000]
 # Base Level 經驗表(轉生後)

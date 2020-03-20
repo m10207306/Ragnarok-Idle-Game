@@ -84,11 +84,13 @@ class AttributeClusterClass:
         self.max_hp = round(35 + char_obj.base_level * 60 * (100 + ability.get_ability("vit").value) / 100)
         self.max_sp = round((char_obj.base_level * 3) * (100 + ability.get_ability("int").value) / 100)
         self.char_atk = round(ability.get_ability("str").value + atk_addition)
-        self.weapon_atk = equipment[4][1]
+        # self.weapon_atk = equipment[4][1]
+        self.weapon_atk = 17
         self.char_matk = round(ability.get_ability("int").value * 1.5 + atk_addition)
         self.weapon_matk = 0
         self.defence = round((char_obj.base_level + ability.get_ability("vit").value) / 2 + ability.get_ability("agi").value / 5)
-        self.armor_defence = equipment[3][1]
+        # self.armor_defence = equipment[3][1]
+        self.armor_defence = 10
         self.mdefence = round(char_obj.base_level / 4 +
                                ability.get_ability("int").value +
                                ability.get_ability("vit").value / 5 +
