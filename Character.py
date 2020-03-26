@@ -59,6 +59,10 @@ class CharacterClass:
         self.item.add_item(Item.ItemObj(1, 0, self, 1))
         self.item.add_item(Item.ItemObj(1, 1, self, 1))
         self.item.add_item(Item.ItemObj(1, 0, self, 1))
+        self.item.add_item(Item.ItemObj(2, 0, self, 1))
+        self.item.add_item(Item.ItemObj(2, 1, self, 10))
+        self.item.add_item(Item.ItemObj(2, 2, self, 100))
+        self.item.add_item(Item.ItemObj(2, 3, self, 1000))
         self.equipment = None
         # self.equipment = Item.EquipmentList()
         # self.equipment.equip(Item.ItemObj(1, 0, self, 1), self.item)

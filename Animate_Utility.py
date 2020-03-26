@@ -271,3 +271,82 @@ class ButtonAnimate(pygame.sprite.Sprite):
             return enter
         else:
             return False
+
+
+class SlideItemButtonAnimate(pygame.sprite.Sprite):
+    def __init__(self, btn_list, center_pos, border_list, scroll_step, item_type, item_idx):
+        super().__init__()
+        self.btn_list = btn_list
+        self.image = btn_list[0]
+        self.rect = self.image.get_rect()
+        self.rect.center = center_pos
+        self.true_rect = self.rect
+        self.width, self.height = self.rect.width, self.rect.height
+        self.border_top, self.border_bottom, self.border_left, self.border_right = border_list
+        self.scroll_step = scroll_step
+        self.item_type, self.item_idx = item_type, item_idx
+        self.border_check()
+
+    def border_check(self):
+        self.rect = self.true_rect.copy()
+        if self.true_rect.top < self.border_top:
+            if self.true_rect.bottom <= self.border_top:
+                self.rect.height = 0
+                self.rect.top = self.true_rect.top
+            else:
+                self.rect.height = self.rect.height - (self.border_top - self.true_rect.top)
+                self.rect.top = self.border_top
+        elif self.true_rect.bottom > self.border_bottom:
+            if self.true_rect.top >= self.border_bottom:
+                self.rect.height = 0
+                self.rect.bottom = self.true_rect.bottom
+            else:
+                self.rect.height = self.rect.height - (self.true_rect.bottom - self.border_bottom)
+                self.rect.bottom = self.border_bottom
+        elif self.true_rect.left < self.border_left:
+            if self.true_rect.right <= self.border_left:
+                self.rect.width = 0
+                self.rect.left = self.true_rect.left
+            else:
+                self.rect.width = self.rect.width - (self.border_left - self.true_rect.left)
+                self.rect.left = self.border_left
+        elif self.true_rect.right > self.border_right:
+            if self.true_rect.left > self.border_right:
+                self.rect.width = 0
+                self.rect.right = self.true_rect.right
+            else:
+                self.rect.width = self.rect.width - (self.true_rect.right - self.border_right)
+                self.rect.right = self.border_right
+
+    def scroll(self, direct):
+        if direct == 1:      # direction 1, 2, 3, 4 = 物體往上下左右移動
+            self.true_rect.center = (self.true_rect.center[0], self.true_rect.center[1] - self.scroll_step)
+        elif direct == 2:
+            self.true_rect.center = (self.true_rect.center[0], self.true_rect.center[1] + self.scroll_step)
+        elif direct == 3:
+            self.true_rect.center = (self.true_rect.center[0] - self.scroll_step, self.true_rect.center[1])
+        elif direct == 4:
+            self.true_rect.center = (self.true_rect.center[0] + self.scroll_step, self.true_rect.center[1])
+
+    def update(self, direct, ptr_topleft, mouse_type):
+        self.scroll(direct)
+        self.border_check()
+        enter = False
+        if self.rect.collidepoint(ptr_topleft):
+            if len(mouse_type) == 0:  # 鼠標移上去但是沒按
+                self.image = self.btn_list[1].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()
+                pygame.draw.rect(self.image, Red, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
+            elif "down" in mouse_type:  # 按下去
+                self.image = self.btn_list[2].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()
+                pygame.draw.rect(self.image, Blue, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
+            elif "up" in mouse_type or "click" in mouse_type:  # 放開來
+                self.image = self.btn_list[2].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()
+                pygame.draw.rect(self.image, Green, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
+                enter = True
+        else:
+            self.image = self.btn_list[0].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()  # 正常情況
+            pygame.draw.rect(self.image, Green, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
+        return enter
+
+
+

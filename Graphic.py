@@ -1,7 +1,7 @@
 import os, math                                     # Built-in Library
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # 3rd party Library
-import Character
+import Character, Animate_Utility
 
 Black = (0, 0, 0)
 White = (255, 255, 255)
@@ -433,7 +433,8 @@ class WindowClass:
 
         return win
 
-    def get_item_list_win(self, item_list):
+    def get_item_list_win(self, item_list, border_list):
+        # border_list = [border_up, border_down, border_left, border_right]
         item_num = len(item_list)
         item_in_row = 7
         edge_width, block_width, height = 40, 32, 32
@@ -444,7 +445,7 @@ class WindowClass:
 
         win = pygame.Surface((win_width, win_height)).convert_alpha()
         cur_width, cur_height = 0, 0
-        for r in range(row_num):
+        for r in range(row_num):            # 先畫出物品欄的底圖
             win.blit(self.item_base_template[0], (cur_width, cur_height))
             cur_width += edge_width
             for i in range(5):
@@ -458,11 +459,14 @@ class WindowClass:
         cur_width, cur_height = 24, 14
         width_space, height_space = 32, 32
         amount_bias = 10
+        item_btn_group = pygame.sprite.Group()
+        btn_list = [self.create_transparent_surface(width_space, height_space)] * 3
         font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 10)
-        for item in item_list:
+        for item in item_list:              # 按照順序將物品icon畫上並標註數量
             rect = item.icon_image.get_rect()
             rect.center = (cur_width, cur_height)
             win.blit(item.icon_image, rect)
+            item_btn_group.add(Animate_Utility.SlideItemButtonAnimate(btn_list, (border_list[2] + cur_width, border_list[0] + cur_height + 2), border_list, 2, item.item_type, item.item_idx))
             amount = font.render(str(item.amount), True, Black)
             rect = amount.get_rect()
             rect.center = (cur_width + amount_bias, cur_height + amount_bias)
@@ -474,7 +478,7 @@ class WindowClass:
                 cur_height += height_space
             else:
                 count += 1
-        return win
+        return win, item_btn_group
 
     def generate_titlebar(self, width_px):          # 創造客製化尺寸的系統視窗的上方Bar與下方Button Bar
         titlebar_width = 20

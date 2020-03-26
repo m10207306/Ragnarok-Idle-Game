@@ -210,7 +210,7 @@ class WorldClass:
     def fight_run(self, map_idx):
         map_data = Map_Database.map_data[map_idx]
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 循環戰鬥 - 再按一次 戰鬥開關 逃離戰鬥"], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 循環戰鬥 - 按下 ESC 逃離戰鬥"], [Green])
         self.chat_room_group.update(chat, None)
 
         for sprite in self.console_btn_group.sprites():
@@ -286,7 +286,7 @@ class WorldClass:
                 self.status_group.update(self.window.get_status_win(self.Char_obj), None)
                 self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
 
-                if self.console_btn_group.sprites()[3].update(ptr_tip_pos, mouse_type):
+                if "escape" in key:
                     char_dmg_group.empty()      # 調離戰鬥時清除傷害紀錄
                     mons_dmg_group.empty()
                     print("Battle Stage")
@@ -418,25 +418,28 @@ class WorldClass:
     def item_page(self, map_idx):
         char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(), self.char_pos))
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 物品資訊頁面 - 再按一次 物品資訊 按鈕關閉頁面"], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 物品資訊頁面 - 按下 ESC 退出"], [Green])
         self.chat_room_group.update(chat, None)
         window_center = (0.80 * self.window.width, 0.55 * self.window.height)
 
         transparent_btn = [self.window.create_color_surface(White, pygame.Rect(0, 0, 15, 23), 0)] * 3
         type_btn_w_bias, type_btn_h_bias, h_step = 118, 58, 26
-        usable_btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias)))
-        equip_btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + h_step)))
-        collect_btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + 2 * h_step)))
+        # 物品欄中切換顯示不同物品的按鍵
+        usable_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias)))
+        equip_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + h_step)))
+        collect_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + 2 * h_step)))
 
         win_base = self.window.get_item_base_win(0)
+        # 物品欄的基礎背景，並且輸入參數來決定這是哪種類型物品(不包含具體物品)
         item_win_base_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(win_base, window_center))
         item_list_width, item_list_height = 32, 32
         show_width, show_height = 40 * 2 + 32 * 5, item_list_height * 4
         height_start, scroll_step = 0, 2
-        win_list = self.window.get_item_list_win(self.Char_obj.item.all_list[0])
+        border_list = [int(window_center[1]) - 69, int(window_center[1]) + 59, int(window_center[0]) - 110, int(window_center[0]) + 130]
+        # 秀出不同類型物品的物品列表（如果項目較多可上下滾動）
+        win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[0], border_list)
         item_win_list_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), (window_center[0] + 10, window_center[1] - 5)))
-
-        all_group = self.window.combine_sprite(char_sit_group, usable_btn_group, equip_btn_group, collect_btn_group,
+        all_group = self.window.combine_sprite(char_sit_group, usable_switch_group, equip_switch_group, collect_switch_group,
                                                item_win_base_group, item_win_list_group,
                                                self.status_group, self.mini_map_group,
                                                self.health_bar_group, self.chat_room_group, self.name_group,
@@ -448,6 +451,7 @@ class WorldClass:
         self.console_btn_group.sprites()[1].freeze = False
 
         fps_list = []
+        scroll_history = height_start
         while True:
             self.window.clock.tick(self.window.fps)
             fps_list.append(self.window.clock.get_fps())
@@ -458,28 +462,36 @@ class WorldClass:
                 return map_idx
 
             all_group.clear(self.window.screen, self.window.background)
+            item_btn_group.clear(self.window.screen, self.window.background)
 
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
             self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-            for idx, btn in enumerate(self.window.combine_sprite(usable_btn_group, equip_btn_group, collect_btn_group)):
+            for idx, btn in enumerate(self.window.combine_sprite(usable_switch_group, equip_switch_group, collect_switch_group)):
                 if btn.update(ptr_tip_pos, mouse_type):
                     item_win_base_group.update(self.window.get_item_base_win(idx), None)
                     height_start = 0
-                    win_list = self.window.get_item_list_win(self.Char_obj.item.all_list[idx])
+                    win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[idx], border_list)
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
 
             if item_win_list_group.sprites()[0].rect.collidepoint(ptr_tip_pos):
                 if 4 in mouse:
                     height_start = height_start - scroll_step if height_start >= 0 + scroll_step else height_start
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
+                    if scroll_history != height_start:
+                        item_btn_group.update(2, ptr_tip_pos, mouse_type)
+                        scroll_history = height_start
                 elif 5 in mouse:
-                    height_start = height_start + scroll_step if height_start <= win_list.get_size()[1] - 1 - show_height - scroll_step else height_start
+                    height_start = height_start + scroll_step if height_start <= win_list.get_size()[1] - show_height - scroll_step else height_start
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
-
+                    if scroll_history != height_start:
+                        item_btn_group.update(1, ptr_tip_pos, mouse_type)
+                        scroll_history = height_start
+                else:
+                    item_btn_group.update(0, ptr_tip_pos, mouse_type)
             all_group.draw(self.window.screen)
-
+            item_btn_group.draw(self.window.screen)
             pygame.display.update()
 
     def info_page(self, map_idx):
@@ -487,7 +499,7 @@ class WorldClass:
         # map_data = Map_Database.map_data[map_idx]
         char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(), self.char_pos))
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 角色資訊頁面 - 再按一次 角色資訊 按鈕關閉頁面"], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 角色資訊頁面 - 按下 ESC 退出"], [Green])
         self.chat_room_group.update(chat, None)
 
         ability_list = ["str", "agi", "vit", "int", "dex", "luk"]
@@ -512,9 +524,8 @@ class WorldClass:
                                                self.chat_input_group, self.console_btn_group, self.console_text_group,
                                                ability_group, ability_btn_group, self.ptr_group)
 
-        for i in [1, 2, 3, 4, 5]:
-            self.console_btn_group.sprites()[i].freeze = True
-        self.console_btn_group.sprites()[0].freeze = False
+        for btn in self.console_btn_group.sprites():
+            btn.freeze = True
 
         fps_list = []
         while True:
@@ -532,10 +543,6 @@ class WorldClass:
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
             self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-            if self.console_btn_group.sprites()[0].update(ptr_tip_pos, mouse_type):
-                print("Ability Page")
-                self.window.fps_analysis(fps_list)
-                return map_idx
 
             for idx, btn in enumerate(ability_btn_group.sprites()):
                 if btn.update(ptr_tip_pos, mouse_type):
@@ -576,7 +583,7 @@ class WorldClass:
 
         btn_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(curr_btn_list, map_data[6].center))
         next_map_list = list(map_data[5]).copy()
-        next_map_name = ["[系統訊息] 此地可移動前往以下地點："]
+        next_map_name = ["[系統訊息] 地圖移動頁面 - 按下 ESC 退出", "[系統訊息] 此地可移動前往以下地點："]
         for i in range(len(next_map_list)):             # 框出可前往地圖
             next_map_data = Map_Database.map_data[next_map_list[i]]
             next_map_name.append("  No. " + str(next_map_data[0]) + " " + next_map_data[2])
@@ -595,7 +602,6 @@ class WorldClass:
                                                 self.console_btn_group, self.console_text_group, self.ptr_group])
         for btn in self.console_btn_group.sprites():
             btn.freeze = True
-        self.console_btn_group.sprites()[4].freeze = False
         fps_list = []
         while True:
             self.window.clock.tick(self.window.fps)
@@ -608,14 +614,14 @@ class WorldClass:
 
             scroll = False
             if "click" in mouse_type or "down" in mouse_type:
-                if 4 in mouse:      # 滾輪，影像往上
+                if 4 in mouse:      # 滾輪往下，影像往上
                     sub_height = sub_height + scroll_step if sub_height < max_height else sub_height
                     if height_record != sub_height:             # 表示sub_height有所變動，因此按鍵的Rect也要跟著變動
                         for btn in btn_group:
                             btn.rect.center = (btn.rect.center[0], btn.rect.center[1] - scroll_step)
                     height_record = sub_height if height_record != sub_height else height_record    # 假設這個Frame的sub_height有變更，則更新紀錄
                     scroll = True
-                elif 5 in mouse:    # 滾輪，影像往下
+                elif 5 in mouse:    # 滾輪往上，影像往下
                     sub_height = sub_height - scroll_step if sub_height > scroll_step else sub_height
                     if height_record != sub_height:
                         for btn in btn_group:
@@ -637,11 +643,6 @@ class WorldClass:
                     print("Map Moving Stage")
                     self.window.fps_analysis(fps_list)
                     return next_map_list[idx]
-
-            if self.console_btn_group.sprites()[4].update(ptr_tip_pos, mouse_type) and 4 not in mouse and 5 not in mouse:
-                print("Map Moving Stage")
-                self.window.fps_analysis(fps_list)
-                return map_idx
 
             all_group.draw(self.window.screen)
             pygame.display.update()
