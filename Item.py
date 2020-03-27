@@ -24,6 +24,9 @@ class ItemList:
             container.append(item_obj)              # 未存在的物品新增進List
             idx_container.append(item_obj.item_idx)
 
+    def get_item(self, item_type, item_idx):
+        return self.all_list[item_type][self.all_idx_list[item_type].index(item_idx)]
+
     # def double_click(self, item_type, item_idx):        # 當數量為0時需要從表單中刪除
     #     obj = self.all_list[item_type][self.all_idx_list[item_type].index(item_idx)]
     #     if item_type == 0:
@@ -85,6 +88,7 @@ class ItemObj:
         self.icon_image = None
         self.image = None
         self.descrip = None
+        self.descrip_color = None
         self.amount = amount
         self.double_click_act = None
         self.data_setting()
@@ -106,8 +110,9 @@ class ItemObj:
             self.health_sp = self.item_data[3]
             self.price = self.item_data[4]
             self.icon_image = pygame.image.load(self.item_data[5]).convert_alpha()
-            # self.image = pygame.image.load(self.item_data[6]).convert_alpha()
+            self.image = pygame.image.load(self.item_data[6]).convert_alpha()
             self.descrip = self.item_data[7]
+            self.descrip_color = self.item_data[8]
             # self.double_click_act = self.usable_double_click
         elif self.item_type == 1:
             self.attack = self.item_data[2]
@@ -125,15 +130,16 @@ class ItemObj:
             self.equip_min_level = self.item_data[14]
             self.price = self.item_data[15]
             self.icon_image = pygame.image.load(self.item_data[16]).convert_alpha()
-            # self.image = pygame.image.load(self.item_data[17]).convert_alpha()
+            self.image = pygame.image.load(self.item_data[17]).convert_alpha()
             self.descrip = self.item_data[18]
+            self.descrip_color = self.item_data[19]
             # self.double_click_act = self.equip_double_click
         elif self.item_type == 2:
             self.price = self.item_data[2]
             self.icon_image = pygame.image.load(self.item_data[3])
-            # self.image = pygame.image.load(self.item_data[4])
+            self.image = pygame.image.load(self.item_data[4])
             self.descrip = self.item_data[5]
-
+            self.descrip_color = self.item_data[6]
 
 
 

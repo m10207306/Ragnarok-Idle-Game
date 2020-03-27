@@ -34,18 +34,17 @@ class WindowClass:
         self.equip_ability_template = pygame.image.load(os.path.join("Info_Image", "equipwin_bg.png")).convert_alpha()
         self.create_char_template = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
         self.cri_template = pygame.image.load(os.path.join("Info_Image", "critical.png")).convert_alpha()
-        self.damage_template = []
-        self.damage_cri_template = []
-        self.pointer_template = []
-        self.txt_win_template = []
-        self.btn_ok_template = []
-        self.btn_cancel_template = []
-        self.btn_ability_template = []
-        self.btn_inter_template = []
-        self.btn_r_arw_template = []
-        self.item_tab_template = []
-        self.item_base_template = []
-        self.item_base_template2 = []
+        self.item_detail_template = pygame.image.load(os.path.join("Info_Image", "collection_bg.png")).convert_alpha()
+        self.damage_template = []       # 普通攻擊數值
+        self.damage_cri_template = []   # 爆擊傷害數值
+        self.pointer_template = []      # 滑鼠動畫
+        self.txt_win_template = []      # 文字區域板塊（九宮格模板，可自訂大小）
+        self.btn_ok_template = []       # 確認按鈕
+        self.btn_cancel_template = []   # 取消按鈕
+        self.btn_inter_template = []    # 主界面的功能按鈕，且會放大
+        self.btn_r_arw_template = []    # 素質加點向右箭頭
+        self.item_tab_template = []     # 物品欄左方分類標籤
+        self.item_base_template = []    # 物品欄格子模板
         self.load_template_image()
 
     def clear_screen(self):
@@ -79,12 +78,13 @@ class WindowClass:
         pygame.transform.scale(img1, target_size, img2)
         return img2
 
-    def set_text(self, surface, text, color, offset):       # 在輸入的Surface上畫上文字，並且如果文字太長會自動換行
+    def set_text(self, surface, text, color, str_offset, end_offset = None):       # 在輸入的Surface上畫上文字，並且如果文字太長會自動換行
         # It seems that surface needs always be converted
         # offset = (width_offset, height_offset)
         # color = (R, G, B)
         max_w, max_h = surface.get_size()
-        cur_w, cur_h = offset
+        cur_w, cur_h = str_offset
+        end_w, end_h = (end_offset[0], end_offset[1]) if end_offset is not None else (0, 0)
         color_idx = 0
         for line in text:
             word_h2 = 0
@@ -93,21 +93,15 @@ class WindowClass:
                 word_w, word_h = word_surface.get_size()
                 word_h += 3                                 # increase the space between lines
                 word_h2 = word_h
-                if cur_w + word_w > max_w:
-                    cur_w = offset[0]
+                # if cur_w + word_w > max_w - end_w:
+                if max_w - (cur_w + word_w) < end_w:
+                    cur_w = str_offset[0]
                     cur_h += word_h
                 surface.blit(word_surface, (cur_w, cur_h))
                 cur_w += word_w
-            cur_w = offset[0]
+            cur_w = str_offset[0]
             cur_h += word_h2
             color_idx += 1
-
-    def set_block(self, color, rect):
-        # color = (R, G, B)
-        # rect = pygame.Rect(x, y, width, height)
-        surface = self.create_color_surface(color, rect, 255)
-        rect = self.screen.blit(surface, rect)
-        return rect
 
     def get_chat_win(self, content, color, only_input_chat_content = False):      # 創造聊天室
         # content = ["str1", "str2", ...]
@@ -191,9 +185,6 @@ class WindowClass:
         self.item_base_template = [pygame.image.load(os.path.join("Info_Image", "itemwin_left.png")).convert_alpha(),
                                    pygame.image.load(os.path.join("Info_Image", "itemwin_mid.png")).convert_alpha(),
                                    pygame.image.load(os.path.join("Info_Image", "itemwin_right.png")).convert_alpha()]
-        self.item_base_template2 = [pygame.image.load(os.path.join("Info_Image", "itemwin_left2.png")).convert_alpha(),
-                                    pygame.image.load(os.path.join("Info_Image", "itemwin_mid2.png")).convert_alpha(),
-                                    pygame.image.load(os.path.join("Info_Image", "itemwin_right2.png")).convert_alpha()]
         # 把每個Button送進去resize，然後長寬各乘2倍
         self.btn_inter_template = \
             [[self.get_resize_surface(j, [k*2 for k in j.get_size()]) for j in i] for i in self.btn_inter_template]
@@ -431,6 +422,13 @@ class WindowClass:
         win.blit(self.item_tab_template[item_type], (0, 17))
         win.blit(btn_bar, (0, 145))
 
+        return win
+
+    def get_item_detail_win(self, item_obj):
+        win = self.item_detail_template.copy()
+        win.blit(item_obj.image, (10, 11))
+        win.blit(self.font.render(item_obj.item_name, True, Black), (95, 9))
+        self.set_text(win, item_obj.descrip, item_obj.descrip_color, (95, 30), (10, 10))
         return win
 
     def get_item_list_win(self, item_list, border_list):

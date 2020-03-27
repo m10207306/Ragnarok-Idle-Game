@@ -335,7 +335,7 @@ class SlideItemButtonAnimate(pygame.sprite.Sprite):
         if self.rect.collidepoint(ptr_topleft):
             if len(mouse_type) == 0:  # 鼠標移上去但是沒按
                 self.image = self.btn_list[1].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()
-                pygame.draw.rect(self.image, Red, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
+                pygame.draw.rect(self.image, Green, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
             elif "down" in mouse_type:  # 按下去
                 self.image = self.btn_list[2].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()
                 pygame.draw.rect(self.image, Blue, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
@@ -345,7 +345,6 @@ class SlideItemButtonAnimate(pygame.sprite.Sprite):
                 enter = True
         else:
             self.image = self.btn_list[0].subsurface(pygame.Rect(0, 0, self.rect.width, self.rect.height)).copy()  # 正常情況
-            pygame.draw.rect(self.image, Green, pygame.Rect(0, 0, self.rect.width, self.rect.height), 1)
         return enter
 
 

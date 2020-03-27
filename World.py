@@ -416,11 +416,12 @@ class WorldClass:
             self.name_group.remove(mons_name)
 
     def item_page(self, map_idx):
+        # fps = 39 - 56.........
         char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.image.load(self.Char_obj.sit_img_path).convert_alpha(), self.char_pos))
         self.common_group_update()
         chat = self.window.get_chat_win(["[系統訊息] 物品資訊頁面 - 按下 ESC 退出"], [Green])
         self.chat_room_group.update(chat, None)
-        window_center = (0.80 * self.window.width, 0.55 * self.window.height)
+        window_center = (0.70 * self.window.width, 0.55 * self.window.height)
 
         transparent_btn = [self.window.create_color_surface(White, pygame.Rect(0, 0, 15, 23), 0)] * 3
         type_btn_w_bias, type_btn_h_bias, h_step = 118, 58, 26
@@ -428,6 +429,7 @@ class WorldClass:
         usable_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias)))
         equip_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + h_step)))
         collect_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + 2 * h_step)))
+        item_detail_group = pygame.sprite.Group()
 
         win_base = self.window.get_item_base_win(0)
         # 物品欄的基礎背景，並且輸入參數來決定這是哪種類型物品(不包含具體物品)
@@ -443,8 +445,7 @@ class WorldClass:
                                                item_win_base_group, item_win_list_group,
                                                self.status_group, self.mini_map_group,
                                                self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group, self.console_text_group,
-                                               self.ptr_group)
+                                               self.chat_input_group, self.console_btn_group, self.console_text_group)
 
         for btn in self.console_btn_group.sprites():
             btn.freeze = True
@@ -452,6 +453,7 @@ class WorldClass:
 
         fps_list = []
         scroll_history = height_start
+        update_flag = 0
         while True:
             self.window.clock.tick(self.window.fps)
             fps_list.append(self.window.clock.get_fps())
@@ -463,6 +465,8 @@ class WorldClass:
 
             all_group.clear(self.window.screen, self.window.background)
             item_btn_group.clear(self.window.screen, self.window.background)
+            item_detail_group.clear(self.window.screen, self.window.background)
+            self.ptr_group.clear(self.window.screen, self.window.background)
 
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
@@ -480,18 +484,27 @@ class WorldClass:
                     height_start = height_start - scroll_step if height_start >= 0 + scroll_step else height_start
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
                     if scroll_history != height_start:
-                        item_btn_group.update(2, ptr_tip_pos, mouse_type)
+                        update_flag = 2
                         scroll_history = height_start
                 elif 5 in mouse:
                     height_start = height_start + scroll_step if height_start <= win_list.get_size()[1] - show_height - scroll_step else height_start
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
                     if scroll_history != height_start:
-                        item_btn_group.update(1, ptr_tip_pos, mouse_type)
+                        update_flag = 1
                         scroll_history = height_start
                 else:
-                    item_btn_group.update(0, ptr_tip_pos, mouse_type)
+                    update_flag = 0
+
+            for item_btn in item_btn_group.sprites():
+                if item_btn.update(update_flag, ptr_tip_pos, mouse_type):
+                    detail_win = self.window.get_item_detail_win(self.Char_obj.item.get_item(item_btn.item_type, item_btn.item_idx))
+                    item_detail_group.empty()
+                    item_detail_group.add(Animate_Utility.InfoWindowAnimate(detail_win, (window_center[0], window_center[1] - win_base.get_size()[1] * 0.6 - detail_win.get_size()[1] / 2)))
+
             all_group.draw(self.window.screen)
             item_btn_group.draw(self.window.screen)
+            item_detail_group.draw(self.window.screen)
+            self.ptr_group.draw(self.window.screen)
             pygame.display.update()
 
     def info_page(self, map_idx):
