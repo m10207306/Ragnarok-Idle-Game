@@ -1,17 +1,18 @@
-import os
+import os, random
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # 3rd party Library
 import Item_Database
 
 
 class ItemList:
-    def __init__(self):
+    def __init__(self, equip_obj):
         self.usable_item_list = []
         self.usable_idx = []
         self.equipment_list = []
         self.equip_idx = []
         self.collection_list = []
         self.collect_idx = []
+        self.equip_obj = equip_obj
 
         self.all_list = [self.usable_item_list, self.equipment_list, self.collection_list]
         self.all_idx_list = [self.usable_idx, self.equip_idx, self.collect_idx]
@@ -24,47 +25,80 @@ class ItemList:
             container.append(item_obj)              # 未存在的物品新增進List
             idx_container.append(item_obj.item_idx)
 
-    def get_item(self, item_type, item_idx):
-        return self.all_list[item_type][self.all_idx_list[item_type].index(item_idx)]
+    def get_item(self, item_type, order):
+        return self.all_list[item_type][order]
 
-    # def double_click(self, item_type, item_idx):        # 當數量為0時需要從表單中刪除
-    #     obj = self.all_list[item_type][self.all_idx_list[item_type].index(item_idx)]
-    #     if item_type == 0:
-    #         obj.usable_double_click()
-    #     return
+    def use_item(self, item_type, order):
+        obj = self.all_list[item_type][order]
+        response = obj.use_action(self.equip_obj)
+        if response is not False:                       # 代表不是裝備失敗
+            self.all_list[item_type].remove(obj)        # 裝備成功先將該裝備移出物品欄
+            if isinstance(response, ItemObj):           # 代表原先位置有裝備，被return回來
+                self.add_item(response)                 # 加入裝備欄
+            return 0                                # 裝備的amount不會-1，因為只是跑過去裝備欄，但是這邊要return 0才會從物品欄消除
+        if obj.amount <= 0:
+            self.all_list[item_type].remove(obj)
+            return 0
+        else:
+            return obj.amount
 
 
 class EquipmentList:
     def __init__(self):
         self.equip_list = [None, None, None, None, None, None, None, None, None, None]
-        # 頭上, 頭中, 頭下, 鎧甲, 左邊手的格子(右手), 右邊手的格子(左手), 披風, 鞋子, 左飾品, 右飾品
-        self.equip_atk, self.equip_def, self.equip_hp, self.equip_sp = 0, 0, 0, 0
+        # 頭上, 頭中, 頭下, 鎧甲, 左邊手的格子(右手), 右邊手的格子(左手), 披風, 鞋子, 左飾品, 右飾品 (飾品的位置編號為8，但是8跟9都可以安裝)
+        self.equip_atk, self.equip_def, self.equip_matk, self.equip_mdef, self.equip_hp, self.equip_sp = 0, 0, 0, 0, 0, 0
         self.equip_str, self.equip_agi, self.equip_vit, self.equip_int, self.equip_dex, self.equip_luk = 0, 0, 0, 0, 0, 0
+        self.equip_idx = []
 
-    def equip(self, item_obj, item_list):
-        if self.check_equip_limit(item_obj):  # 檢查是否符合裝備限定的職業與等級
-            current = self.equip_list[item_obj.equip_pos]
-            self.equip_list[item_obj.equip_pos] = item_obj     # 根據位置裝上裝備
-            if current is not None:
-                item_list.add_item(current)     # 假如原本該位置有裝備，放入物品欄
-            self.calculate_bonus()              # 重新統整裝備給予的加成
+    def equip(self, item_obj):
+        if self.check_equip_limit(item_obj):                    # 檢查是否符合裝備限定的職業與等級
+            pos = item_obj.equip_pos
+            if pos == 8:                                        # 代表是飾品 (左飾品為空，直接裝，這邊無動作)
+                if self.equip_list[pos] is not None and self.equip_list[pos + 1] is None:   # 左裝飾品有東西，右裝飾品沒有，就改安裝到9號位，其他都是裝到8號位
+                    pos = pos + 1
+            current_equip = self.equip_list[pos]
+            self.equip_list[pos] = item_obj                     # 根據位置裝上裝備
+            self.calculate_bonus()                              # 重新統整裝備給予的加成
+            return current_equip                                # return None or Obj
+        else:
+            return False                                        # return False
+
+    def unload(self, pos):
+        if self.equip_list[pos] is not None:
+            current_equip = self.equip_list[pos]
+            self.equip_list[pos] = None
+            self.calculate_bonus()
+            return current_equip
+        else:
+            return None
+
+    def reset_equip_bonus(self):
+        self.equip_atk, self.equip_def, self.equip_matk, self.equip_mdef, self.equip_hp, self.equip_sp = 0, 0, 0, 0, 0, 0
+        self.equip_str, self.equip_agi, self.equip_vit, self.equip_int, self.equip_dex, self.equip_luk = 0, 0, 0, 0, 0, 0
+        self.equip_idx = []
 
     def calculate_bonus(self):
-        for obj in self.equip_list:
-            self.equip_atk = self.equip_atk + obj.attack if obj is not None else self.equip_atk
-            self.equip_def = self.equip_def + obj.defence if obj is not None else self.equip_def
-            self.equip_hp = self.equip_hp + obj.hp if obj is not None else self.equip_hp
-            self.equip_sp = self.equip_sp + obj.sp if obj is not None else self.equip_sp
-            self.equip_str = self.equip_str + obj.str if obj is not None else self.equip_str
-            self.equip_agi = self.equip_agi + obj.agi if obj is not None else self.equip_agi
-            self.equip_vit = self.equip_vit + obj.vit if obj is not None else self.equip_vit
-            self.equip_int = self.equip_int + obj.int if obj is not None else self.equip_int
-            self.equip_dex = self.equip_dex + obj.dex if obj is not None else self.equip_dex
-            self.equip_luk = self.equip_luk + obj.luk if obj is not None else self.equip_luk
+        self.reset_equip_bonus()
+        for idx, obj in enumerate(self.equip_list):
+            if obj is not None:
+                self.equip_atk = self.equip_atk + obj.attack
+                self.equip_def = self.equip_def + obj.defence
+                self.equip_matk = self.equip_matk + obj.mattack
+                self.equip_mdef = self.equip_mdef + obj.mdefence
+                self.equip_hp = self.equip_hp + obj.hp
+                self.equip_sp = self.equip_sp + obj.sp
+                self.equip_str = self.equip_str + obj.str
+                self.equip_agi = self.equip_agi + obj.agi
+                self.equip_vit = self.equip_vit + obj.vit
+                self.equip_int = self.equip_int + obj.int
+                self.equip_dex = self.equip_dex + obj.dex
+                self.equip_luk = self.equip_luk + obj.luk
+                self.equip_idx.append(idx)
 
     @staticmethod
     def check_equip_limit(item_obj):
-        if item_obj.char.job_idx in item_obj.item_data[12]:
+        if item_obj.char.job_idx in item_obj.equip_target:
             if item_obj.char.base_level >= item_obj.equip_min_level:
                 return True
             else:
@@ -81,7 +115,7 @@ class ItemObj:
         self.item_data = Item_Database.item_list[item_type][item_idx]
         self.item_name = None
         self.health_hp, self.health_sp = None, None
-        self.attack, self.defence, self.hp, self.sp = None, None, None, None
+        self.attack, self.defence, self.mattack, self.mdefence, self.hp, self.sp = None, None, None, None, None, None
         self.str, self.agi, self.vit, self.int, self.dex, self.luk = None, None, None, None, None, None
         self.equip_target, self.equip_pos, self.equip_min_level = None, None, None
         self.price = None
@@ -90,50 +124,68 @@ class ItemObj:
         self.descrip = None
         self.descrip_color = None
         self.amount = amount
-        self.double_click_act = None
+        self.use_action = None
         self.data_setting()
 
-    # def usable_double_click(self):
-    #     self.char.hp = self.char.hp + self.health_hp if self.health_hp is not None else self.char.hp
-    #     self.char.hp = self.char.attribute.max_hp if self.char.hp >= self.char.attribute.max_hp else self.char.hp
-    #     self.char.sp = self.char.sp + self.health_sp if self.health_sp is not None else self.char.sp
-    #     self.char.sp = self.char.attribute.max_sp if self.char.sp >= self.char.attribute.max_sp else self.char.sp
-    #     self.amount -= 1
-    #
-    # def equip_double_click(self):
-    #     return
+    def usable_use(self, equip_obj):
+        self.char.hp = self.char.hp + random.randint(self.health_hp[0], self.health_hp[1]) if self.health_hp is not None else self.char.hp
+        self.char.hp = self.char.attribute.max_hp if self.char.hp >= self.char.attribute.max_hp else self.char.hp
+        self.char.sp = self.char.sp + random.randint(self.health_sp[0], self.health_sp[1]) if self.health_sp is not None else self.char.sp
+        self.char.sp = self.char.attribute.max_sp if self.char.sp >= self.char.attribute.max_sp else self.char.sp
+        self.amount -= 1
+        return True
+
+    def equip_use(self, equip_obj):
+        response = equip_obj.equip(self)                                        # 可能return True, Equipment_Obj, False
+        if response is not False:                                               # 代表確實裝備上去
+            self.char.attribute.transform(self.char)                            # 裝備上去之後需要更新attribute
+            if isinstance(response, ItemObj):
+                return response                                                 # 回傳卸下的裝備，準備裝入物品欄
+            else:
+                return True
+        else:
+            # 加入系統訊息？
+            return response                                                     # 回傳False，裝備失敗
 
     def data_setting(self):
         self.item_name = self.item_data[1]
         if self.item_type == 0:
             self.health_hp = self.item_data[2]
+            if self.health_hp is not None:
+                if len(self.health_hp) < 2:                  # 如果只有一個數字代表他是percentage，不然通常是兩個數字
+                    self.health_hp = (int(self.health_hp[0] * self.char.attribute.max_hp), int(self.health_hp[0] * self.char.attribute.max_hp) + 1)
             self.health_sp = self.item_data[3]
+            if self.health_sp is not None:
+                if len(self.health_sp) < 2:
+                    self.health_sp = (int(self.health_sp[0] * self.char.attribute.max_sp), int(self.health_sp[0] * self.char.attribute.max_sp) + 1)
             self.price = self.item_data[4]
             self.icon_image = pygame.image.load(self.item_data[5]).convert_alpha()
             self.image = pygame.image.load(self.item_data[6]).convert_alpha()
             self.descrip = self.item_data[7]
             self.descrip_color = self.item_data[8]
-            # self.double_click_act = self.usable_double_click
+            self.use_action = self.usable_use
         elif self.item_type == 1:
             self.attack = self.item_data[2]
             self.defence = self.item_data[3]
-            self.hp = self.item_data[4]
-            self.sp = self.item_data[5]
-            self.str = self.item_data[6]
-            self.agi = self.item_data[7]
-            self.vit = self.item_data[8]
-            self.int = self.item_data[9]
-            self.dex = self.item_data[10]
-            self.luk = self.item_data[11]
-            self.equip_target = self.item_data[12]
-            self.equip_pos = self.item_data[13]
-            self.equip_min_level = self.item_data[14]
-            self.price = self.item_data[15]
-            self.icon_image = pygame.image.load(self.item_data[16]).convert_alpha()
-            self.image = pygame.image.load(self.item_data[17]).convert_alpha()
-            self.descrip = self.item_data[18]
-            self.descrip_color = self.item_data[19]
-            # self.double_click_act = self.equip_double_click
+            self.mattack = self.item_data[4]
+            self.mdefence = self.item_data[5]
+            self.hp = self.item_data[6]
+            self.sp = self.item_data[7]
+            self.str = self.item_data[8]
+            self.agi = self.item_data[9]
+            self.vit = self.item_data[10]
+            self.int = self.item_data[11]
+            self.dex = self.item_data[12]
+            self.luk = self.item_data[13]
+            self.equip_target = self.item_data[14]
+            self.equip_pos = self.item_data[15]
+            self.equip_min_level = self.item_data[16]
+            self.price = self.item_data[17]
+            self.icon_image = pygame.image.load(self.item_data[18]).convert_alpha()
+            self.image = pygame.image.load(self.item_data[19]).convert_alpha()
+            self.descrip = self.item_data[20]
+            self.descrip_color = self.item_data[21]
+            self.use_action = self.equip_use
         elif self.item_type == 2:
             self.price = self.item_data[2]
             self.icon_image = pygame.image.load(self.item_data[3])

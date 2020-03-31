@@ -14,12 +14,7 @@ class AbilityClusterClass:
 
     def get_ability(self, ability_tag):
         ability = ["str", "agi", "vit", "int", "dex", "luk"]
-        try:
-            idx = ability.index(ability_tag)
-            return self.ability[idx]
-        except Exception as error_message:
-            print(">> ", error_message)
-            return
+        return self.ability[ability.index(ability_tag)]
 
     def level_up(self):
         self.status_point += levelup_ability_point[self.level + 1]
@@ -57,16 +52,24 @@ class AbilityClass:
 
 class AttributeClusterClass:
     def __init__(self, char_obj):
+        self.equip_hp = []
+        self.equip_sp = []
         self.max_hp = []
         self.max_sp = []
         self.char_atk = []          # atk from ability
-        self.weapon_atk = []        # atk from weapon
+        self.equip_atk = []         # atk from equipment
         self.char_matk = []         # matk from ability
-        self.weapon_matk = []       # matk from weapon
-        self.defence = []           # def
-        self.armor_defence = []
-        self.mdefence = []          # mdef
-        self.armor_mdefence = []
+        self.equip_matk = []        # matk from equipment
+        self.char_def = []          # def
+        self.equip_def = []
+        self.char_mdef = []         # mdef
+        self.equip_mdef = []
+        self.equip_str = []
+        self.equip_agi = []
+        self.equip_vit = []
+        self.equip_int = []
+        self.equip_dex = []
+        self.equip_luk = []
         self.hit = []               # 100% hit needs = (100 + enemy flee)
         self.flee = []
         self.cri = []
@@ -74,39 +77,57 @@ class AttributeClusterClass:
         self.att_frame = []         # frame number in an attack
         self.total_atk = []
         self.total_matk = []
-        self.total_defence = []
-        self.total_mdefence = []
-        self.transform(char_obj, char_obj.equipment)
+        self.total_def = []
+        self.total_mdef = []
+        self.transform(char_obj)
 
-    def transform(self, char_obj, equipment):
+    def transform(self, char_obj):
         ability = char_obj.ability
-        atk_addition = ability.get_ability("luk").value / 3 + ability.get_ability("dex").value / 5 + char_obj.base_level / 4
-        self.max_hp = round(35 + char_obj.base_level * 60 * (100 + ability.get_ability("vit").value) / 100)
-        self.max_sp = round((char_obj.base_level * 3) * (100 + ability.get_ability("int").value) / 100)
-        self.char_atk = round(ability.get_ability("str").value + atk_addition)
-        # self.weapon_atk = equipment[4][1]
-        self.weapon_atk = 17
-        self.char_matk = round(ability.get_ability("int").value * 1.5 + atk_addition)
-        self.weapon_matk = 0
-        self.defence = round((char_obj.base_level + ability.get_ability("vit").value) / 2 + ability.get_ability("agi").value / 5)
-        # self.armor_defence = equipment[3][1]
-        self.armor_defence = 10
-        self.mdefence = round(char_obj.base_level / 4 +
-                               ability.get_ability("int").value +
-                               ability.get_ability("vit").value / 5 +
-                               ability.get_ability("dex").value / 5)
-        self.armor_mdefence = 0
-        self.hit = round(175 + ability.get_ability("dex").value + char_obj.base_level + ability.get_ability("luk").value / 3)
-        self.flee = round(100 + char_obj.base_level + ability.get_ability("agi").value + ability.get_ability("luk").value / 5)
-        self.cri = round(ability.get_ability("luk").value / 3 + 1)
-        self.aspd = round(160 + (200 - 150) * (ability.get_ability("agi").value + ability.get_ability("dex").value / 4) / 250)
+        self.equip_str = char_obj.equipment.equip_str
+        self.equip_agi = char_obj.equipment.equip_agi
+        self.equip_vit = char_obj.equipment.equip_vit
+        self.equip_int = char_obj.equipment.equip_int
+        self.equip_dex = char_obj.equipment.equip_dex
+        self.equip_luk = char_obj.equipment.equip_luk
+        atk_addition = (ability.get_ability("luk").value + self.equip_luk) / 3 + \
+                       (ability.get_ability("dex").value + self.equip_dex) / 5 + \
+                       char_obj.base_level / 4
+        self.equip_hp = char_obj.equipment.equip_hp
+        self.equip_sp = char_obj.equipment.equip_sp
+        self.max_hp = round(35 +
+                            char_obj.base_level * 60 * (100 + (ability.get_ability("vit").value + self.equip_vit)) / 100) + \
+                            self.equip_hp
+        self.max_sp = round((char_obj.base_level * 3) * (100 + (ability.get_ability("int").value + self.equip_int)) / 100) + \
+                             self.equip_sp
+        self.char_atk = round((ability.get_ability("str").value + self.equip_str) + atk_addition)
+        self.equip_atk = char_obj.equipment.equip_atk
+        self.char_matk = round((ability.get_ability("int").value + self.equip_int) * 1.5 + atk_addition)
+        self.equip_matk = char_obj.equipment.equip_matk
+        self.char_def = round((char_obj.base_level + (ability.get_ability("vit").value + self.equip_vit)) / 2 +
+                              (ability.get_ability("agi").value + self.equip_agi) / 5)
+        self.equip_def = char_obj.equipment.equip_def
+        self.char_mdef = round(char_obj.base_level / 4 +
+                               (ability.get_ability("int").value + self.equip_int) +
+                               (ability.get_ability("vit").value + self.equip_vit) / 5 +
+                               (ability.get_ability("dex").value + self.equip_dex) / 5)
+        self.equip_mdef = char_obj.equipment.equip_mdef
+        self.hit = round(175 + (ability.get_ability("dex").value + self.equip_dex) +
+                         char_obj.base_level +
+                         (ability.get_ability("luk").value + self.equip_luk) / 3)
+        self.flee = round(100 + char_obj.base_level +
+                          (ability.get_ability("agi").value + self.equip_agi) +
+                          (ability.get_ability("luk").value + self.equip_luk) / 5)
+        self.cri = round((ability.get_ability("luk").value + self.equip_luk) / 3 + 1)
+        self.aspd = round(160 +
+                          (200 - 150) *
+                          ((ability.get_ability("agi").value + self.equip_agi) + (ability.get_ability("dex").value + self.equip_dex) / 4) / 250)
         self.aspd = 190 if self.aspd > 190 else self.aspd
         self.aspd = 150 if self.aspd < 150 else self.aspd
         self.att_frame = round(60 / round(50 / (200 - self.aspd)))
-        self.total_atk = [math.floor((self.char_atk + self.weapon_atk) * 0.9), math.ceil((self.char_atk + self.weapon_atk) * 1.1)]
-        self.total_matk = [math.floor((self.char_matk + self.weapon_matk) * 0.9), math.ceil((self.char_matk + self.weapon_matk) * 1.1)]
-        self.total_defence = self.defence + self.armor_defence
-        self.total_mdefence = self.mdefence + self.armor_mdefence
+        self.total_atk = [math.floor((self.char_atk + self.equip_atk) * 0.9), math.ceil((self.char_atk + self.equip_atk) * 1.1)]
+        self.total_matk = [math.floor((self.char_matk + self.equip_matk) * 0.9), math.ceil((self.char_matk + self.equip_matk) * 1.1)]
+        self.total_def = self.char_def + self.equip_def
+        self.total_mdef = self.char_mdef + self.equip_mdef
 
 
 class MonsterAttribute:

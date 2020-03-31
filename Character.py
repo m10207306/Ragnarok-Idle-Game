@@ -22,7 +22,11 @@ class CharacterClass:
         self.target_job_exp = 0
         self.define_job_exp_type()
 
-        self.item = Item.ItemList()
+        self.equipment = Item.EquipmentList()
+        self.ability = Attribute.AbilityClusterClass(ini_ability)       # control str, agi, vit ...etc
+        self.attribute = Attribute.AttributeClusterClass(self)          # generate atk, def, flee ...etc
+
+        self.item = Item.ItemList(self.equipment)
         self.item.add_item(Item.ItemObj(0, 0, self, 1))
         self.item.add_item(Item.ItemObj(0, 0, self, 9))
         self.item.add_item(Item.ItemObj(0, 1, self, 10))
@@ -44,21 +48,33 @@ class CharacterClass:
         self.item.add_item(Item.ItemObj(0, 17, self, 10))
         self.item.add_item(Item.ItemObj(0, 18, self, 10))
         self.item.add_item(Item.ItemObj(0, 19, self, 10))
-        self.item.add_item(Item.ItemObj(1, 1, self, 1))
         self.item.add_item(Item.ItemObj(1, 0, self, 1))
         self.item.add_item(Item.ItemObj(1, 1, self, 1))
-        self.item.add_item(Item.ItemObj(1, 0, self, 1))
+        self.item.add_item(Item.ItemObj(1, 2, self, 1))
+        self.item.add_item(Item.ItemObj(1, 4, self, 1))
+        self.item.add_item(Item.ItemObj(1, 5, self, 1))
+        self.item.add_item(Item.ItemObj(1, 6, self, 1))
+        self.item.add_item(Item.ItemObj(1, 7, self, 1))
+        self.item.add_item(Item.ItemObj(1, 8, self, 1))
+        self.item.add_item(Item.ItemObj(1, 9, self, 1))
+        self.item.add_item(Item.ItemObj(1, 10, self, 1))
+        self.item.add_item(Item.ItemObj(1, 10, self, 1))
         self.item.add_item(Item.ItemObj(2, 0, self, 1))
         self.item.add_item(Item.ItemObj(2, 1, self, 10))
         self.item.add_item(Item.ItemObj(2, 2, self, 100))
         self.item.add_item(Item.ItemObj(2, 3, self, 1000))
-        self.equipment = None
-        # self.equipment = Item.EquipmentList()
-        # self.equipment.equip(Item.ItemObj(1, 0, self, 1), self.item)
-        # self.equipment.equip(Item.ItemObj(1, 1, self, 1), self.item)
 
-        self.ability = Attribute.AbilityClusterClass(ini_ability)       # control str, agi, vit ...etc
-        self.attribute = Attribute.AttributeClusterClass(self)          # generate atk, def, flee ...etc
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
+        self.item.use_item(1, 0)
 
         self.hp = self.attribute.max_hp
         self.sp = self.attribute.max_sp

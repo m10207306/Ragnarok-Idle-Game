@@ -35,16 +35,19 @@ class WindowClass:
         self.create_char_template = pygame.image.load(os.path.join("Info_Image", "win_make.png")).convert_alpha()
         self.cri_template = pygame.image.load(os.path.join("Info_Image", "critical.png")).convert_alpha()
         self.item_detail_template = pygame.image.load(os.path.join("Info_Image", "collection_bg.png")).convert_alpha()
-        self.damage_template = []       # 普通攻擊數值
-        self.damage_cri_template = []   # 爆擊傷害數值
-        self.pointer_template = []      # 滑鼠動畫
-        self.txt_win_template = []      # 文字區域板塊（九宮格模板，可自訂大小）
-        self.btn_ok_template = []       # 確認按鈕
-        self.btn_cancel_template = []   # 取消按鈕
-        self.btn_inter_template = []    # 主界面的功能按鈕，且會放大
-        self.btn_r_arw_template = []    # 素質加點向右箭頭
-        self.item_tab_template = []     # 物品欄左方分類標籤
-        self.item_base_template = []    # 物品欄格子模板
+        self.damage_template = []           # 普通攻擊數值
+        self.damage_cri_template = []       # 爆擊傷害數值
+        self.pointer_template = []          # 滑鼠動畫
+        self.txt_win_template = []          # 文字區域板塊（九宮格模板，可自訂大小）
+        self.btn_ok_template = []           # 確認按鈕
+        self.btn_cancel_template = []       # 取消按鈕
+        self.btn_inter_template = []        # 主界面的功能按鈕，且會放大
+        self.btn_r_arw_template = []        # 素質加點向右箭頭
+        self.btn_use_template = []          # 物品使用按鈕
+        self.btn_auto_use_template = []     # 補品自動使用開啟按鈕
+        self.btn_unload_template = []      # 卸下裝備按鈕
+        self.item_tab_template = []         # 物品欄左方分類標籤
+        self.item_base_template = []        # 物品欄格子模板
         self.load_template_image()
 
     def clear_screen(self):
@@ -179,6 +182,15 @@ class WindowClass:
         self.btn_r_arw_template = [pygame.image.load(os.path.join("Info_Image", "arw_right0.png")).convert_alpha(),
                                    pygame.image.load(os.path.join("Info_Image", "arw_right1.png")).convert_alpha(),
                                    pygame.image.load(os.path.join("Info_Image", "arw_right2.png")).convert_alpha()]
+        self.btn_use_template = [pygame.image.load(os.path.join("Info_Image", "btn_use.png")).convert_alpha(),
+                                 pygame.image.load(os.path.join("Info_Image", "btn_use_a.png")).convert_alpha(),
+                                 pygame.image.load(os.path.join("Info_Image", "btn_use_b.png")).convert_alpha()]
+        self.btn_auto_use_template = [pygame.image.load(os.path.join("Info_Image", "btn_auto_use.png")).convert_alpha(),
+                                      pygame.image.load(os.path.join("Info_Image", "btn_auto_use_a.png")).convert_alpha(),
+                                      pygame.image.load(os.path.join("Info_Image", "btn_auto_use_b.png")).convert_alpha()]
+        self.btn_unload_template = [pygame.image.load(os.path.join("Info_Image", "btn_unload.png")).convert_alpha(),
+                                    pygame.image.load(os.path.join("Info_Image", "btn_unload_a.png")).convert_alpha(),
+                                    pygame.image.load(os.path.join("Info_Image", "btn_unload_b.png")).convert_alpha()]
         self.item_tab_template = [pygame.image.load(os.path.join("Info_Image", "tab_itm_01.png")).convert_alpha(),
                                   pygame.image.load(os.path.join("Info_Image", "tab_itm_02.png")).convert_alpha(),
                                   pygame.image.load(os.path.join("Info_Image", "tab_itm_03.png")).convert_alpha()]
@@ -312,6 +324,8 @@ class WindowClass:
         rect = stand_char.get_rect()
         rect.center = (143, 95)
         return_sur.blit(stand_char, rect)
+        equip_win_size = (280, 166)
+        status_win_size = (280, 120)
 
         right_idx1, right_idx2 = 190, 272
         str_ = char_obj.ability.get_ability('str').value
@@ -338,12 +352,12 @@ class WindowClass:
         return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + 4 * p2_step))
         return_sur.blit(font.render("+", True, Black), (pos1 + ability_step, pos2 + 5 * p2_step))
         # 裝備素質 or job加成
-        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2))
-        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + p2_step))
-        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 2 * p2_step))
-        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 3 * p2_step))
-        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 4 * p2_step))
-        return_sur.blit(font.render("0", True, Black), (pos1 + ability_step + plus_step, pos2 + 5 * p2_step))
+        return_sur.blit(font.render(str(char_obj.attribute.equip_str), True, Black), (pos1 + ability_step + plus_step, pos2))
+        return_sur.blit(font.render(str(char_obj.attribute.equip_agi), True, Black), (pos1 + ability_step + plus_step, pos2 + p2_step))
+        return_sur.blit(font.render(str(char_obj.attribute.equip_vit), True, Black), (pos1 + ability_step + plus_step, pos2 + 2 * p2_step))
+        return_sur.blit(font.render(str(char_obj.attribute.equip_int), True, Black), (pos1 + ability_step + plus_step, pos2 + 3 * p2_step))
+        return_sur.blit(font.render(str(char_obj.attribute.equip_dex), True, Black), (pos1 + ability_step + plus_step, pos2 + 4 * p2_step))
+        return_sur.blit(font.render(str(char_obj.attribute.equip_luk), True, Black), (pos1 + ability_step + plus_step, pos2 + 5 * p2_step))
         # 升級素質所需升級點
         pos1_up = pos1 + 48
         return_sur.blit(font.render(str(char_obj.ability.get_ability("str").upgrade_demand), True, Black), (pos1_up, pos2))
@@ -352,11 +366,11 @@ class WindowClass:
         return_sur.blit(font.render(str(char_obj.ability.get_ability("int").upgrade_demand), True, Black), (pos1_up, pos2 + 3 * p2_step))
         return_sur.blit(font.render(str(char_obj.ability.get_ability("dex").upgrade_demand), True, Black), (pos1_up, pos2 + 4 * p2_step))
         return_sur.blit(font.render(str(char_obj.ability.get_ability("luk").upgrade_demand), True, Black), (pos1_up, pos2 + 5 * p2_step))
-
-        sur, rect = self.render_and_return_rect(font, str(attribute.total_atk[0]) + " - " + str(attribute.total_atk[1]), Black)
+        # 右方詳細數值
+        sur, rect = self.render_and_return_rect(font, str(attribute.char_atk) + " + " + str(attribute.equip_atk), Black)
         rect.top, rect.right = 188, right_idx1
         return_sur.blit(sur, rect)
-        sur, rect = self.render_and_return_rect(font, str(attribute.total_matk[0]) + " - " + str(attribute.total_matk[1]), Black)
+        sur, rect = self.render_and_return_rect(font, str(attribute.char_matk) + " + " + str(attribute.equip_matk), Black)
         rect.top, rect.right = 204, right_idx1
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.hit), Black)
@@ -365,10 +379,10 @@ class WindowClass:
         sur, rect = self.render_and_return_rect(font, str(attribute.cri), Black)
         rect.top, rect.right = 236, right_idx1
         return_sur.blit(sur, rect)
-        sur, rect = self.render_and_return_rect(font, str(attribute.total_defence), Black)
+        sur, rect = self.render_and_return_rect(font, str(attribute.char_def) + " + " + str(attribute.equip_def), Black)
         rect.top, rect.right = 188, right_idx2
         return_sur.blit(sur, rect)
-        sur, rect = self.render_and_return_rect(font, str(attribute.total_mdefence), Black)
+        sur, rect = self.render_and_return_rect(font, str(attribute.char_mdef) + " + " + str(attribute.equip_mdef), Black)
         rect.top, rect.right = 204, right_idx2
         return_sur.blit(sur, rect)
         sur, rect = self.render_and_return_rect(font, str(attribute.flee), Black)
@@ -383,8 +397,36 @@ class WindowClass:
         sur, rect = self.render_and_return_rect(font, "~ * 仙境情懷 * ~", Black)
         rect.top, rect.right = 268, right_idx2
         return_sur.blit(sur, rect)
-        #      裝備欄                                               素質欄
-        return return_sur.subsurface(pygame.Rect(0, 0, 280, 166)), return_sur.subsurface(pygame.Rect(0, 167, 280, 120))
+        # 裝備
+        left_ini_pos, right_ini_pos, step = (17, 30), (262, 30), 26
+        pos_list = (left_ini_pos, right_ini_pos,
+                    (left_ini_pos[0], left_ini_pos[1] + step),
+                    (right_ini_pos[0], right_ini_pos[1] + step),
+                    (left_ini_pos[0], left_ini_pos[1] + 2 * step),
+                    (right_ini_pos[0], right_ini_pos[1] + 2 * step),
+                    (left_ini_pos[0], left_ini_pos[1] + 3 * step),
+                    (right_ini_pos[0], right_ini_pos[1] + 3 * step),
+                    (left_ini_pos[0], left_ini_pos[1] + 4 * step),
+                    (right_ini_pos[0], right_ini_pos[1] + 4 * step))
+        equip_btn_group = pygame.sprite.Group()
+        topleft = pygame.Rect(0, 0, equip_win_size[0], equip_win_size[1])
+        topleft.center = (self.width * 0.15, self.height * 0.55)
+        transparent_list = [self.create_transparent_surface(step, step)] * 3
+        for idx, equip in enumerate(char_obj.equipment.equip_list):
+            if equip is not None:
+                rect = equip.icon_image.get_rect()
+                rect.center = pos_list[idx]
+                return_sur.blit(equip.icon_image, rect)
+                equip_btn_group.add(Animate_Utility.SlideItemButtonAnimate(transparent_list, (topleft.topleft[0] + rect.centerx, topleft.topleft[1] + rect.centery), [0, self.height, 0, self.width], 1, equip.item_type, equip.item_idx, idx))
+                name = self.font.render(equip.item_name, True, Black)
+                rect = name.get_rect()
+                if idx % 2 == 0:
+                    rect.left, rect.centery = pos_list[idx][0] + 20, pos_list[idx][1]
+                else:
+                    rect.right, rect.centery = pos_list[idx][0] - 20, pos_list[idx][1]
+                return_sur.blit(name, rect)
+        #      裝備欄                                                                            素質欄                                                                                                裝備按鈕
+        return return_sur.subsurface(pygame.Rect(0, 0, equip_win_size[0], equip_win_size[1])), return_sur.subsurface(pygame.Rect(0, equip_win_size[1] + 1, status_win_size[0], status_win_size[1])), equip_btn_group
 
     def generate_txt_win(self, width_px, height_px):  # 創造客製化尺寸的系統視窗文字區域，原則上輸入的最小尺寸應胎是60 x 60
         txt_width = 20      # 分割模板的尺寸
@@ -460,11 +502,11 @@ class WindowClass:
         item_btn_group = pygame.sprite.Group()
         btn_list = [self.create_transparent_surface(width_space, height_space)] * 3
         font = pygame.font.Font("GenJyuuGothic-Monospace-Bold.ttf", 10)
-        for item in item_list:              # 按照順序將物品icon畫上並標註數量
+        for idx, item in enumerate(item_list):              # 按照順序將物品icon畫上並標註數量
             rect = item.icon_image.get_rect()
             rect.center = (cur_width, cur_height)
             win.blit(item.icon_image, rect)
-            item_btn_group.add(Animate_Utility.SlideItemButtonAnimate(btn_list, (border_list[2] + cur_width, border_list[0] + cur_height + 2), border_list, 2, item.item_type, item.item_idx))
+            item_btn_group.add(Animate_Utility.SlideItemButtonAnimate(btn_list, (border_list[2] + cur_width, border_list[0] + cur_height + 2), border_list, 2, item.item_type, item.item_idx, idx))
             amount = font.render(str(item.amount), True, Black)
             rect = amount.get_rect()
             rect.center = (cur_width + amount_bias, cur_height + amount_bias)

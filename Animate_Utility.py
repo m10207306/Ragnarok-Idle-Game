@@ -274,7 +274,7 @@ class ButtonAnimate(pygame.sprite.Sprite):
 
 
 class SlideItemButtonAnimate(pygame.sprite.Sprite):
-    def __init__(self, btn_list, center_pos, border_list, scroll_step, item_type, item_idx):
+    def __init__(self, btn_list, center_pos, border_list, scroll_step, item_type, item_idx, order_in_list):
         super().__init__()
         self.btn_list = btn_list
         self.image = btn_list[0]
@@ -284,7 +284,7 @@ class SlideItemButtonAnimate(pygame.sprite.Sprite):
         self.width, self.height = self.rect.width, self.rect.height
         self.border_top, self.border_bottom, self.border_left, self.border_right = border_list
         self.scroll_step = scroll_step
-        self.item_type, self.item_idx = item_type, item_idx
+        self.item_type, self.item_idx, self.order_in_list = item_type, item_idx, order_in_list
         self.border_check()
 
     def border_check(self):

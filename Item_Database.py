@@ -29,9 +29,19 @@ usable_list = (
 )
 
 equip_list = (
-  # 編號  名稱       atk     def    增加hp  增加sp  str agi vit int dex luk  可使用職業    裝備位置  裝備需要等級  售價   縮圖路徑                              大圖路徑                                      詳細說明
-    (0,  "棉襯衫",   None,   10,    None,  None,   0,  0,  0,  0,  0,  0,   range(30),  3,       1,          5,    os.path.join(folder, "equip_0.png"), os.path.join(folder, "equip_detail_0.png"),   ("純棉製成的衣服,穿著時非常舒服的衣物。",),           (Black,)),
-    (1,  "短劍",     17,     None,  None,  None,   0,  0,  0,  0,  0,  0,   range(30),  4,       1,          25,   os.path.join(folder, "equip_1.png"), os.path.join(folder, "equip_detail_1.png"),   ("為了方便任何人使用所製作出來的短劍。",),            (Black,))
+  # 編號  名稱       atk    def   matk   mdef 增加hp  增加sp  str agi vit int dex luk  可使用職業    裝備位置  裝備需要等級  售價   縮圖路徑                              大圖路徑                                      詳細說明
+    (0,  "棉襯衫",   0,     10,    0,    0,   0,     0,      0,  0,  0,  0,  0,  0,   range(30),  3,       1,          5,    os.path.join(folder, "equip_0.png"), os.path.join(folder, "equip_detail_0.png"),   ("純棉製成的衣服,穿著時非常舒服的衣物。",),           (Black,)),
+    (1,  "短劍",     17,     0,    0,    0,   0,     0,      0,  0,  0,  0,  0,  0,   range(30),  4,       1,          25,   os.path.join(folder, "equip_1.png"), os.path.join(folder, "equip_detail_1.png"),   ("為了方便任何人使用所製作出來的短劍。",),            (Black,)),
+    (2, "鐵盾", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 5, 1, 25, os.path.join(folder, "equip_2.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (3, "短劍", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 4, 1, 25, os.path.join(folder, "equip_3.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (4, "蛋殼帽", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 0, 1, 25, os.path.join(folder, "equip_4.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (5, "眼鏡", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 1, 1, 25, os.path.join(folder, "equip_5.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (6, "草葉", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 2, 1, 25, os.path.join(folder, "equip_6.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (7, "披肩", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 6, 1, 25, os.path.join(folder, "equip_7.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (8, "海灘鞋", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 7, 1, 25, os.path.join(folder, "equip_8.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (9, "力量手環", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 8, 1, 25, os.path.join(folder, "equip_9.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+    (10, "敏捷別針", 17, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, range(30), 8, 1, 25, os.path.join(folder, "equip_10.png"), os.path.join(folder, "equip_detail_1.png"), ("為了方便任何人使用所製作出來的短劍。",), (Black,)),
+
 )
 
 collection_list = (
