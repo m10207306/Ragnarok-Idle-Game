@@ -153,7 +153,7 @@ class DamageAnimate(pygame.sprite.Sprite):
                 self.window.effect_sound(os.path.join("Effect_Sound", "_attack_sword_miss.wav"))
                 return 0, 3
         defence_ratio = round(
-            (4000 + defencer.attribute.total_defence) / (4000 + defencer.attribute.total_defence * 10), 2)
+            (4000 + defencer.attribute.total_def) / (4000 + defencer.attribute.total_def * 10), 2)
         damage_value = random.randint(attacker.attribute.total_atk[0], attacker.attribute.total_atk[1])
         damage_value *= defence_ratio
         # 再判斷是否爆擊

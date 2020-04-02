@@ -134,8 +134,8 @@ class MonsterAttribute:
     def __init__(self, content):
         self.type = content[4]
         self.total_atk = [math.floor(content[5]*0.9), math.ceil(content[5]*1.1)]
-        self.total_defence = content[6]
-        self.total_mdefence = content[7]
+        self.total_def = content[6]
+        self.total_mdef = content[7]
         self.flee = content[8]
         self.hit = content[9]
         self.cri = content[13]
