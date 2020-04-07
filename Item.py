@@ -31,12 +31,12 @@ class ItemList:
     def use_item(self, item_type, order):
         obj = self.all_list[item_type][order]
         response = obj.use_action(self.equip_obj)
-        if response is not False:                       # 代表不是裝備失敗
-            self.all_list[item_type].remove(obj)        # 裝備成功先將該裝備移出物品欄
-            if isinstance(response, ItemObj):           # 代表原先位置有裝備，被return回來
-                self.add_item(response)                 # 加入裝備欄
-            return 0                                # 裝備的amount不會-1，因為只是跑過去裝備欄，但是這邊要return 0才會從物品欄消除
-        if obj.amount <= 0:
+        if response is not False and obj.item_type == 1:    # 代表不是裝備失敗
+            self.all_list[item_type].remove(obj)            # 裝備成功先將該裝備移出物品欄
+            if isinstance(response, ItemObj):               # 代表原先位置有裝備，被return回來
+                self.add_item(response)                     # 加入裝備欄
+            return 0                                        # 裝備的amount不會-1，因為只是跑過去裝備欄，但是這邊要return 0才會從物品欄消除
+        if obj.amount <= 0 and obj.item_type == 0:
             self.all_list[item_type].remove(obj)
             return 0
         else:
@@ -112,7 +112,7 @@ class ItemObj:
         self.item_type = item_type        # type 0 = usable item, type 1 = equipment, type 2 = collection
         self.char = char
         self.item_idx = item_idx
-        self.item_data = Item_Database.item_list[item_type][item_idx]
+        self.item_data = Item_Database.item_list[item_type][item_idx] if item_type != 1 else Item_Database.item_list[item_type][item_idx[0]][item_idx[1]]
         self.item_name = None
         self.health_hp, self.health_sp = None, None
         self.attack, self.defence, self.mattack, self.mdefence, self.hp, self.sp = None, None, None, None, None, None

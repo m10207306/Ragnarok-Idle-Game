@@ -233,7 +233,7 @@ class WorldClass:
             frame_limit = char_group.sprites()[0].standby_frame_interval
             animate_count = char_group.sprites()[0].image_count
             alpha_step = 20
-            alpha = 255 - (alpha_step * frame_limit / animate_count)
+            alpha = 255 - (alpha_step * frame_limit / animate_count)        # 其實就等同min_std_interval
             self.console_btn_group.sprites()[3].image = self.console_btn_group.sprites()[3].btn_list[0]  # 按鍵動畫恢復按下去之前
             self.console_btn_group.sprites()[3].freeze = True  # 動畫時間不跳出
             fps_list = []
@@ -311,12 +311,12 @@ class WorldClass:
                 all_group.draw(self.window.screen)
                 pygame.display.update()
 
-                if mons_obj.hp <= 0:
-                    mons_dead = True
-                    break
-                elif self.Char_obj.hp <= 0:
+                if self.Char_obj.hp <= 0:
                     self.Char_obj.hp = 0
                     char_dead = True
+                    break
+                elif mons_obj.hp <= 0:
+                    mons_dead = True
                     break
 
             print("Battle Stage")
@@ -387,25 +387,57 @@ class WorldClass:
                 chat_list.append(lv_up_message)
             chat = self.window.get_chat_win(chat_list, [Green] * len(chat_list))
             self.chat_room_group.update(chat, None)
+            # while True:
+            #     self.window.clock.tick(self.window.fps)
+            #     _, _, _, _ = self.window.input_detect()
+            #
+            #     if count >= frame_limit:
+            #         if mons_dead:
+            #             break
+            #         elif char_dead:
+            #             self.Char_obj.respawn()
+            #             return map_idx
+            #     all_group.clear(self.window.screen, self.window.background)
+            #
+            #     self.ptr_group.update(pygame.mouse.get_pos())
+            #     self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+            #     self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
+            #     if mons_dead:
+            #         char_group.sprites()[0].update(1, 255)
+            #     elif char_dead:
+            #         mons_group.sprites()[0].update(1, 255)
+            #
+            #     all_group.draw(self.window.screen)
+            #     pygame.display.update()
+            #     count += 1
+
+            # 屍體漸進消失
+            count = 0
+            alpha_step = 20
+            alpha = 255
+            frame_limit = char_group.sprites()[0].standby_frame_interval
             while True:
                 self.window.clock.tick(self.window.fps)
                 _, _, _, _ = self.window.input_detect()
-
-                if count >= frame_limit:
+                if count >= frame_limit * 2:
                     if mons_dead:
                         break
                     elif char_dead:
                         self.Char_obj.respawn()
                         return map_idx
+
                 all_group.clear(self.window.screen, self.window.background)
 
                 self.ptr_group.update(pygame.mouse.get_pos())
-                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
-                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-                if mons_dead:
-                    char_group.sprites()[0].update(1, 255)
-                elif char_dead:
+                if char_dead:
+                    char_group.sprites()[0].update(4, alpha)
                     mons_group.sprites()[0].update(1, 255)
+                elif mons_dead:
+                    char_group.sprites()[0].update(1, 255)
+                    mons_group.sprites()[0].update(4, alpha)
+
+                if count % mons_group.sprites()[0].min_std_interval == 0:
+                    alpha -= alpha_step
 
                 all_group.draw(self.window.screen)
                 pygame.display.update()

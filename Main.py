@@ -9,6 +9,7 @@ Black = [0, 0, 0]
 White = [255, 255, 255]
 Select_Color = [209, 222, 250]
 
+
 class Ragnarok:
     def __init__(self):
         self.window = Graphic.WindowClass()

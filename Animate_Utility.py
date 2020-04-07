@@ -28,10 +28,10 @@ class CharAnimate(pygame.sprite.Sprite):
         self.animate_idx = 0
         self.frame = 0              # 從0開始才可以第1個frame就有動作
         self.min_att_interval = 8   # 最小的攻擊動畫frame間隔
-        self.min_att_total_frame = self.min_att_interval * self.image_count     # 攻擊完整動畫所佔的最多Frame
-        self.attack_frame_interval = self.char.attribute.att_frame      # 一次攻擊動畫所佔的Total Frame
-        self.standby_frame_interval = 42                                # 一次待機動畫所佔的Total Frame
-        self.min_std_interval = self.standby_frame_interval / self.image_count   # 每張待機動畫所佔的Frame
+        self.min_att_total_frame = self.min_att_interval * self.image_count         # 攻擊完整動畫所佔的最多Frame
+        self.attack_frame_interval = self.char.attribute.att_frame                  # 一次攻擊動畫所佔的Total Frame
+        self.standby_frame_interval = 42                                            # 一次待機動畫所佔的Total Frame
+        self.min_std_interval = self.standby_frame_interval / self.image_count      # 每張待機動畫所佔的Frame
 
     def update(self, ani_type, alpha):     # type = 1: 純待機, type = 2: 攻擊(速度如果太慢也包含一部分待機), type = 3: 死亡
         if ani_type == 1:
@@ -40,6 +40,8 @@ class CharAnimate(pygame.sprite.Sprite):
             self.attack_animate(alpha)
         elif ani_type == 3:
             self.dead_animate(alpha)
+        elif ani_type == 4:
+            self.body_fade_out(alpha)
 
         if ani_type == 2:
             self.frame = self.frame + 1 if self.frame <= self.attack_frame_interval - 2 else 0
@@ -96,6 +98,17 @@ class CharAnimate(pygame.sprite.Sprite):
             else:
                 self.image = self.dead_image[self.animate_idx]
             self.animate_idx = self.animate_idx + 1 if self.animate_idx < self.image_count - 1 else 0
+
+    def body_fade_out(self, alpha):
+        if self.frame % self.min_std_interval == 0:
+            if alpha < 255:
+                copy = self.dead_image[-1].copy()
+                alpha_surface = pygame.Surface(copy.get_size(), pygame.SRCALPHA)
+                alpha_surface.fill((255, 255, 255, alpha))
+                copy.blit(alpha_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+                self.image = copy
+            else:
+                self.image = self.dead_image[-1]
 
     def reset_frame_animate(self):
         self.frame = 0

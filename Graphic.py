@@ -45,7 +45,7 @@ class WindowClass:
         self.btn_r_arw_template = []        # 素質加點向右箭頭
         self.btn_use_template = []          # 物品使用按鈕
         self.btn_auto_use_template = []     # 補品自動使用開啟按鈕
-        self.btn_unload_template = []      # 卸下裝備按鈕
+        self.btn_unload_template = []       # 卸下裝備按鈕
         self.item_tab_template = []         # 物品欄左方分類標籤
         self.item_base_template = []        # 物品欄格子模板
         self.load_template_image()
