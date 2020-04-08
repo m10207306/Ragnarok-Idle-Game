@@ -73,6 +73,7 @@ class WorldClass:
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[3], self.pos2[3]), self.pos2[3]))
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[4], self.pos2[4]), self.pos2[4]))
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[5], self.pos2[5]), self.pos2[5]))
+        self.auto_restore = AutoRestore(self.Char_obj, self.window.fps * 5)
 
     def transfer_station(self, map_idx):
         # 轉運站：基本上要切換場景的時候都透過這Function，並且控制背景與BGM
@@ -136,6 +137,7 @@ class WorldClass:
 
             Animate_Utility.HealthAnimate.health_hp_group.update()
             Animate_Utility.HealthAnimate.health_sp_group.update()
+            self.auto_restore.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -194,6 +196,7 @@ class WorldClass:
 
             Animate_Utility.HealthAnimate.health_hp_group.update()
             Animate_Utility.HealthAnimate.health_sp_group.update()
+            self.auto_restore.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -266,6 +269,7 @@ class WorldClass:
 
                 Animate_Utility.HealthAnimate.health_hp_group.update()
                 Animate_Utility.HealthAnimate.health_sp_group.update()
+                self.auto_restore.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
                 char_group.sprites()[0].update(1, 255)
                 mons_group.sprites()[0].update(1, alpha)
@@ -298,6 +302,7 @@ class WorldClass:
 
                 Animate_Utility.HealthAnimate.health_hp_group.update()
                 Animate_Utility.HealthAnimate.health_sp_group.update()
+                self.auto_restore.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
                 # ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
                 self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -364,6 +369,7 @@ class WorldClass:
                 mons_dmg_group.update()
 
                 if mons_dead:
+                    self.auto_restore.update()
                     char_group.sprites()[0].update(1, 255)      # 勝者會持續待機動畫
                     if count < frame_limit:
                         mons_group.sprites()[0].update(3, 255)  # 播過一次死亡動畫就會定格在最後一張動畫
@@ -425,6 +431,7 @@ class WorldClass:
                     char_group.sprites()[0].update(4, alpha)
                     mons_group.sprites()[0].update(1, 255)
                 elif mons_dead:
+                    self.auto_restore.update()
                     char_group.sprites()[0].update(1, 255)
                     mons_group.sprites()[0].update(4, alpha)
 
@@ -496,6 +503,7 @@ class WorldClass:
 
             Animate_Utility.HealthAnimate.health_hp_group.update()
             Animate_Utility.HealthAnimate.health_sp_group.update()
+            self.auto_restore.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -602,6 +610,7 @@ class WorldClass:
 
             Animate_Utility.HealthAnimate.health_hp_group.update()
             Animate_Utility.HealthAnimate.health_sp_group.update()
+            self.auto_restore.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -661,6 +670,7 @@ class WorldClass:
 
             Animate_Utility.HealthAnimate.health_hp_group.update()
             Animate_Utility.HealthAnimate.health_sp_group.update()
+            self.auto_restore.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -788,3 +798,28 @@ class WorldClass:
         for idx, sprite in enumerate(self.console_text_group.sprites()):
             sprite.update(self.window.get_text_block(self.console_text[idx], self.pos2[idx]), None)
             # 因為會因為背景不同而需要重新Update
+
+
+class AutoRestore:
+    def __init__(self, char_obj, cycle_frame):
+        self.char_obj = char_obj
+        self.cycle_frame = cycle_frame
+        self.count = 0
+
+    def update(self):
+        if self.count >= self.cycle_frame:
+            if self.char_obj.hp < self.char_obj.attribute.max_hp:
+                health_hp = int(self.char_obj.attribute.max_hp * 0.1)
+                self.char_obj.hp += health_hp
+                self.char_obj.hp = self.char_obj.attribute.max_hp if self.char_obj.hp > self.char_obj.attribute.max_hp else self.char_obj.hp
+                Animate_Utility.HealthAnimate.health_hp_group.add(
+                    Animate_Utility.HealthAnimate(
+                        True, health_hp, Graphic.WindowClass.obj.mons_damage_pos, Animate_Utility.HealthAnimate.health_hp_group))
+            if self.char_obj.sp < self.char_obj.attribute.max_sp:
+                health_sp = int(self.char_obj.attribute.max_sp * 0.1)
+                health_sp = health_sp if health_sp > 0 else 1
+                self.char_obj.sp += health_sp
+                self.char_obj.sp = self.char_obj.attribute.max_sp if self.char_obj.sp > self.char_obj.attribute.max_sp else self.char_obj.sp
+            self.count = 0
+        else:
+            self.count += 1
