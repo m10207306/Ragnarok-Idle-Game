@@ -1,6 +1,7 @@
 import math, os, random
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
+import Graphic
 
 Black = (0, 0, 0)
 White = (255, 255, 255)
@@ -113,6 +114,33 @@ class CharAnimate(pygame.sprite.Sprite):
     def reset_frame_animate(self):
         self.frame = 0
         self.animate_idx = 0
+
+
+class HealthAnimate(pygame.sprite.Sprite):
+    health_hp_group = pygame.sprite.Group()
+    health_sp_group = pygame.sprite.Group()
+
+    def __init__(self, hp_flag, health_num, pos, group):
+        super().__init__()
+        self.img_list = Graphic.WindowClass.obj.health_hp_template if hp_flag else Graphic.WindowClass.obj.health_sp_template
+        self.num = health_num
+        self.num = 999999 if self.num > 999999 else self.num
+        self.num_max_digit = 6
+        self.num_width, self.num_height = self.img_list[0].get_size()
+        value_list = [int(d) for d in str(self.num)]
+        self.image = Graphic.WindowClass.obj.create_transparent_surface(self.num_width * len(value_list), self.num_height)
+        for i in range(len(value_list)):
+            self.image.blit(self.img_list[value_list[i]], (i * self.num_width, 0))
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+        self.group = group
+        self.life = 0
+
+    def update(self):
+        if self.life >= 60:
+            self.group.remove(self)
+        self.rect.y -= 2
+        self.life += 1
 
 
 class DamageAnimate(pygame.sprite.Sprite):

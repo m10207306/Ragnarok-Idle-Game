@@ -1,7 +1,7 @@
 import os, random
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # 3rd party Library
-import Item_Database
+import Item_Database, Animate_Utility, Graphic
 
 
 class ItemList:
@@ -128,10 +128,20 @@ class ItemObj:
         self.data_setting()
 
     def usable_use(self, equip_obj):
-        self.char.hp = self.char.hp + random.randint(self.health_hp[0], self.health_hp[1]) if self.health_hp is not None else self.char.hp
-        self.char.hp = self.char.attribute.max_hp if self.char.hp >= self.char.attribute.max_hp else self.char.hp
-        self.char.sp = self.char.sp + random.randint(self.health_sp[0], self.health_sp[1]) if self.health_sp is not None else self.char.sp
-        self.char.sp = self.char.attribute.max_sp if self.char.sp >= self.char.attribute.max_sp else self.char.sp
+        health_hp = random.randint(self.health_hp[0], self.health_hp[1]) if self.health_hp is not None else None
+        if health_hp is not None:
+            Animate_Utility.HealthAnimate.health_hp_group.add(
+                Animate_Utility.HealthAnimate(
+                    True, health_hp, Graphic.WindowClass.obj.mons_damage_pos, Animate_Utility.HealthAnimate.health_hp_group))
+            self.char.hp = self.char.hp + health_hp
+            self.char.hp = self.char.attribute.max_hp if self.char.hp >= self.char.attribute.max_hp else self.char.hp
+        health_sp = random.randint(self.health_sp[0], self.health_sp[1]) if self.health_sp is not None else None
+        if health_sp is not None:
+            Animate_Utility.HealthAnimate.health_sp_group.add(
+                Animate_Utility.HealthAnimate(
+                    False, health_sp, Graphic.WindowClass.obj.mons_damage_pos, Animate_Utility.HealthAnimate.health_sp_group))
+            self.char.sp = self.char.sp + health_sp
+            self.char.sp = self.char.attribute.max_sp if self.char.sp >= self.char.attribute.max_sp else self.char.sp
         self.amount -= 1
         return True
 

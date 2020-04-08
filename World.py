@@ -1,5 +1,5 @@
-import os, math, random                                     # Python Built-in Library
-import Character, Item, Animate_Utility, Map_Database       # 自己的Code
+import os, random                                                    # Python Built-in Library
+import Character, Item, Animate_Utility, Map_Database, Graphic       # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
 
@@ -13,6 +13,16 @@ Orange = (255, 170, 0)
 Battle_Meg_Color = (0, 196, 255)
 
 
+def all_group_clear(group_cluster, screen, background):
+    for group in group_cluster:
+        group.clear(screen, background)
+
+
+def all_group_draw(group_cluster, screen):
+    for group in group_cluster:
+        group.draw(screen)
+
+
 class WorldClass:
     def __init__(self, window_screen, name, ini_ability):
         self.window = window_screen
@@ -20,12 +30,12 @@ class WorldClass:
         self.Char_obj = Character.CharacterClass(name, ini_ability)
 
         # 一些幾乎必備的Animate Group存在這裏，避免每進去一個function要重做一次
-        self.char_pos = (self.window.width * 0.4, self.window.height * 0.55)    # center pos
-        self.mons_pos = (self.window.width * 0.6, self.window.height * 0.55)
-        self.char_name_pos = (self.char_pos[0], self.char_pos[1] - 70)
-        self.mons_name_pos = (self.mons_pos[0], self.mons_pos[1] - 70)
-        self.char_damage_pos = (self.mons_pos[0], self.mons_pos[1] - 110)
-        self.mons_damage_pos = (self.char_pos[0], self.char_pos[1] - 110)
+        self.char_pos = self.window.char_pos    # center pos
+        self.mons_pos = self.window.mons_pos
+        self.char_name_pos = self.window.char_name_pos
+        self.mons_name_pos = self.window.mons_name_pos
+        self.char_damage_pos = self.window.char_damage_pos
+        self.mons_damage_pos = self.window.mons_damage_pos
         self.status_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(self.window.status_win_template, (0, 0)))
         self.mini_map_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
         self.health_bar_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(pygame.Surface((1, 1)), (0, 0)))
@@ -100,10 +110,11 @@ class WorldClass:
         chat = self.window.get_chat_win(["[系統訊息] 目前所在位置 - " + map_data[2]], [Green])
         self.chat_room_group.update(chat, None)
 
-        all_group = self.window.combine_sprite(char_sit_group, self.status_group, self.mini_map_group,
-                                               self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group, self.console_text_group,
-                                               self.ptr_group)
+        all_group = [char_sit_group, self.status_group, self.mini_map_group,
+                     self.health_bar_group, self.chat_room_group, self.name_group,
+                     Animate_Utility.HealthAnimate.health_hp_group, Animate_Utility.HealthAnimate.health_sp_group,
+                     self.chat_input_group, self.console_btn_group, self.console_text_group,
+                     self.ptr_group]
 
         for sprite in self.console_btn_group.sprites():
             sprite.freeze = False
@@ -121,8 +132,10 @@ class WorldClass:
                 self.window.fps_analysis(fps_list)
                 return None
 
-            all_group.clear(self.window.screen, self.window.background)
+            all_group_clear(all_group, self.window.screen, self.window.background)
 
+            Animate_Utility.HealthAnimate.health_hp_group.update()
+            Animate_Utility.HealthAnimate.health_sp_group.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -132,7 +145,7 @@ class WorldClass:
                     opt_select = idx
                     enter = True
 
-            all_group.draw(self.window.screen)
+            all_group_draw(all_group, self.window.screen)
             pygame.display.update()
 
             if enter and opt_select is not None:
@@ -159,10 +172,11 @@ class WorldClass:
         for sprite in self.console_btn_group.sprites():     # 所有按鍵都可以使用
             sprite.freeze = False
 
-        all_group = self.window.combine_sprite(char_group, self.status_group, self.mini_map_group,
-                                               self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group,
-                                               self.console_text_group, self.ptr_group)
+        all_group = [char_group, self.status_group, self.mini_map_group,
+                     self.health_bar_group, self.chat_room_group, self.name_group,
+                     Animate_Utility.HealthAnimate.health_hp_group, Animate_Utility.HealthAnimate.health_sp_group,
+                     self.chat_input_group, self.console_btn_group,
+                     self.console_text_group, self.ptr_group]
 
         fps_list = []
         enter = False
@@ -176,8 +190,10 @@ class WorldClass:
                 self.window.fps_analysis(fps_list)
                 return None
 
-            all_group.clear(self.window.screen, self.window.background)
+            all_group_clear(all_group, self.window.screen, self.window.background)
 
+            Animate_Utility.HealthAnimate.health_hp_group.update()
+            Animate_Utility.HealthAnimate.health_sp_group.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -188,7 +204,7 @@ class WorldClass:
                     opt_select = idx
                     enter = True
 
-            all_group.draw(self.window.screen)
+            all_group_draw(all_group, self.window.screen)
             pygame.display.update()
 
             if enter and opt_select is not None:
@@ -224,10 +240,12 @@ class WorldClass:
             mons_name = self.window.get_text_block("Lv." + str(mons_obj.base_level) + " " + mons_obj.mons_zh_name, self.mons_name_pos)
             self.name_group.add(Animate_Utility.InfoWindowAnimate(mons_name, self.mons_name_pos))
 
-            all_group = self.window.combine_sprite(char_group, mons_group, self.status_group,
-                                                   self.mini_map_group, self.health_bar_group, self.chat_room_group,
-                                                   self.name_group, self.chat_input_group, self.console_btn_group,
-                                                   self.console_text_group, self.ptr_group)
+            all_group = [char_group, mons_group, self.status_group, self.mini_map_group, self.health_bar_group,
+                         self.chat_room_group, self.name_group,
+                         Animate_Utility.HealthAnimate.health_hp_group, Animate_Utility.HealthAnimate.health_sp_group,
+                         char_dmg_group, mons_dmg_group,
+                         self.chat_input_group, self.console_btn_group, self.console_text_group, self.ptr_group]
+
             # 怪物漸進登場
             count = 0
             frame_limit = char_group.sprites()[0].standby_frame_interval
@@ -244,15 +262,17 @@ class WorldClass:
                 if count >= frame_limit * 2:
                     break
 
-                all_group.clear(self.window.screen, self.window.background)
+                all_group_clear(all_group, self.window.screen, self.window.background)
 
+                Animate_Utility.HealthAnimate.health_hp_group.update()
+                Animate_Utility.HealthAnimate.health_sp_group.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
                 char_group.sprites()[0].update(1, 255)
                 mons_group.sprites()[0].update(1, alpha)
                 if count % mons_group.sprites()[0].min_std_interval == 0:
                     alpha += alpha_step
 
-                all_group.draw(self.window.screen)
+                all_group_draw(all_group, self.window.screen)
                 pygame.display.update()
                 count += 1
 
@@ -274,13 +294,12 @@ class WorldClass:
                 fps_list.append(self.window.clock.get_fps())
                 key, key_id, mouse, mouse_type = self.window.input_detect()
 
-                all_group.clear(self.window.screen, self.window.background)
-                char_dmg_group.clear(self.window.screen, self.window.background)
-                mons_dmg_group.clear(self.window.screen, self.window.background)
-                # 因為damage_group會動態增加sprite跟減少，所以沒辦法在外面一次塞進去all_group裡
+                all_group_clear(all_group, self.window.screen, self.window.background)
 
+                Animate_Utility.HealthAnimate.health_hp_group.update()
+                Animate_Utility.HealthAnimate.health_sp_group.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
-                ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
+                # ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
                 self.status_group.update(self.window.get_status_win(self.Char_obj), None)
                 self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
 
@@ -292,7 +311,7 @@ class WorldClass:
                     return map_idx
 
                 char_group.update(2, 255)
-                if len(char_dmg_group.sprites()) != 0 and (char_dmg_group.sprites()[-1].life == 0):
+                if len(char_dmg_group.sprites()) != 0 and (char_dmg_group.sprites()[-1].life == 0):     # 每新加入一個傷害數字就加入系統的戰報訊息
                     self.window.get_chat_win([char_dmg_group.sprites()[-1].get_battle_msg()], [Battle_Meg_Color], True)
                     chat_update = True
                 mons_group.update(2, 255)
@@ -306,9 +325,7 @@ class WorldClass:
                     self.chat_room_group.update(chat, None)
                     chat_update = False
 
-                char_dmg_group.draw(self.window.screen)
-                mons_dmg_group.draw(self.window.screen)
-                all_group.draw(self.window.screen)
+                all_group_draw(all_group, self.window.screen)
                 pygame.display.update()
 
                 if self.Char_obj.hp <= 0:
@@ -336,10 +353,10 @@ class WorldClass:
                 if count >= frame_limit and len(char_dmg_group.sprites()) == 0 and len(mons_dmg_group.sprites()) == 0:
                     break
 
-                all_group.clear(self.window.screen, self.window.background)
-                char_dmg_group.clear(self.window.screen, self.window.background)
-                mons_dmg_group.clear(self.window.screen, self.window.background)
+                all_group_clear(all_group, self.window.screen, self.window.background)
 
+                Animate_Utility.HealthAnimate.health_hp_group.update()
+                Animate_Utility.HealthAnimate.health_sp_group.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
                 self.status_group.update(self.window.get_status_win(self.Char_obj), None)
                 self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
@@ -355,10 +372,7 @@ class WorldClass:
                     if count < frame_limit:
                         char_group.sprites()[0].update(3, 255)
 
-                char_dmg_group.draw(self.window.screen)
-                mons_dmg_group.draw(self.window.screen)
-                all_group.draw(self.window.screen)
-
+                all_group_draw(all_group, self.window.screen)
                 pygame.display.update()
                 count += 1
 
@@ -366,7 +380,6 @@ class WorldClass:
             self.window.fps_analysis(fps_list)
 
             # 戰鬥結果總結（經驗值處理）
-            count = 0
             self.console_btn_group.sprites()[3].freeze = False  # 死亡與總結階段無法跳出
             sys_message = "[戰鬥結果] - "
             lv_up_message = "[系統訊息] "
@@ -387,29 +400,6 @@ class WorldClass:
                 chat_list.append(lv_up_message)
             chat = self.window.get_chat_win(chat_list, [Green] * len(chat_list))
             self.chat_room_group.update(chat, None)
-            # while True:
-            #     self.window.clock.tick(self.window.fps)
-            #     _, _, _, _ = self.window.input_detect()
-            #
-            #     if count >= frame_limit:
-            #         if mons_dead:
-            #             break
-            #         elif char_dead:
-            #             self.Char_obj.respawn()
-            #             return map_idx
-            #     all_group.clear(self.window.screen, self.window.background)
-            #
-            #     self.ptr_group.update(pygame.mouse.get_pos())
-            #     self.status_group.update(self.window.get_status_win(self.Char_obj), None)
-            #     self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-            #     if mons_dead:
-            #         char_group.sprites()[0].update(1, 255)
-            #     elif char_dead:
-            #         mons_group.sprites()[0].update(1, 255)
-            #
-            #     all_group.draw(self.window.screen)
-            #     pygame.display.update()
-            #     count += 1
 
             # 屍體漸進消失
             count = 0
@@ -426,8 +416,10 @@ class WorldClass:
                         self.Char_obj.respawn()
                         return map_idx
 
-                all_group.clear(self.window.screen, self.window.background)
+                all_group_clear(all_group, self.window.screen, self.window.background)
 
+                Animate_Utility.HealthAnimate.health_hp_group.update()
+                Animate_Utility.HealthAnimate.health_sp_group.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
                 if char_dead:
                     char_group.sprites()[0].update(4, alpha)
@@ -439,7 +431,7 @@ class WorldClass:
                 if count % mons_group.sprites()[0].min_std_interval == 0:
                     alpha -= alpha_step
 
-                all_group.draw(self.window.screen)
+                all_group_draw(all_group, self.window.screen)
                 pygame.display.update()
                 count += 1
 
@@ -459,7 +451,7 @@ class WorldClass:
         usable_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias)))
         equip_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + h_step)))
         collect_switch_group = pygame.sprite.Group(Animate_Utility.ButtonAnimate(transparent_btn, (window_center[0] - type_btn_w_bias, window_center[1] - type_btn_h_bias + 2 * h_step)))
-        item_detail_group, detail_use_btn_group, detail_auto_use_btn_group = pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group()
+        item_btn_group, item_detail_group, detail_use_btn_group, detail_auto_use_btn_group = pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group()
 
         win_base = self.window.get_item_base_win(0)
         # 物品欄的基礎背景，並且輸入參數來決定這是哪種類型物品(不包含具體物品)
@@ -469,13 +461,19 @@ class WorldClass:
         height_start, scroll_step = 0, 2
         border_list = [int(window_center[1]) - 69, int(window_center[1]) + 59, int(window_center[0]) - 110, int(window_center[0]) + 130]
         # 秀出不同類型物品的物品列表（如果項目較多可上下滾動）
-        win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[0], border_list)
+        win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[0], border_list, item_btn_group)
         item_win_list_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), (window_center[0] + 10, window_center[1] - 5)))
-        all_group = self.window.combine_sprite(char_sit_group, usable_switch_group, equip_switch_group, collect_switch_group,
-                                               item_win_base_group, item_win_list_group,
-                                               self.status_group, self.mini_map_group,
-                                               self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group, self.console_text_group)
+
+        all_group = [char_sit_group, usable_switch_group, equip_switch_group, collect_switch_group,
+                     item_win_base_group, item_win_list_group,
+                     item_btn_group, item_detail_group,
+                     detail_use_btn_group, detail_auto_use_btn_group,
+                     Animate_Utility.HealthAnimate.health_hp_group,
+                     Animate_Utility.HealthAnimate.health_sp_group,
+                     self.status_group, self.mini_map_group,
+                     self.health_bar_group, self.chat_room_group, self.name_group,
+                     self.chat_input_group, self.console_btn_group, self.console_text_group,
+                     self.ptr_group]
 
         for btn in self.console_btn_group.sprites():
             btn.freeze = True
@@ -494,20 +492,19 @@ class WorldClass:
                 self.window.fps_analysis(fps_list)
                 return map_idx
 
-            all_group.clear(self.window.screen, self.window.background)
-            item_btn_group.clear(self.window.screen, self.window.background)
-            item_detail_group.clear(self.window.screen, self.window.background)
-            self.ptr_group.clear(self.window.screen, self.window.background)
+            all_group_clear(all_group, self.window.screen, self.window.background)
 
+            Animate_Utility.HealthAnimate.health_hp_group.update()
+            Animate_Utility.HealthAnimate.health_sp_group.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
             self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-            for idx, btn in enumerate(self.window.combine_sprite(usable_switch_group, equip_switch_group, collect_switch_group)):   # 切換不同種類物品的物品欄
-                if btn.update(ptr_tip_pos, mouse_type):
+            for idx, btn in enumerate([usable_switch_group, equip_switch_group, collect_switch_group]):  # 切換不同種類物品的物品欄
+                if btn.sprites()[0].update(ptr_tip_pos, mouse_type):
                     height_start, curr_type = 0, idx
                     item_win_base_group.update(self.window.get_item_base_win(curr_type), None)
-                    win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[curr_type], border_list)
+                    win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[curr_type], border_list, item_btn_group)
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
 
             if item_win_list_group.sprites()[0].rect.collidepoint(ptr_tip_pos):     # 當物品欄內容多於4 row，則可以上下滾動
@@ -546,19 +543,14 @@ class WorldClass:
                     if remaining == 0:
                         selected_item = None
                         item_detail_group.empty(), detail_use_btn_group.empty(), detail_auto_use_btn_group.empty()
-                    win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[curr_type], border_list)
+                    win_list, item_btn_group = self.window.get_item_list_win(self.Char_obj.item.all_list[curr_type], border_list, item_btn_group)
                     item_win_list_group.update(win_list.subsurface(pygame.Rect(0, height_start, show_width, show_height)), None)
 
             if len(detail_auto_use_btn_group.sprites()) != 0:   # 當自動使用按鈕被觸動時
                 if detail_auto_use_btn_group.sprites()[0].update(ptr_tip_pos, mouse_type):
                     print("Set auto use")
 
-            all_group.draw(self.window.screen)
-            item_btn_group.draw(self.window.screen)
-            item_detail_group.draw(self.window.screen)
-            detail_use_btn_group.draw(self.window.screen)
-            detail_auto_use_btn_group.draw(self.window.screen)
-            self.ptr_group.draw(self.window.screen)
+            all_group_draw(all_group, self.window.screen)
             pygame.display.update()
 
     def info_page(self, map_idx):
@@ -570,7 +562,8 @@ class WorldClass:
         self.chat_room_group.update(chat, None)
 
         ability_list = ["str", "agi", "vit", "int", "dex", "luk"]
-        _, ability_page, _ = self.window.create_equip_ability_win(self.Char_obj)
+        equip_btn_group = pygame.sprite.Group()
+        _, ability_page, _ = self.window.create_equip_ability_win(self.Char_obj, equip_btn_group)
         page_center = (self.window.width * 0.15, self.window.height * 0.55)
         ability_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(ability_page, page_center))
         ability_btn_group = pygame.sprite.Group()   # 要看升級點來確認是否有btn
@@ -586,10 +579,11 @@ class WorldClass:
                 obj.freeze = True
                 ability_btn_group.add(obj)
 
-        all_group = self.window.combine_sprite(char_sit_group, self.status_group, self.mini_map_group,
-                                               self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group, self.console_text_group,
-                                               ability_group, ability_btn_group, self.ptr_group)
+        all_group = [char_sit_group, self.status_group, self.mini_map_group,
+                     self.health_bar_group, self.chat_room_group, self.name_group,
+                     Animate_Utility.HealthAnimate.health_hp_group, Animate_Utility.HealthAnimate.health_sp_group,
+                     self.chat_input_group, self.console_btn_group, self.console_text_group,
+                     ability_group, ability_btn_group, self.ptr_group]
 
         for btn in self.console_btn_group.sprites():
             btn.freeze = True
@@ -604,8 +598,10 @@ class WorldClass:
                 self.window.fps_analysis(fps_list)
                 return map_idx
 
-            all_group.clear(self.window.screen, self.window.background)
+            all_group_clear(all_group, self.window.screen, self.window.background)
 
+            Animate_Utility.HealthAnimate.health_hp_group.update()
+            Animate_Utility.HealthAnimate.health_sp_group.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -623,11 +619,10 @@ class WorldClass:
                     btn.image = transparent_btn_list[0]
                     btn.freeze = True
 
-            _, ability_page, _ = self.window.create_equip_ability_win(self.Char_obj)
+            _, ability_page, _ = self.window.create_equip_ability_win(self.Char_obj, equip_btn_group)
             ability_group.update(ability_page, None)
 
-            all_group.draw(self.window.screen)
-
+            all_group_draw(all_group, self.window.screen)
             pygame.display.update()
 
     def equip_page(self, map_idx):
@@ -637,15 +632,16 @@ class WorldClass:
         self.chat_room_group.update(chat, None)
 
         page_center = (self.window.width * 0.15, self.window.height * 0.55)
-        equip_page, _, equip_btn_group = self.window.create_equip_ability_win(self.Char_obj)
+        item_detail_group, detail_use_btn_group, equip_btn_group = pygame.sprite.Group(), pygame.sprite.Group(), pygame.sprite.Group()
+        equip_page, _, equip_btn_group = self.window.create_equip_ability_win(self.Char_obj, equip_btn_group)
         equip_page_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(equip_page, page_center))
-        item_detail_group, detail_use_btn_group = pygame.sprite.Group(), pygame.sprite.Group()
         detain_center_pos = (0.7 * self.window.width, 0.55 * self.window.height - 0.6 * 173 - 0.5 * self.window.item_detail_template.get_size()[1])
 
-        all_group = self.window.combine_sprite(char_sit_group, equip_page_group,
-                                               self.status_group, self.mini_map_group,
-                                               self.health_bar_group, self.chat_room_group, self.name_group,
-                                               self.chat_input_group, self.console_btn_group, self.console_text_group)
+        all_group = [char_sit_group, equip_page_group, equip_btn_group, item_detail_group, detail_use_btn_group,
+                     self.status_group, self.mini_map_group,
+                     self.health_bar_group, self.chat_room_group, self.name_group,
+                     Animate_Utility.HealthAnimate.health_hp_group, Animate_Utility.HealthAnimate.health_sp_group,
+                     self.chat_input_group, self.console_btn_group, self.console_text_group, self.ptr_group]
 
         for btn in self.console_btn_group.sprites():
             btn.freeze = True
@@ -661,10 +657,10 @@ class WorldClass:
                 self.window.fps_analysis(fps_list)
                 return map_idx
 
-            all_group.clear(self.window.screen, self.window.background)
-            item_detail_group.clear(self.window.screen, self.window.background)
-            self.ptr_group.clear(self.window.screen, self.window.background)
+            all_group_clear(all_group, self.window.screen, self.window.background)
 
+            Animate_Utility.HealthAnimate.health_hp_group.update()
+            Animate_Utility.HealthAnimate.health_sp_group.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -685,15 +681,11 @@ class WorldClass:
                     if isinstance(response, Item.ItemObj):
                         select_equip = None
                         self.Char_obj.item.add_item(response)
-                        equip_page, _, equip_btn_group = self.window.create_equip_ability_win(self.Char_obj)
+                        equip_page, _, equip_btn_group = self.window.create_equip_ability_win(self.Char_obj, equip_btn_group)
                         equip_page_group.update(equip_page, None)
                         item_detail_group.empty(), detail_use_btn_group.empty()
 
-            all_group.draw(self.window.screen)
-            equip_btn_group.draw(self.window.screen)
-            item_detail_group.draw(self.window.screen)
-            detail_use_btn_group.draw(self.window.screen)
-            self.ptr_group.draw(self.window.screen)
+            all_group_draw(all_group, self.window.screen)
             pygame.display.update()
 
     def moving_page(self, map_idx):
@@ -731,8 +723,10 @@ class WorldClass:
         self.common_group_update()
         chat = self.window.get_chat_win([], [])
         self.chat_room_group.update(chat, None)
-        all_group = self.window.combine_sprite([btn_group, self.chat_room_group, self.chat_input_group,
-                                                self.console_btn_group, self.console_text_group, self.ptr_group])
+
+        all_group = [btn_group, self.chat_room_group, self.chat_input_group,
+                     self.console_btn_group, self.console_text_group, self.ptr_group]
+
         for btn in self.console_btn_group.sprites():
             btn.freeze = True
         fps_list = []
@@ -777,7 +771,7 @@ class WorldClass:
                     self.window.fps_analysis(fps_list)
                     return next_map_list[idx]
 
-            all_group.draw(self.window.screen)
+            all_group_draw(all_group, self.window.screen)
             pygame.display.update()
 
     def common_group_update(self):
