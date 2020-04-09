@@ -230,7 +230,7 @@ class DamageAnimate(pygame.sprite.Sprite):
 
     @staticmethod
     def trigger_or_not(probability):
-        return random.randint(1, 100) <= int(probability * 100)
+        return random.randint(1, 10000) <= int(probability * 10000)
 
 
 class InfoWindowAnimate(pygame.sprite.Sprite):

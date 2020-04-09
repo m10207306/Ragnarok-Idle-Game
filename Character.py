@@ -162,5 +162,5 @@ class MonsterClass:
             self.standby_img.append(img1.subsurface(pygame.Rect((i - 1) * width, 0, width, height)))
             self.attack_img.append(img2.subsurface(pygame.Rect((i - 1) * width, 0, width, height)))
             self.dead_img.append(img3.subsurface(pygame.Rect((i - 1) * width, 0, width, height)))
-
-
+        self.item_drop_prob = Monster_Database.monster_data[self.mons_number][14]
+        self.item_drop_idx = Monster_Database.monster_data[self.mons_number][15]

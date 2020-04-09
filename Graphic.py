@@ -108,8 +108,9 @@ class WindowClass:
         # can store 15 lines content
         size = (600, 221)
         line_limit = 12
-        self.chat_message = self.chat_message + content  # concatenate 2 list, keep 15 elements in list
-        self.chat_color = self.chat_color + color
+        if content is not None:
+            self.chat_message = self.chat_message + content  # concatenate 2 list, keep 15 elements in list
+            self.chat_color = self.chat_color + color
         while not len(self.chat_message) < line_limit:
             self.chat_message.pop(0)                           # 刪除最舊的訊息
             self.chat_color.pop(0)

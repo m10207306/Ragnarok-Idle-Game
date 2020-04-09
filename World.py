@@ -80,8 +80,7 @@ class WorldClass:
         self.auto_health = AutoHealthByMedicine(self.Char_obj, None, self.Char_obj.item, 0.5)
         WorldClass.chat_group = self.chat_room_group
 
-        self.Char_obj.item.add_item(Item.ItemObj(0, 0, self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 0, self.Char_obj, 9))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 0, self.Char_obj, 10))
         self.Char_obj.item.add_item(Item.ItemObj(0, 1, self.Char_obj, 10))
         self.Char_obj.item.add_item(Item.ItemObj(0, 2, self.Char_obj, 10))
         self.Char_obj.item.add_item(Item.ItemObj(0, 3, self.Char_obj, 10))
@@ -101,10 +100,6 @@ class WorldClass:
         self.Char_obj.item.add_item(Item.ItemObj(0, 17, self.Char_obj, 10))
         self.Char_obj.item.add_item(Item.ItemObj(0, 18, self.Char_obj, 10))
         self.Char_obj.item.add_item(Item.ItemObj(0, 19, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(2, 0, self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(2, 1, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(2, 2, self.Char_obj, 100))
-        self.Char_obj.item.add_item(Item.ItemObj(2, 3, self.Char_obj, 1000))
         self.Char_obj.item.add_item(Item.ItemObj(1, (0, 0), self.Char_obj, 1))
         self.Char_obj.item.add_item(Item.ItemObj(1, (0, 3), self.Char_obj, 1))
         self.Char_obj.item.add_item(Item.ItemObj(1, (0, 5), self.Char_obj, 1))
@@ -444,6 +439,7 @@ class WorldClass:
             self.console_btn_group.sprites()[3].freeze = False  # 死亡與總結階段無法跳出
             sys_message = "[戰鬥結果] - "
             lv_up_message = "[系統訊息] "
+            item_message = "[物品系統] 獲得 "
             if mons_dead:
                 base_lv_up, job_lv_up = self.Char_obj.get_exp(mons_obj.base_exp, mons_obj.job_exp)
                 sys_message += "勝利！ 獲得 Base Exp " + str(mons_obj.base_exp) + ", Job Exp " + str(mons_obj.job_exp)
@@ -453,13 +449,21 @@ class WorldClass:
                     lv_up_message += " | "
                 if job_lv_up:
                     lv_up_message += "Job Level Up! " + str(self.Char_obj.job_level - 1) + " -> " + str(self.Char_obj.job_level)
+                for idx, prob in enumerate(mons_obj.item_drop_prob):        # 處理物品掉落
+                    if Animate_Utility.DamageAnimate.trigger_or_not(prob):
+                        target_idx = mons_obj.item_drop_idx[idx]
+                        drop_obj = Item.ItemObj(target_idx[0], target_idx[1], self.Char_obj, 1)
+                        self.Char_obj.item.add_item(drop_obj)
+                        item_message += drop_obj.item_name + " "
             elif char_dead:
                 self.Char_obj.exp_punish()
                 sys_message += "失敗！ 損失 2% Base / Job Exp"
-            chat_list = [sys_message]
+            self.window.get_chat_win([sys_message], [Green], True)
             if lv_up_message != "[系統訊息] ":
-                chat_list.append(lv_up_message)
-            chat = self.window.get_chat_win(chat_list, [Green] * len(chat_list))
+                self.window.get_chat_win([lv_up_message], [Green], True)
+            if item_message != "[物品系統] 獲得 ":
+                self.window.get_chat_win([item_message], [Purple], True)
+            chat = self.window.get_chat_win(None, None)
             self.chat_room_group.update(chat, None)
 
             # 屍體漸進消失
