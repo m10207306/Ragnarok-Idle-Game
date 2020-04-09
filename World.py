@@ -11,6 +11,7 @@ Blue = (0, 0, 255)
 Yellow = (255, 222, 0)
 Orange = (255, 170, 0)
 Battle_Meg_Color = (0, 196, 255)
+Purple = (200, 95, 200)
 
 
 def all_group_clear(group_cluster, screen, background):
@@ -24,6 +25,8 @@ def all_group_draw(group_cluster, screen):
 
 
 class WorldClass:
+    chat_group = None
+
     def __init__(self, window_screen, name, ini_ability):
         self.window = window_screen
         self.current_pos = None
@@ -74,6 +77,55 @@ class WorldClass:
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[4], self.pos2[4]), self.pos2[4]))
         self.console_text_group.add(Animate_Utility.InfoWindowAnimate(self.window.get_text_block(self.console_text[5], self.pos2[5]), self.pos2[5]))
         self.auto_restore = AutoRestore(self.Char_obj, self.window.fps * 5)
+        self.auto_health = AutoHealthByMedicine(self.Char_obj, None, self.Char_obj.item, 0.5)
+        WorldClass.chat_group = self.chat_room_group
+
+        self.Char_obj.item.add_item(Item.ItemObj(0, 0, self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 0, self.Char_obj, 9))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 1, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 2, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 3, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 4, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 5, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 6, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 7, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 8, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 9, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 10, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 11, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 12, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 13, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 14, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 15, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 16, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 17, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 18, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(0, 19, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(2, 0, self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(2, 1, self.Char_obj, 10))
+        self.Char_obj.item.add_item(Item.ItemObj(2, 2, self.Char_obj, 100))
+        self.Char_obj.item.add_item(Item.ItemObj(2, 3, self.Char_obj, 1000))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (0, 0), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (0, 3), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (0, 5), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (1, 0), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (2, 0), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (4, 0), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (5, 0), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 0), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 1), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 2), self.Char_obj, 1))
+        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 3), self.Char_obj, 1))
+
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
+        self.Char_obj.item.use_item(1, 0)
 
     def transfer_station(self, map_idx):
         # 轉運站：基本上要切換場景的時候都透過這Function，並且控制背景與BGM
@@ -194,9 +246,9 @@ class WorldClass:
 
             all_group_clear(all_group, self.window.screen, self.window.background)
 
+            self.auto_restore.update()
             Animate_Utility.HealthAnimate.health_hp_group.update()
             Animate_Utility.HealthAnimate.health_sp_group.update()
-            self.auto_restore.update()
             self.ptr_group.update(pygame.mouse.get_pos())
             ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
             self.status_group.update(self.window.get_status_win(self.Char_obj), None)
@@ -267,10 +319,13 @@ class WorldClass:
 
                 all_group_clear(all_group, self.window.screen, self.window.background)
 
+                self.auto_restore.update()
+                self.auto_health.detect()
                 Animate_Utility.HealthAnimate.health_hp_group.update()
                 Animate_Utility.HealthAnimate.health_sp_group.update()
-                self.auto_restore.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
+                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
                 char_group.sprites()[0].update(1, 255)
                 mons_group.sprites()[0].update(1, alpha)
                 if count % mons_group.sprites()[0].min_std_interval == 0:
@@ -300,11 +355,11 @@ class WorldClass:
 
                 all_group_clear(all_group, self.window.screen, self.window.background)
 
+                self.auto_restore.update()
+                self.auto_health.detect()
                 Animate_Utility.HealthAnimate.health_hp_group.update()
                 Animate_Utility.HealthAnimate.health_sp_group.update()
-                self.auto_restore.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
-                # ptr_tip_pos = self.ptr_group.sprites()[0].rect.topleft
                 self.status_group.update(self.window.get_status_win(self.Char_obj), None)
                 self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
 
@@ -360,16 +415,9 @@ class WorldClass:
 
                 all_group_clear(all_group, self.window.screen, self.window.background)
 
-                Animate_Utility.HealthAnimate.health_hp_group.update()
-                Animate_Utility.HealthAnimate.health_sp_group.update()
-                self.ptr_group.update(pygame.mouse.get_pos())
-                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
-                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
-                char_dmg_group.update()
-                mons_dmg_group.update()
-
                 if mons_dead:
                     self.auto_restore.update()
+                    self.auto_health.detect()
                     char_group.sprites()[0].update(1, 255)      # 勝者會持續待機動畫
                     if count < frame_limit:
                         mons_group.sprites()[0].update(3, 255)  # 播過一次死亡動畫就會定格在最後一張動畫
@@ -377,6 +425,13 @@ class WorldClass:
                     mons_group.sprites()[0].update(1, 255)
                     if count < frame_limit:
                         char_group.sprites()[0].update(3, 255)
+                Animate_Utility.HealthAnimate.health_hp_group.update()
+                Animate_Utility.HealthAnimate.health_sp_group.update()
+                self.ptr_group.update(pygame.mouse.get_pos())
+                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
+                char_dmg_group.update()
+                mons_dmg_group.update()
 
                 all_group_draw(all_group, self.window.screen)
                 pygame.display.update()
@@ -427,11 +482,14 @@ class WorldClass:
                 Animate_Utility.HealthAnimate.health_hp_group.update()
                 Animate_Utility.HealthAnimate.health_sp_group.update()
                 self.ptr_group.update(pygame.mouse.get_pos())
+                self.status_group.update(self.window.get_status_win(self.Char_obj), None)
+                self.health_bar_group.update(self.window.get_health_bar(self.Char_obj), None)
                 if char_dead:
                     char_group.sprites()[0].update(4, alpha)
                     mons_group.sprites()[0].update(1, 255)
                 elif mons_dead:
                     self.auto_restore.update()
+                    self.auto_health.detect()
                     char_group.sprites()[0].update(1, 255)
                     mons_group.sprites()[0].update(4, alpha)
 
@@ -556,7 +614,12 @@ class WorldClass:
 
             if len(detail_auto_use_btn_group.sprites()) != 0:   # 當自動使用按鈕被觸動時
                 if detail_auto_use_btn_group.sprites()[0].update(ptr_tip_pos, mouse_type):
-                    print("Set auto use")
+                    self.auto_health.assign_target(selected_item[1])
+                    item_obj = self.Char_obj.item.get_item(selected_item[0], selected_item[1])
+                    selected_item = None
+                    item_detail_group.empty(), detail_use_btn_group.empty(), detail_auto_use_btn_group.empty()  # 關閉詳細資訊視窗，讓設定成功有些反饋
+                    chat = self.window.get_chat_win(["[自動使用系統] 目前設定 - " + item_obj.item_name + " 數量: " + str(item_obj.amount)], [Purple])
+                    self.chat_room_group.update(chat, None)
 
             all_group_draw(all_group, self.window.screen)
             pygame.display.update()
@@ -823,3 +886,23 @@ class AutoRestore:
             self.count = 0
         else:
             self.count += 1
+
+
+class AutoHealthByMedicine:
+    def __init__(self, char_obj, order_in_list, item_list_obj, threshold):
+        self.char_obj = char_obj
+        self.item_order_in_list = order_in_list
+        self.item_list_obj = item_list_obj
+        self.threshold = threshold              # floating number
+
+    def assign_target(self, order_in_list):
+        self.item_order_in_list = order_in_list
+
+    def detect(self):
+        if self.char_obj.hp < int(self.char_obj.attribute.max_hp * self.threshold) and self.item_order_in_list is not None:
+            obj = self.item_list_obj.get_item(0, self.item_order_in_list)
+            self.item_list_obj.use_item(0, self.item_order_in_list)
+            if obj.amount <= 0:
+                self.item_order_in_list = None
+
+

@@ -1,7 +1,17 @@
 import os, random
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # 3rd party Library
-import Item_Database, Animate_Utility, Graphic
+import Item_Database, Animate_Utility, Graphic, World
+
+Black = (0, 0, 0)
+White = (255, 255, 255)
+Red = (255, 0, 0)
+Green = (0, 255, 0)
+Blue = (0, 0, 255)
+Yellow = (255, 222, 0)
+Orange = (255, 170, 0)
+Battle_Meg_Color = (0, 196, 255)
+Purple = (200, 95, 200)
 
 
 class ItemList:
@@ -31,7 +41,7 @@ class ItemList:
     def use_item(self, item_type, order):
         obj = self.all_list[item_type][order]
         response = obj.use_action(self.equip_obj)
-        if response is not False and obj.item_type == 1:    # 代表不是裝備失敗
+        if response is not False and obj.item_type == 1:    # 代表不是裝備失敗，如果沒有限定item_type = 1，補品用一次就會消失
             self.all_list[item_type].remove(obj)            # 裝備成功先將該裝備移出物品欄
             if isinstance(response, ItemObj):               # 代表原先位置有裝備，被return回來
                 self.add_item(response)                     # 加入裝備欄
@@ -143,18 +153,30 @@ class ItemObj:
             self.char.sp = self.char.sp + health_sp
             self.char.sp = self.char.attribute.max_sp if self.char.sp >= self.char.attribute.max_sp else self.char.sp
         self.amount -= 1
+        message = "[物品使用] 使用 " + self.item_name
+        if health_hp is not None or health_sp is not None:
+            message += " 恢復 HP " + str(health_hp) if health_hp is not None else ""
+            message += " 恢復 SP " + str(health_sp) if health_sp is not None else ""
+            win = Graphic.WindowClass.obj.get_chat_win([message], [Purple])
+            World.WorldClass.chat_group.update(win, None)
         return True
 
     def equip_use(self, equip_obj):
         response = equip_obj.equip(self)                                        # 可能return True, Equipment_Obj, False
+        message = "[物品使用] 裝備 " + self.item_name
         if response is not False:                                               # 代表確實裝備上去
+            message += " 成功！"
+            win = Graphic.WindowClass.obj.get_chat_win([message], [Purple])
+            World.WorldClass.chat_group.update(win, None)
             self.char.attribute.transform(self.char)                            # 裝備上去之後需要更新attribute
             if isinstance(response, ItemObj):
                 return response                                                 # 回傳卸下的裝備，準備裝入物品欄
             else:
                 return True
         else:
-            # 加入系統訊息？
+            message += " 失敗！"
+            win = Graphic.WindowClass.obj.get_chat_win([message], [Red])
+            World.WorldClass.chat_group.update(win, None)
             return response                                                     # 回傳False，裝備失敗
 
     def data_setting(self):
