@@ -1,5 +1,5 @@
-import os, random                                                    # Python Built-in Library
-import Character, Item, Animate_Utility, Map_Database, Graphic       # 自己的Code
+import os, random                                                  # Python Built-in Library
+import Character, Item, Animate_Utility, Map_Database, Graphic, Save       # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
 
@@ -81,42 +81,10 @@ class WorldClass:
         WorldClass.chat_group = self.chat_room_group
 
         self.Char_obj.item.add_item(Item.ItemObj(0, 0, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 1, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 2, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 3, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 4, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 5, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 6, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 7, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 8, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 9, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 10, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 11, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 12, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 13, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 14, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 15, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 16, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 17, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 18, self.Char_obj, 10))
-        self.Char_obj.item.add_item(Item.ItemObj(0, 19, self.Char_obj, 10))
         self.Char_obj.item.add_item(Item.ItemObj(1, (0, 0), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (0, 3), self.Char_obj, 1))
         self.Char_obj.item.add_item(Item.ItemObj(1, (0, 5), self.Char_obj, 1))
         self.Char_obj.item.add_item(Item.ItemObj(1, (1, 0), self.Char_obj, 1))
         self.Char_obj.item.add_item(Item.ItemObj(1, (2, 0), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (4, 0), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (5, 0), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 0), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 1), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 2), self.Char_obj, 1))
-        self.Char_obj.item.add_item(Item.ItemObj(1, (6, 3), self.Char_obj, 1))
-
-        self.Char_obj.item.use_item(1, 0)
-        self.Char_obj.item.use_item(1, 0)
-        self.Char_obj.item.use_item(1, 0)
-        self.Char_obj.item.use_item(1, 0)
-        self.Char_obj.item.use_item(1, 0)
         self.Char_obj.item.use_item(1, 0)
         self.Char_obj.item.use_item(1, 0)
         self.Char_obj.item.use_item(1, 0)
@@ -130,6 +98,8 @@ class WorldClass:
         while True:
             if map_idx is None:         # 回到主畫面
                 self.window.interlude_black_window()
+                save_obj = Save.SaveClass(self)
+                save_obj.saving_date()
                 break
             map_data = Map_Database.map_data[map_idx]
             if self.current_pos != map_idx:                     # 換地圖時：過場、換bgm、更新目前位置
@@ -155,7 +125,7 @@ class WorldClass:
 
         char_sit_group = pygame.sprite.Group(Animate_Utility.InfoWindowAnimate(self.Char_obj.sit_img, self.char_pos))
         self.common_group_update()
-        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置 - " + map_data[2]], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置 - " + map_data[2] + " 按下 ESC 可儲存並退回主選單"], [Green])
         self.chat_room_group.update(chat, None)
 
         all_group = [char_sit_group, self.status_group, self.mini_map_group,
@@ -203,7 +173,7 @@ class WorldClass:
                 elif opt_select == 1:
                     return self.item_page(map_idx)
                 elif opt_select == 2:
-                    print("裝備")
+                    return self.equip_page(map_idx)
                 elif opt_select == 4:
                     return self.moving_page(map_idx)
                 elif opt_select == 5:
@@ -214,7 +184,7 @@ class WorldClass:
         self.window.set_bg_image(os.path.join("BG_Image", map_data[1] + ".png"), 255)
         self.common_group_update()
 
-        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2]], [Green])
+        chat = self.window.get_chat_win(["[系統訊息] 目前所在位置：" + map_data[2] + " 按下 ESC 可儲存並退回主選單"], [Green])
         self.chat_room_group.update(chat, None)
 
         char_group = pygame.sprite.Group(Animate_Utility.CharAnimate(self.window, self.Char_obj, None, self.char_pos, self.char_damage_pos, None))

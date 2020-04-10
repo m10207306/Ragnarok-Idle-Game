@@ -61,8 +61,18 @@ class EquipmentList:
         self.equip_str, self.equip_agi, self.equip_vit, self.equip_int, self.equip_dex, self.equip_luk = 0, 0, 0, 0, 0, 0
         self.equip_idx = []
 
+    def get_idx(self):
+        idx = []
+        for equip in self.equip_list:
+            if equip is None:
+                idx.append(equip)
+            else:
+                idx.append(equip.item_idx)
+        return idx
+
     def equip(self, item_obj):
         if self.check_equip_limit(item_obj):                    # 檢查是否符合裝備限定的職業與等級
+            print(item_obj.equip_pos)
             pos = item_obj.equip_pos
             if pos == 8:                                        # 代表是飾品 (左飾品為空，直接裝，這邊無動作)
                 if self.equip_list[pos] is not None and self.equip_list[pos + 1] is None:   # 左裝飾品有東西，右裝飾品沒有，就改安裝到9號位，其他都是裝到8號位
@@ -82,6 +92,9 @@ class EquipmentList:
             return current_equip
         else:
             return None
+
+    def reset_equip(self):
+        self.equip_list = [None, None, None, None, None, None, None, None, None, None]
 
     def reset_equip_bonus(self):
         self.equip_atk, self.equip_def, self.equip_matk, self.equip_mdef, self.equip_hp, self.equip_sp = 0, 0, 0, 0, 0, 0

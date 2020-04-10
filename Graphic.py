@@ -580,15 +580,7 @@ class WindowClass:
     def fps_analysis(fps_list):
         if len(fps_list) > 30:
             del fps_list[0:29]
-        print("FPS: ", str(min(fps_list)), " - ", str(max(fps_list)))
-
-    # @staticmethod
-    # def combine_sprite(*input_group):
-    #     all_group = pygame.sprite.Group()
-    #     for group in input_group:
-    #         for sprite in group:
-    #             all_group.add(sprite)
-    #     return all_group
+        print("FPS: ", str(round(min(fps_list), 2)), " - ", str(round(max(fps_list), 2)))
 
     @staticmethod
     def render_and_return_rect(font, text, color):

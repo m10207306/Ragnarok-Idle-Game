@@ -12,6 +12,12 @@ class AbilityClusterClass:
         self.status_point = 0
         self.level = 1
 
+    def get_ability_list(self):
+        abi_list = []
+        for ability in self.ability:
+            abi_list.append(ability.value)
+        return abi_list
+
     def get_ability(self, ability_tag):
         ability = ["str", "agi", "vit", "int", "dex", "luk"]
         return self.ability[ability.index(ability_tag)]

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import os                                      # Python Built-in Library
-import World, Graphic, Animate_Utility         # 自己的Code
+import os                                           # Python Built-in Library
+import World, Graphic, Animate_Utility, Save        # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
 
@@ -84,12 +84,17 @@ class Ragnarok:
                 name, ability_list = self.initialize_ability()
                 world_obj = World.WorldClass(self.window, name, ability_list)
                 world_obj.transfer_station(1)       # 預設前往普隆德拉
-                self.window.reset_chat_message()    # 如果走到這邊代表已經退出遊戲，需要清除聊天框內的訊息
-                print(">> Create Character")
+                self.window.reset_chat_message()    # 如果走到這邊代表已經從World退出，需要清除聊天框內的訊息
                 return True
             elif opt_select == 1 and enter:
                 print(">> Load Game")
-                return False
+                world_obj = World.WorldClass(self.window, "Player", [5, 5, 5, 5, 5, 5])
+                save_obj = Save.SaveClass(world_obj)
+                error_flag, pos = save_obj.loading()
+                if error_flag:
+                    world_obj.transfer_station(pos)
+                    self.window.reset_chat_message()
+                return True
             elif opt_select == 2 and enter:
                 print(">> See Ya!")
                 return False
@@ -141,8 +146,8 @@ class Ragnarok:
             self.window.clock.tick(60)
             fps_list.append(self.window.clock.get_fps())
             key, key_id, mouse, mouse_type = self.window.input_detect()
-            if "escape" in key:
-                return False
+            # if "escape" in key:
+            #     return False
 
             for c in key:
                 if name == "Player":
@@ -183,7 +188,7 @@ class Ragnarok:
             if enter:
                 print("Ability Initialization")
                 self.window.fps_analysis(fps_list)
-                return name, ability_list
+                return name, [ability_list[0], ability_list[1], ability_list[3], ability_list[5], ability_list[2], ability_list[4]]
 
 
 if __name__ == "__main__":
