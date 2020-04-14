@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os                                           # Python Built-in Library
+import os, sys                                      # Python Built-in Library
 import World, Graphic, Animate_Utility, Save        # 自己的Code
 os.environ["PYGAME_HIDE_SUPPORT_PROMPT"] = "hide"   # Block the information from importing pygame
 import pygame                                       # Python重複import也不會像C++一樣有影響，sys.module中如果已存在就只是reference過來
@@ -12,6 +12,8 @@ Select_Color = [209, 222, 250]
 
 class Ragnarok:
     def __init__(self):
+        if hasattr(sys, "frozen"):
+            os.chdir(os.path.dirname(sys.executable))
         self.window = Graphic.WindowClass()
 
     def run(self):
@@ -22,7 +24,7 @@ class Ragnarok:
 
     def standby(self):
         # fps大概53-62
-        self.window.set_bg_image(os.path.join("BG_Image", "Login_BG.png"), 200)
+        self.window.set_bg_image(os.path.join("BG_Image", "login_bg.png"), 200)
         black_surf = pygame.Surface(self.window.background.get_size())
         black_surf.fill((0, 0, 0))
 
