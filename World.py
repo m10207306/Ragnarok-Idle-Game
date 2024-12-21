@@ -424,7 +424,7 @@ class WorldClass:
                         target_idx = mons_obj.item_drop_idx[idx]
                         drop_obj = Item.ItemObj(target_idx[0], target_idx[1], self.Char_obj, 1)
                         self.Char_obj.item.add_item(drop_obj)
-                        item_message += drop_obj.item_name + " "
+                        item_message += "[" + drop_obj.item_name + "] "
             elif char_dead:
                 self.Char_obj.exp_punish()
                 sys_message += "失敗！ 損失 2% Base / Job Exp"
@@ -592,7 +592,7 @@ class WorldClass:
                     item_obj = self.Char_obj.item.get_item(selected_item[0], selected_item[1])
                     selected_item = None
                     item_detail_group.empty(), detail_use_btn_group.empty(), detail_auto_use_btn_group.empty()  # 關閉詳細資訊視窗，讓設定成功有些反饋
-                    chat = self.window.get_chat_win(["[自動使用系統] 目前設定 - " + item_obj.item_name + " 數量: " + str(item_obj.amount)], [Purple])
+                    chat = self.window.get_chat_win(["[自動使用系統] 目前設定 - [" + item_obj.item_name + "] 數量: " + str(item_obj.amount)], [Purple])
                     self.chat_room_group.update(chat, None)
 
             all_group_draw(all_group, self.window.screen)

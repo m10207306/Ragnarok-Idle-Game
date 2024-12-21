@@ -166,7 +166,7 @@ class ItemObj:
             self.char.sp = self.char.sp + health_sp
             self.char.sp = self.char.attribute.max_sp if self.char.sp >= self.char.attribute.max_sp else self.char.sp
         self.amount -= 1
-        message = "[物品使用] 使用 " + self.item_name
+        message = "[物品使用] 使用 [" + self.item_name + "]"
         if health_hp is not None or health_sp is not None:
             message += " 恢復 HP " + str(health_hp) if health_hp is not None else ""
             message += " 恢復 SP " + str(health_sp) if health_sp is not None else ""
